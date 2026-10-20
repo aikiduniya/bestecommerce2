@@ -3,7 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ordersQuery, money } from "@/lib/store";
+import { ordersQuery, money, optionLabel, type Order } from "@/lib/store";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Eye, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader, StatusPill } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,12 +23,16 @@ function OrdersPage() {
   const qc = useQueryClient();
   const { data: orders = [] } = useQuery(ordersQuery);
   const [filter, setFilter] = useState("all");
-  const list = orders.filter((o) => filter === "all" || o.status === filter);
+  const [q, setQ] = useState("");
+  const [view, setView] = useState<Order | null>(null);
+  const list = orders.filter((o) => (filter === "all" || o.status === filter) &&
+    `${o.order_number} ${o.customer_name} ${o.customer_email}`.toLowerCase().includes(q.toLowerCase()));
 
   async function update(id: string, patch: { status?: string; payment_status?: string }) {
     const { error } = await supabase.from("orders").update(patch).eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Order updated");
+    if (patch.status === "cancelled") qc.invalidateQueries({ queryKey: ["products"] });
+    toast.success(patch.status === "cancelled" ? "Order cancelled — stock returned to inventory" : "Order updated");
     qc.invalidateQueries({ queryKey: ["orders"] });
   }
 
@@ -37,6 +45,10 @@ function OrdersPage() {
         </select>
       </PageHeader>
       <Card className="p-4">
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+          <Input className="pl-9" placeholder="Search order #, name or email…" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -46,6 +58,7 @@ function OrdersPage() {
               <TableHead>Total</TableHead>
               <TableHead>Fulfilment</TableHead>
               <TableHead>Paid</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -74,14 +87,39 @@ function OrdersPage() {
                     </select>
                   </div>
                 </TableCell>
+                <TableCell><Button size="icon" variant="ghost" onClick={() => setView(o)} aria-label="View"><Eye /></Button></TableCell>
               </TableRow>
             ))}
             {list.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="py-12 text-center text-muted-foreground">No orders yet. They will appear here once customers check out.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="py-12 text-center text-muted-foreground">No orders yet. They will appear here once customers check out.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
       </Card>
+      <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
+        <DialogContent className="max-w-2xl">
+          {view && (
+            <>
+              <DialogHeader><DialogTitle className="font-display text-3xl">Order #{view.order_number}</DialogTitle></DialogHeader>
+              <div className="divide-y rounded border text-sm">
+                {(view.items as { name: string; qty: number; price: number; sku?: string; options?: Record<string, string> }[]).map((l, i) => (
+                  <div key={i} className="flex justify-between p-3"><span>{l.name} × {l.qty}<span className="block text-xs text-muted-foreground">{[l.sku, optionLabel(l.options)].filter(Boolean).join(" · ")}</span></span><span>{money(l.price * l.qty, view.currency)}</span></div>
+                ))}
+                <div className="space-y-1 p-3">
+                  <div className="flex justify-between"><span>Subtotal</span><span>{money(view.subtotal, view.currency)}</span></div>
+                  <div className="flex justify-between"><span>Shipping</span><span>{money(view.shipping_total, view.currency)}</span></div>
+                  <div className="flex justify-between font-semibold"><span>Total</span><span>{money(view.total, view.currency)}</span></div>
+                </div>
+              </div>
+              <div className="grid gap-4 text-sm sm:grid-cols-2">
+                <div><p className="eyebrow mb-1 text-muted-foreground">Customer</p><p>{view.customer_name}</p><p>{view.customer_email}</p><p>{view.customer_phone}</p></div>
+                <div><p className="eyebrow mb-1 text-muted-foreground">Ship to</p>{Object.entries(view.shipping_address as Record<string, string>).filter(([, v]) => v).map(([k, v]) => <p key={k}>{v}</p>)}</div>
+              </div>
+              {view.notes && <p className="rounded bg-muted p-3 text-sm">Note: {view.notes}</p>}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

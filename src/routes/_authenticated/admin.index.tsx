@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { DollarSign, Package, ShoppingBag, AlertTriangle } from "lucide-react";
+import { DollarSign, Package, ShoppingBag, AlertTriangle, TrendingUp } from "lucide-react";
 import { ordersQuery, productsQuery, settingsQuery, money } from "@/lib/store";
 import { PageHeader, StatusPill } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/card";
@@ -28,9 +28,13 @@ function Dashboard() {
     return { day: key.slice(5), total };
   });
 
+  const valid = orders.filter((o) => o.status !== "cancelled");
+  const aov = valid.length ? revenue / valid.length : 0;
+  const pending = orders.filter((o) => o.status === "pending").length;
   const stats = [
     { label: "Revenue", value: money(revenue, cur), icon: DollarSign },
-    { label: "Orders", value: orders.length, icon: ShoppingBag },
+    { label: "Orders", value: `${orders.length}${pending ? ` · ${pending} new` : ""}`, icon: ShoppingBag },
+    { label: "Avg. order value", value: money(aov, cur), icon: TrendingUp },
     { label: "Active products", value: products.filter((p) => p.status === "active").length, icon: Package },
     { label: "Low stock", value: lowStock.length, icon: AlertTriangle },
   ];
@@ -38,7 +42,7 @@ function Dashboard() {
   return (
     <>
       <PageHeader title="Overview" subtitle="Your store at a glance" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((s) => (
           <Card key={s.label} className="p-5">
             <div className="flex items-center justify-between">
