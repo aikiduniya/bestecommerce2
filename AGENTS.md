@@ -11,5 +11,5 @@
 
 ## Project rules
 - All store branding/content/config lives in `store_settings` and related tables; never hardcode business content (admin must control it).
-- Roles live in `user_roles` (admin/staff/customer) with `has_role`/`is_staff` security-definer checks; first signup becomes admin via trigger.
+- Roles live in `user_roles` (admin/staff/customer) with `has_role`/`is_staff` security-definer checks; every signup gets `customer` via trigger — admin/staff can only be granted by an existing admin (RLS on user_roles).
 - Admin pages live under `src/routes/_authenticated/admin.*` and read/write via the browser client protected by RLS.

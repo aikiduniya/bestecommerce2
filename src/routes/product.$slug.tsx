@@ -11,16 +11,30 @@ import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getProductSeo } from "@/lib/seo.functions";
 
 export const Route = createFileRoute("/product/$slug")({
-  head: () => ({
-    meta: [
-      { title: "Product details" },
-      { name: "description", content: "Product details, options, pricing and availability." },
-      { property: "og:title", content: "Product details" },
-      { property: "og:description", content: "Product details, options, pricing and availability." },
-    ],
-  }),
+  loader: ({ params }) => getProductSeo({ data: params.slug }).catch(() => null),
+  head: ({ loaderData, params }) => {
+    const title = loaderData?.title ?? "Product details";
+    const description = loaderData?.description ?? "Product details, options, pricing and availability.";
+    const url = `https://bestecommerce2.lovable.app/product/${params.slug}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(loaderData?.image
+          ? [{ property: "og:image", content: loaderData.image }, { name: "twitter:image", content: loaderData.image }]
+          : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: ProductPage,
 });
 
@@ -57,7 +71,7 @@ function ProductPage() {
   useEffect(() => {
     if (p) {
       pushRecentlyViewed(p.id);
-      document.title = p.seo_title || `${p.name} · ${s?.store_name ?? ""}`;
+      document.title = p.seo_title || `${p.name} | ${s?.store_name ?? ""}`;
     }
   }, [p, s?.store_name]);
 
