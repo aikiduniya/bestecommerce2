@@ -8,3 +8,8 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Project rules
+- All store branding/content/config lives in `store_settings` and related tables; never hardcode business content (admin must control it).
+- Roles live in `user_roles` (admin/staff/customer) with `has_role`/`is_staff` security-definer checks; first signup becomes admin via trigger.
+- Admin pages live under `src/routes/_authenticated/admin.*` and read/write via the browser client protected by RLS.
