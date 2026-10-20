@@ -87,8 +87,8 @@ function ProductPage() {
 
   function addToCart() {
     if (!p) return;
-    if (needsChoice) return toast.error("Please choose your options");
-    if (stock < qty) return toast.error(stock === 0 ? "Out of stock" : `Only ${stock} available`);
+    if (needsChoice) { toast.error("Please choose your options"); return; }
+    if (stock < qty) { toast.error(stock === 0 ? "Out of stock" : `Only ${stock} available`); return; }
     cart.add({
       product_id: p.id, variant_id: variant?.id ?? null, qty, name: p.name, slug: p.slug, price,
       image: images[0] ?? null, options: (variant?.options as Record<string, string>) ?? undefined,
@@ -97,11 +97,11 @@ function ProductPage() {
   }
 
   async function toggleWish() {
-    if (!user || !p) return toast.error("Sign in to save to your wishlist");
+    if (!user || !p) { toast.error("Sign in to save to your wishlist"); return; }
     const { error } = inWish
       ? await supabase.from("wishlists").delete().eq("product_id", p.id).eq("user_id", user.id)
       : await supabase.from("wishlists").insert({ product_id: p.id, user_id: user.id });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["wishlist"] });
   }
 
