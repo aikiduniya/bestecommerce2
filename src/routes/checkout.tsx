@@ -45,7 +45,7 @@ function Checkout() {
 
   async function place(e: React.FormEvent) {
     e.preventDefault();
-    if (!zone) return toast.error("No shipping method available for this country");
+    if (!zone) { toast.error("No shipping method available for this country"); return; }
     setPlacing(true);
     const { data, error } = await supabase.rpc("place_order", {
       _items: cart.items.map((i) => ({ product_id: i.product_id, variant_id: i.variant_id, qty: i.qty })),
@@ -55,7 +55,7 @@ function Checkout() {
       _notes: f.notes,
     });
     setPlacing(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     const res = data as { id: string; order_number: number };
     cart.clear();
     qc.invalidateQueries();

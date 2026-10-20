@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/admin/products")({
   component: ProductsPage,
 });
 
-type Form = Partial<Product> & { tagsText?: string };
+type Form = { [K in keyof Product]?: Product[K] | undefined } & { tagsText?: string | undefined };
 
 function ProductsPage() {
   const qc = useQueryClient();

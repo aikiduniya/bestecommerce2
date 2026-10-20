@@ -27,7 +27,7 @@ function OrderPage() {
 
   if (isLoading) return <StoreLayout><div className="mx-auto max-w-3xl p-14"><Skeleton className="h-96" /></div></StoreLayout>;
   if (!o) return <StoreLayout><div className="py-32 text-center"><h1 className="text-5xl">Order not found</h1></div></StoreLayout>;
-  const addr = o.shipping_address as Record<string, string>;
+  const addr = o.shipping_address as { line1?: string; line2?: string; city?: string; state?: string; postal?: string; country?: string };
   const fresh = Date.now() - new Date(o.created_at).getTime() < 10 * 60 * 1000;
 
   return (

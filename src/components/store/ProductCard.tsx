@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { money, type Product } from "@/lib/store";
 
-export function ProductCard({ p, currency, fromPrice }: { p: Product; currency?: string; fromPrice?: number }) {
+export function ProductCard({ p, currency, fromPrice }: { p: Product; currency?: string | undefined; fromPrice?: number | undefined }) {
   const price = fromPrice ?? Number(p.price);
   const onSale = p.compare_at_price && Number(p.compare_at_price) > price;
   return (

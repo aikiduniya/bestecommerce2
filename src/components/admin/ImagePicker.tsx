@@ -27,14 +27,14 @@ export function ImagePicker({ value, onChange, multiple = true }: { value: strin
     }
     setBusy(false);
     qc.invalidateQueries({ queryKey: ["media"] });
-    if (urls.length) onChange(multiple ? [...value, ...urls] : [urls[0]]);
+    if (urls.length) onChange(multiple ? [...value, ...urls] : [urls[0]!]);
     if (ref.current) ref.current.value = "";
   }
 
   const move = (i: number) => {
     if (i === 0) return;
     const v = [...value];
-    [v[i - 1], v[i]] = [v[i], v[i - 1]];
+    const a = v[i - 1]!; v[i - 1] = v[i]!; v[i] = a;
     onChange(v);
   };
 
