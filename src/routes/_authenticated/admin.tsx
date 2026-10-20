@@ -1,7 +1,7 @@
-import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users,
+  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/store";
@@ -12,36 +12,54 @@ export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async ({ context }) => {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", context.user.id);
     const roles = (data ?? []).map((r) => r.role);
-    return { isAdmin: roles.includes("admin"), isStaff: roles.includes("admin") || roles.includes("staff") };
+    const isAdmin = roles.includes("admin");
+    let perms: string[] = [];
+    let isStaff = isAdmin;
+    if (!isAdmin && roles.includes("staff")) {
+      const { data: m } = await supabase.from("staff_members").select("is_active, staff_roles(permissions)").eq("user_id", context.user.id).maybeSingle();
+      isStaff = !!m?.is_active;
+      perms = m?.is_active ? ((m.staff_roles as { permissions: string[] } | null)?.permissions ?? []) : [];
+    }
+    return { isAdmin, isStaff, perms };
   },
   component: AdminLayout,
 });
 
 const groups = [
-  { label: "Overview", items: [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true }] },
+  { label: "Overview", items: [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, perm: null }] },
   {
     label: "Catalog",
     items: [
-      { to: "/admin/products", label: "Products", icon: Package },
-      { to: "/admin/categories", label: "Categories", icon: FolderTree },
-      { to: "/admin/collections", label: "Collections", icon: Layers },
-      { to: "/admin/brands", label: "Brands", icon: Tag },
-      { to: "/admin/media", label: "Media library", icon: Image },
+      { perm: "catalog", to: "/admin/products", label: "Products", icon: Package },
+      { perm: "catalog", to: "/admin/categories", label: "Categories", icon: FolderTree },
+      { perm: "catalog", to: "/admin/collections", label: "Collections", icon: Layers },
+      { perm: "catalog", to: "/admin/brands", label: "Brands", icon: Tag },
+      { perm: "catalog", to: "/admin/media", label: "Media library", icon: Image },
     ],
   },
   {
     label: "Sales",
     items: [
-      { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
-      { to: "/admin/customers", label: "Customers", icon: Users },
-      { to: "/admin/shipping", label: "Shipping", icon: Truck },
+      { perm: "orders", to: "/admin/orders", label: "Orders", icon: ShoppingBag },
+      { perm: "customers", to: "/admin/customers", label: "Customers", icon: Users },
+      { perm: "admin", to: "/admin/shipping", label: "Shipping", icon: Truck },
     ],
   },
-  { label: "Store", items: [{ to: "/admin/settings", label: "Settings", icon: Settings }] },
+  {
+    label: "Store",
+    items: [
+      { perm: "orders", to: "/admin/reports", label: "COD report", icon: BarChart3 },
+      { perm: "admin", to: "/admin/staff", label: "Staff & roles", icon: ShieldCheck },
+      { perm: "admin", to: "/admin/activity", label: "Activity log", icon: History },
+      { perm: "admin", to: "/admin/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ] as const;
 
 function AdminLayout() {
-  const { isStaff, user } = Route.useRouteContext();
+  const { isStaff, isAdmin, perms, user } = Route.useRouteContext();
+  const { pathname } = useLocation();
+  const can = (p: string | null) => p === null || isAdmin || (p !== "admin" && perms.includes(p));
   const { data: settings } = useQuery(settingsQuery);
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -66,17 +84,20 @@ function AdminLayout() {
     );
   }
 
-  const flat = groups.flatMap((g): readonly (typeof groups)[number]["items"][number][] => g.items);
+  const visible = groups.map((g) => ({ ...g, items: g.items.filter((n) => can(n.perm)) })).filter((g) => g.items.length);
+  const flat = visible.flatMap((g) => g.items);
+  const current = groups.flatMap((g) => g.items as readonly { to: string; perm: string | null }[]).find((n) => n.to !== "/admin" && pathname.startsWith(n.to));
+  const allowed = !current || can(current.perm);
 
   return (
     <div className="flex min-h-screen bg-muted">
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="border-b border-sidebar-border px-6 py-6">
-          <p className="eyebrow text-sidebar-primary">Super Admin</p>
+          <p className="eyebrow text-sidebar-primary">{isAdmin ? "Super Admin" : "Staff"}</p>
           <p className="mt-1 truncate font-display text-2xl text-sidebar-accent-foreground">{settings?.store_name ?? "Store"}</p>
         </div>
         <nav className="flex-1 space-y-5 overflow-y-auto p-3">
-          {groups.map((g) => (
+          {visible.map((g) => (
             <div key={g.label}>
               <p className="eyebrow mb-1 px-3 text-[10px] opacity-40">{g.label}</p>
               {g.items.map((n) => (
@@ -109,7 +130,7 @@ function AdminLayout() {
           ))}
         </div>
         <main className="mx-auto max-w-7xl p-5 md:p-10">
-          <Outlet />
+          {allowed ? <Outlet /> : <div className="py-24 text-center"><h1 className="text-4xl">No permission</h1><p className="mt-2 text-muted-foreground">Ask the Super Admin to give your role access to this section.</p></div>}
         </main>
       </div>
     </div>

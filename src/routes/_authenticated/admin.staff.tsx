@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/admin/staff")({
   component: StaffPage,
 });
 
-export const PERMISSIONS = [
+const PERMISSIONS = [
   { key: "catalog", label: "Catalog", hint: "Products, categories, collections, brands, media" },
   { key: "orders", label: "Orders", hint: "View and update orders, COD collection" },
   { key: "customers", label: "Customers", hint: "Customer list" },
