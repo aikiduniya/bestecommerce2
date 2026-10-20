@@ -17,6 +17,9 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as PagesSlugRouteImport } from './routes/pages.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin.activity'
@@ -71,6 +74,21 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PagesSlugRoute = PagesSlugRouteImport.update({
+  id: '/pages/$slug',
+  path: '/pages/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
@@ -166,7 +184,10 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
+  '/pages/$slug': typeof PagesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -189,7 +210,10 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/shop': typeof ShopRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/pages/$slug': typeof PagesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/blog': typeof BlogIndexRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -215,7 +239,10 @@ export interface FileRoutesById {
   '/shop': typeof ShopRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
+  '/pages/$slug': typeof PagesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -241,7 +268,10 @@ export interface FileRouteTypes {
     | '/shop'
     | '/account'
     | '/admin'
+    | '/blog/$slug'
+    | '/pages/$slug'
     | '/product/$slug'
+    | '/blog/'
     | '/admin/activity'
     | '/admin/brands'
     | '/admin/categories'
@@ -264,7 +294,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/shop'
     | '/account'
+    | '/blog/$slug'
+    | '/pages/$slug'
     | '/product/$slug'
+    | '/blog'
     | '/admin/activity'
     | '/admin/brands'
     | '/admin/categories'
@@ -289,7 +322,10 @@ export interface FileRouteTypes {
     | '/shop'
     | '/_authenticated/account'
     | '/_authenticated/admin'
+    | '/blog/$slug'
+    | '/pages/$slug'
     | '/product/$slug'
+    | '/blog/'
     | '/_authenticated/admin/activity'
     | '/_authenticated/admin/brands'
     | '/_authenticated/admin/categories'
@@ -313,7 +349,10 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ShopRoute: typeof ShopRoute
+  BlogSlugRoute: typeof BlogSlugRoute
+  PagesSlugRoute: typeof PagesSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -373,6 +412,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pages/$slug': {
+      id: '/pages/$slug'
+      path: '/pages/$slug'
+      fullPath: '/pages/$slug'
+      preLoaderRoute: typeof PagesSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/product/$slug': {
       id: '/product/$slug'
@@ -539,7 +599,10 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ShopRoute: ShopRoute,
+  BlogSlugRoute: BlogSlugRoute,
+  PagesSlugRoute: PagesSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -34,6 +34,8 @@ function Checkout() {
   const [f, setF] = useState({ name: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", postal: "", country: "", notes: "" });
   const [zoneId, setZoneId] = useState("");
   const [placing, setPlacing] = useState(false);
+  const [codeInput, setCodeInput] = useState("");
+  const [coupon, setCoupon] = useState<{ code: string; discount: number; free_shipping: boolean } | null>(null);
   const cur = s?.currency;
 
   useEffect(() => { if (user?.email) setF((x) => ({ ...x, email: x.email || user.email! })); }, [user]);
@@ -41,7 +43,20 @@ function Checkout() {
   const country = f.country.trim().toUpperCase();
   const available = zones.filter((z) => z.is_active && (z.countries.length === 0 || z.countries.includes("*") || (country && z.countries.includes(country))));
   const zone = available.find((z) => z.id === zoneId) ?? available[0];
-  const shipping = zone ? (zone.free_over !== null && cart.subtotal >= Number(zone.free_over) ? 0 : Number(zone.rate)) : 0;
+  const baseShipping = zone ? (zone.free_over !== null && cart.subtotal >= Number(zone.free_over) ? 0 : Number(zone.rate)) : 0;
+  const shipping = coupon?.free_shipping ? 0 : baseShipping;
+  const discount = coupon ? Math.min(coupon.discount, cart.subtotal) : 0;
+
+  async function applyCoupon() {
+    if (!codeInput.trim()) return;
+    const { data, error } = await supabase.rpc("check_coupon", { _code: codeInput, _subtotal: cart.subtotal });
+    if (error) { setCoupon(null); toast.error(error.message); return; }
+    const c = data as { code: string; discount: number; free_shipping: boolean };
+    setCoupon({ code: c.code, discount: Number(c.discount), free_shipping: c.free_shipping });
+    toast.success(`Coupon ${c.code} applied`);
+  }
+  // Re-check if cart changes after applying
+  useEffect(() => { if (coupon) setCoupon(null); }, [cart.subtotal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const codFee = Number(s?.cod_fee ?? 0);
   const codIssue = !s ? null
@@ -61,6 +76,7 @@ function Checkout() {
       _address: { line1: f.line1, line2: f.line2, city: f.city, state: f.state, postal: f.postal, country },
       _zone_id: zone.id,
       _notes: f.notes,
+      _coupon: coupon?.code ?? undefined,
     });
     setPlacing(false);
     if (error) { toast.error(error.message); return; }
@@ -150,11 +166,16 @@ function Checkout() {
               </div>
             ))}
           </div>
+          <div className="mt-4 flex gap-2 border-t pt-4">
+            <Input placeholder="Coupon code" value={codeInput} onChange={(e) => setCodeInput(e.target.value.toUpperCase())} />
+            <Button type="button" variant="outline" onClick={applyCoupon}>Apply</Button>
+          </div>
           <div className="mt-4 space-y-2 border-t pt-4 text-sm">
             <div className="flex justify-between"><span>Subtotal</span><span>{money(cart.subtotal, cur)}</span></div>
             <div className="flex justify-between"><span>Shipping</span><span>{zone ? money(shipping, cur) : "—"}</span></div>
+            {coupon && <div className="flex justify-between text-success"><span>Coupon {coupon.code} <button type="button" className="ml-1 text-xs underline" onClick={() => setCoupon(null)}>remove</button></span><span>{coupon.free_shipping ? "Free shipping" : `−${money(discount, cur)}`}</span></div>}
             {codFee > 0 && <div className="flex justify-between"><span>Cash on Delivery fee</span><span>{money(codFee, cur)}</span></div>}
-            <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(cart.subtotal + shipping + codFee, cur)}</span></div>
+            <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(cart.subtotal - discount + shipping + codFee, cur)}</span></div>
             {codIssue && <p className="text-xs text-destructive">{codIssue}</p>}
           </div>
           <Button type="submit" size="lg" className="mt-6 w-full" disabled={placing || !s?.cod_enabled || !zone || !!codIssue}>
