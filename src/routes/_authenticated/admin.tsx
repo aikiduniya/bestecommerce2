@@ -66,7 +66,7 @@ function AdminLayout() {
     );
   }
 
-  const flat = groups.flatMap((g) => g.items);
+  const flat = groups.flatMap((g): readonly (typeof groups)[number]["items"][number][] => g.items);
 
   return (
     <div className="flex min-h-screen bg-muted">

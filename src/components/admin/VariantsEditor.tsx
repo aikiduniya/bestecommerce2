@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
 export type VariantDraft = {
-  id?: string;
+  id?: string | undefined;
   options: Record<string, string>;
   sku: string;
   price: string;
@@ -32,7 +32,7 @@ export function VariantsEditor({
   variants: VariantDraft[];
   setVariants: (v: VariantDraft[]) => void;
   images: string[];
-  baseSku?: string | null;
+  baseSku?: string | null | undefined;
 }) {
   function generate() {
     const clean = options.filter((o) => o.name.trim() && o.values.length);
