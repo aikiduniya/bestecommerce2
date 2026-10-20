@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
-import { categoriesQuery, productsQuery, settingsQuery, money } from "@/lib/store";
+import { useEffect, useState } from "react";
+import { ArrowRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
+import {
+  categoriesQuery, collectionsQuery, productCollectionsQuery, productsQuery, settingsQuery, zonesQuery, money,
+} from "@/lib/store";
+import { getRecentlyViewed } from "@/lib/cart";
+import { useFromPrice } from "@/lib/useFromPrice";
+import { StoreLayout } from "@/components/store/StoreLayout";
+import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
@@ -20,67 +27,104 @@ function Index() {
   const { data: s } = useQuery(settingsQuery);
   const { data: products = [] } = useQuery(productsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
-  const featured = products.filter((p) => p.is_featured).concat(products.filter((p) => !p.is_featured)).slice(0, 8);
+  const { data: cols = [] } = useQuery(collectionsQuery);
+  const { data: pcs = [] } = useQuery(productCollectionsQuery);
+  const { data: zones = [] } = useQuery(zonesQuery);
+  const fromPrice = useFromPrice();
+  const [recent, setRecent] = useState<string[]>([]);
+  useEffect(() => setRecent(getRecentlyViewed()), []);
 
-  if (s?.maintenance_mode) {
-    return (
-      <div className="bg-hero flex min-h-screen flex-col items-center justify-center p-8 text-center text-primary-foreground">
-        <h1 className="text-6xl">{s.store_name}</h1>
-        <p className="mt-4 opacity-70">We're polishing things up. Back shortly.</p>
-      </div>
-    );
-  }
+  const active = products.filter((p) => p.status === "active");
+  const featured = active.filter((p) => p.is_featured).slice(0, 8);
+  const newest = active.slice(0, 4);
+  const homeCols = cols.filter((c) => c.is_active && c.show_on_home);
+  const recentProducts = recent.map((id) => active.find((p) => p.id === id)).filter(Boolean).slice(0, 4) as typeof active;
+  const freeOver = zones.filter((z) => z.is_active && z.free_over).map((z) => Number(z.free_over));
+  const cur = s?.currency;
+
+  const Grid = ({ items }: { items: typeof active }) => (
+    <div className="grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-4">
+      {items.map((p) => <ProductCard key={p.id} p={p} currency={cur} fromPrice={fromPrice(p.id)} />)}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen">
-      {s?.announcement_enabled && s.announcement && (
-        <div className="bg-primary py-2 text-center text-xs tracking-wide text-primary-foreground">{s.announcement}</div>
+    <StoreLayout>
+      <section className="bg-hero relative overflow-hidden text-primary-foreground">
+        {s?.hero_image_url && <img src={s.hero_image_url} alt="" className="absolute inset-0 size-full object-cover opacity-45" />}
+        <div className="relative mx-auto max-w-7xl px-6 py-28 md:py-44">
+          {s?.hero_eyebrow && <p className="eyebrow text-gold">{s.hero_eyebrow}</p>}
+          <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{s?.tagline ?? "\u00a0"}</h1>
+          {s?.hero_cta && (
+            <Button variant="hero" size="lg" className="mt-10" asChild>
+              <Link to="/shop">{s.hero_cta} <ArrowRight /></Link>
+            </Button>
+          )}
+        </div>
+      </section>
+
+      <section className="border-b bg-card">
+        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 text-sm sm:grid-cols-3">
+          <div className="flex items-center gap-3"><Truck className="size-5 text-gold" />{freeOver.length ? `Free shipping over ${money(Math.min(...freeOver), cur)}` : "Shipping worldwide"}</div>
+          <div className="flex items-center gap-3"><ShieldCheck className="size-5 text-gold" />Pay securely — Cash on Delivery available</div>
+          <div className="flex items-center gap-3"><RotateCcw className="size-5 text-gold" />Dedicated customer support</div>
+        </div>
+      </section>
+
+      {cats.filter((c) => c.is_active && !c.parent_id).length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pt-20">
+          <p className="eyebrow text-gold">Browse</p>
+          <h2 className="mt-2 text-5xl">Shop by category</h2>
+          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-5">
+            {cats.filter((c) => c.is_active && !c.parent_id).map((c) => (
+              <Link key={c.id} to="/shop" search={{ category: c.slug }} className="group relative flex aspect-square items-end overflow-hidden rounded bg-secondary p-5">
+                {c.image_url && <img src={c.image_url} alt="" className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105" />}
+                <span className="relative font-display text-2xl">{c.name}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
-      <header className="border-b">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          {s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{s?.store_name ?? "\u00a0"}</span>}
-          <nav className="hidden gap-8 text-sm md:flex">
-            {cats.slice(0, 5).map((c) => <span key={c.id} className="cursor-pointer hover:text-gold">{c.name}</span>)}
-          </nav>
-          <Link to="/admin" className="text-sm text-muted-foreground hover:text-foreground">Account</Link>
-        </div>
-      </header>
 
-      <section className="bg-hero text-primary-foreground">
-        <div className="mx-auto max-w-7xl px-6 py-28 md:py-40">
-          <p className="eyebrow text-gold">New season</p>
-          <h1 className="mt-6 max-w-3xl text-6xl leading-[1.05] md:text-8xl">{s?.tagline ?? ""}</h1>
-          <Button variant="hero" size="lg" className="mt-10">Shop the collection <ArrowRight /></Button>
-        </div>
-      </section>
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pt-20">
+          <p className="eyebrow text-gold">Featured</p>
+          <h2 className="mb-10 mt-2 text-5xl">Selected pieces</h2>
+          <Grid items={featured} />
+        </section>
+      )}
 
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="mb-10 flex items-end justify-between">
-          <div><p className="eyebrow text-gold">Featured</p><h2 className="mt-2 text-5xl">Selected pieces</h2></div>
-        </div>
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          {featured.map((p) => (
-            <article key={p.id} className="group">
-              <div className="aspect-[4/5] overflow-hidden rounded bg-secondary">
-                {p.images[0] ? (
-                  <img src={p.images[0]} alt={p.name} className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                ) : (
-                  <div className="flex size-full items-center justify-center font-display text-5xl text-muted-foreground/40">{p.name[0]}</div>
-                )}
-              </div>
-              <h3 className="mt-4 text-xl">{p.name}</h3>
-              <p className="text-sm">
-                {money(p.price, s?.currency)}
-                {p.compare_at_price && <span className="ml-2 text-muted-foreground line-through">{money(p.compare_at_price, s?.currency)}</span>}
-              </p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {homeCols.map((c) => {
+        const ids = pcs.filter((x) => x.collection_id === c.id).map((x) => x.product_id);
+        const items = active.filter((p) => ids.includes(p.id)).slice(0, 4);
+        if (!items.length) return null;
+        return (
+          <section key={c.id} className="mx-auto max-w-7xl px-6 pt-20">
+            <div className="mb-10 flex items-end justify-between">
+              <div><p className="eyebrow text-gold">Collection</p><h2 className="mt-2 text-5xl">{c.name}</h2>{c.description && <p className="mt-2 text-muted-foreground">{c.description}</p>}</div>
+              <Link to="/shop" search={{ collection: c.slug }} className="text-sm hover:text-gold">View all →</Link>
+            </div>
+            <Grid items={items} />
+          </section>
+        );
+      })}
 
-      <footer className="border-t py-10 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} {s?.store_name} {s?.support_email && `· ${s.support_email}`}
-      </footer>
-    </div>
+      {newest.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pt-20">
+          <div className="mb-10 flex items-end justify-between">
+            <div><p className="eyebrow text-gold">Just in</p><h2 className="mt-2 text-5xl">New arrivals</h2></div>
+            <Link to="/shop" search={{ sort: "new" }} className="text-sm hover:text-gold">Shop all →</Link>
+          </div>
+          <Grid items={newest} />
+        </section>
+      )}
+
+      {recentProducts.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pt-20">
+          <h2 className="mb-10 text-4xl">Recently viewed</h2>
+          <Grid items={recentProducts} />
+        </section>
+      )}
+    </StoreLayout>
   );
 }

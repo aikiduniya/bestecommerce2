@@ -85,6 +85,75 @@ export type Database = {
           },
         ]
       }
+      collections: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          show_on_home: boolean
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          show_on_home?: boolean
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          show_on_home?: boolean
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      media: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          filename: string | null
+          id: string
+          mime_type: string | null
+          path: string
+          size_bytes: number | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          filename?: string | null
+          id?: string
+          mime_type?: string | null
+          path: string
+          size_bytes?: number | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          filename?: string | null
+          id?: string
+          mime_type?: string | null
+          path?: string
+          size_bytes?: number | null
+          url?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
@@ -100,7 +169,9 @@ export type Database = {
           payment_status: string
           shipping_address: Json
           shipping_total: number
+          shipping_zone_id: string | null
           status: string
+          stock_restored: boolean
           subtotal: number
           total: number
           updated_at: string
@@ -120,7 +191,9 @@ export type Database = {
           payment_status?: string
           shipping_address?: Json
           shipping_total?: number
+          shipping_zone_id?: string | null
           status?: string
+          stock_restored?: boolean
           subtotal?: number
           total?: number
           updated_at?: string
@@ -140,13 +213,103 @@ export type Database = {
           payment_status?: string
           shipping_address?: Json
           shipping_total?: number
+          shipping_zone_id?: string | null
           status?: string
+          stock_restored?: boolean
           subtotal?: number
           total?: number
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_shipping_zone_id_fkey"
+            columns: ["shipping_zone_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_collections: {
+        Row: {
+          collection_id: string
+          product_id: string
+        }
+        Insert: {
+          collection_id: string
+          product_id: string
+        }
+        Update: {
+          collection_id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_collections_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_collections_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          compare_at_price: number | null
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          options: Json
+          price: number | null
+          product_id: string
+          sku: string | null
+          sort_order: number
+          stock: number
+        }
+        Insert: {
+          compare_at_price?: number | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          options?: Json
+          price?: number | null
+          product_id: string
+          sku?: string | null
+          sort_order?: number
+          stock?: number
+        }
+        Update: {
+          compare_at_price?: number | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          options?: Json
+          price?: number | null
+          product_id?: string
+          sku?: string | null
+          sort_order?: number
+          stock?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -161,6 +324,7 @@ export type Database = {
           is_featured: boolean
           low_stock_threshold: number
           name: string
+          options: Json
           price: number
           seo_description: string | null
           seo_title: string | null
@@ -184,6 +348,7 @@ export type Database = {
           is_featured?: boolean
           low_stock_threshold?: number
           name: string
+          options?: Json
           price?: number
           seo_description?: string | null
           seo_title?: string | null
@@ -207,6 +372,7 @@ export type Database = {
           is_featured?: boolean
           low_stock_threshold?: number
           name?: string
+          options?: Json
           price?: number
           seo_description?: string | null
           seo_title?: string | null
@@ -235,6 +401,42 @@ export type Database = {
           },
         ]
       }
+      shipping_zones: {
+        Row: {
+          countries: string[]
+          created_at: string
+          estimated_days: string | null
+          free_over: number | null
+          id: string
+          is_active: boolean
+          name: string
+          rate: number
+          sort_order: number
+        }
+        Insert: {
+          countries?: string[]
+          created_at?: string
+          estimated_days?: string | null
+          free_over?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          rate?: number
+          sort_order?: number
+        }
+        Update: {
+          countries?: string[]
+          created_at?: string
+          estimated_days?: string | null
+          free_over?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          rate?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
       store_settings: {
         Row: {
           accent_color: string | null
@@ -243,6 +445,11 @@ export type Database = {
           cod_enabled: boolean
           currency: string
           favicon_url: string | null
+          font_body: string
+          font_display: string
+          hero_cta: string | null
+          hero_eyebrow: string | null
+          hero_image_url: string | null
           id: number
           logo_url: string | null
           maintenance_mode: boolean
@@ -263,6 +470,11 @@ export type Database = {
           cod_enabled?: boolean
           currency?: string
           favicon_url?: string | null
+          font_body?: string
+          font_display?: string
+          hero_cta?: string | null
+          hero_eyebrow?: string | null
+          hero_image_url?: string | null
           id?: number
           logo_url?: string | null
           maintenance_mode?: boolean
@@ -283,6 +495,11 @@ export type Database = {
           cod_enabled?: boolean
           currency?: string
           favicon_url?: string | null
+          font_body?: string
+          font_display?: string
+          hero_cta?: string | null
+          hero_eyebrow?: string | null
+          hero_image_url?: string | null
           id?: number
           logo_url?: string | null
           maintenance_mode?: boolean
@@ -316,6 +533,32 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlists: {
+        Row: {
+          created_at: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -329,6 +572,16 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      place_order: {
+        Args: {
+          _address: Json
+          _customer: Json
+          _items: Json
+          _notes?: string
+          _zone_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "staff" | "customer"

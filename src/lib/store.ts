@@ -74,3 +74,77 @@ export function money(n: number | string | null | undefined, currency = "USD") {
     return `${currency} ${Number(n ?? 0).toFixed(2)}`;
   }
 }
+
+export type Variant = Database["public"]["Tables"]["product_variants"]["Row"];
+export type Collection = Database["public"]["Tables"]["collections"]["Row"];
+export type ShippingZone = Database["public"]["Tables"]["shipping_zones"]["Row"];
+export type Media = Database["public"]["Tables"]["media"]["Row"];
+export type ProductOption = { name: string; values: string[] };
+
+export const variantsQuery = (productId: string) =>
+  queryOptions({
+    queryKey: ["variants", productId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select("*")
+        .eq("product_id", productId)
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const allVariantsQuery = queryOptions({
+  queryKey: ["variants", "all"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("product_variants").select("*").eq("is_active", true);
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const collectionsQuery = queryOptions({
+  queryKey: ["collections"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("collections").select("*").order("sort_order");
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const productCollectionsQuery = queryOptions({
+  queryKey: ["product_collections"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("product_collections").select("*");
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const zonesQuery = queryOptions({
+  queryKey: ["shipping_zones"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("shipping_zones").select("*").order("sort_order");
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const mediaQuery = queryOptions({
+  queryKey: ["media"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("media").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+});
+
+export function optionsOf(p: { options: unknown }): ProductOption[] {
+  return Array.isArray(p.options) ? (p.options as ProductOption[]) : [];
+}
+
+export function optionLabel(o: unknown) {
+  if (!o || typeof o !== "object") return "";
+  return Object.entries(o as Record<string, string>).map(([k, v]) => `${k}: ${v}`).join(" · ");
+}

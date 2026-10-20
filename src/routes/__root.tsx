@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
+import { CartProvider } from "@/lib/cart";
+import { StoreTheme } from "@/components/store/StoreTheme";
 import { supabase } from "@/integrations/supabase/client";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -133,8 +135,11 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <Toaster richColors position="top-right" />
+      <CartProvider>
+        <StoreTheme />
+        <Outlet />
+        <Toaster richColors position="top-right" />
+      </CartProvider>
     </QueryClientProvider>
   );
 }
