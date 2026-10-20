@@ -37,7 +37,7 @@ export function ContentEditor({ kind, rows, queryKey }: { kind: "pages" | "blog_
     const { id, created_at: _c, updated_at: _u, ...rest } = edit;
     const payload: Record<string, unknown> = { ...rest, title, slug };
     for (const k of ["seo_title", "seo_description", "excerpt", "author"]) if (k in payload && payload[k] === "") payload[k] = null;
-    if (isBlog && payload.is_published && !payload.published_at) payload.published_at = new Date().toISOString();
+    if (isBlog && payload["is_published"] && !payload["published_at"]) payload["published_at"] = new Date().toISOString();
     const q = id ? supabase.from(kind).update(payload as never).eq("id", id) : supabase.from(kind).insert(payload as never);
     const { error } = await q;
     setSaving(false);
@@ -74,11 +74,11 @@ export function ContentEditor({ kind, rows, queryKey }: { kind: "pages" | "blog_
           <div className="space-y-6">
             <Card className="space-y-4 p-6">
               <label className="flex items-center justify-between text-sm">Published <Switch checked={edit.is_published} onCheckedChange={(v) => set("is_published", v)} /></label>
-              {!isBlog && <label className="flex items-center justify-between text-sm">Show in footer <Switch checked={!!edit.show_in_footer} onCheckedChange={(v) => set("show_in_footer", v)} /></label>}
+              {!isBlog && <label className="flex items-center justify-between text-sm">Show in footer <Switch checked={!!edit["show_in_footer"]} onCheckedChange={(v) => set("show_in_footer", v)} /></label>}
               {!isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Footer order</Label><Input type="number" value={str("sort_order")} onChange={(e) => set("sort_order", Number(e.target.value))} /></div>}
               {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Author</Label><Input value={str("author")} onChange={(e) => set("author", e.target.value)} /></div>}
-              {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Tags (comma separated)</Label><Input value={((edit.tags as string[]) ?? []).join(", ")} onChange={(e) => set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} /></div>}
-              {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Cover image</Label><ImagePicker multiple={false} value={edit.cover_image ? [String(edit.cover_image)] : []} onChange={(v) => set("cover_image", v[0] ?? null)} /></div>}
+              {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Tags (comma separated)</Label><Input value={((edit["tags"] as string[]) ?? []).join(", ")} onChange={(e) => set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} /></div>}
+              {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Cover image</Label><ImagePicker multiple={false} value={edit["cover_image"] ? [String(edit["cover_image"])] : []} onChange={(v) => set("cover_image", v[0] ?? null)} /></div>}
             </Card>
             <Card className="space-y-4 p-6">
               <p className="text-sm font-medium">Search engine listing</p>

@@ -76,7 +76,7 @@ function Checkout() {
       _address: { line1: f.line1, line2: f.line2, city: f.city, state: f.state, postal: f.postal, country },
       _zone_id: zone.id,
       _notes: f.notes,
-      _coupon: coupon?.code ?? undefined,
+      ...(coupon ? { _coupon: coupon.code } : {}),
     });
     setPlacing(false);
     if (error) { toast.error(error.message); return; }
