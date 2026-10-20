@@ -33,7 +33,7 @@ function SettingsPage() {
     const { id: _id, updated_at: _u, ...rest } = s;
     const { error } = await supabase.from("store_settings").update(rest).eq("id", 1);
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Settings saved");
     qc.invalidateQueries({ queryKey: ["settings"] });
   }

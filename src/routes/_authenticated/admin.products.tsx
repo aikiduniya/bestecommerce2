@@ -74,7 +74,7 @@ function ProductsPage() {
       ? await supabase.from("products").update(payload).eq("id", form.id)
       : await supabase.from("products").insert(payload);
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Product saved");
     setForm(null);
     qc.invalidateQueries({ queryKey: ["products"] });
@@ -83,7 +83,7 @@ function ProductsPage() {
   async function remove(p: Product) {
     if (!confirm(`Delete "${p.name}"?`)) return;
     const { error } = await supabase.from("products").delete().eq("id", p.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Deleted");
     qc.invalidateQueries({ queryKey: ["products"] });
   }

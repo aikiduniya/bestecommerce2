@@ -20,20 +20,20 @@ export function SimpleTaxonomy({ table, rows, noun }: { table: "categories" | "b
     e.preventDefault();
     if (!name.trim()) return;
     const { error } = await supabase.from(table).insert({ name: name.trim(), slug: slugify(name) });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setName("");
     toast.success(`${noun} added`);
     refresh();
   }
   async function update(id: string, patch: Partial<Row>) {
     const { error } = await supabase.from(table).update(patch).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     refresh();
   }
   async function remove(r: Row) {
     if (!confirm(`Delete "${r.name}"?`)) return;
     const { error } = await supabase.from(table).delete().eq("id", r.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     refresh();
   }
 
