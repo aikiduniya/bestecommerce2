@@ -6,19 +6,18 @@ export type ProductSeo = { title: string; description: string; image: string | n
 export const getProductSeo = createServerFn({ method: "GET" })
   .inputValidator((slug: string) => String(slug).slice(0, 200))
   .handler(async ({ data: slug }): Promise<ProductSeo> => {
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-    const sb = createClient(process.env.SUPABASE_URL!, key, {
+    const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+    const sb = createClient(process.env["SUPABASE_URL"]!, key, {
       auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-      global: key.startsWith("sb_")
-        ? {
-            fetch: (input, init) => {
+      global: {
+        fetch: (input, init) => {
+              if (!key.startsWith("sb_")) return fetch(input, init);
               const h = new Headers(init?.headers);
               if (h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
               h.set("apikey", key);
               return fetch(input, { ...init, headers: h });
             },
-          }
-        : undefined,
+      },
     });
     const [{ data: p }, { data: s }] = await Promise.all([
       sb.from("products").select("name,seo_title,seo_description,short_description,images").eq("slug", slug).eq("status", "active").maybeSingle(),
