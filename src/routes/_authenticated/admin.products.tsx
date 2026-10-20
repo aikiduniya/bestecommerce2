@@ -97,6 +97,7 @@ function ProductsPage() {
       tags: (form.tagsText ?? "").split(",").map((s) => s.trim()).filter(Boolean),
       status: form.status ?? "draft",
       is_featured: !!form.is_featured,
+      cod_allowed: form.cod_allowed ?? true,
       seo_title: form.seo_title || null,
       seo_description: form.seo_description || null,
       options: opts.filter((o) => o.name.trim() && o.values.length),
@@ -279,6 +280,7 @@ function ProductsPage() {
                   <F label={variants.length ? "Stock (sum of variants)" : "Stock"}>
                     <Input type="number" min="0" disabled={variants.length > 0} value={variants.length ? variants.filter((v) => v.is_active).reduce((s, v) => s + v.stock, 0) : form.stock ?? 0} onChange={(e) => set("stock", e.target.value)} />
                   </F>
+                  <label className="flex items-center gap-3 text-sm sm:col-span-3"><Switch checked={form.cod_allowed ?? true} onCheckedChange={(v) => set("cod_allowed", v)} /> Available for Cash on Delivery</label>
                   <F label="Low-stock alert at"><Input type="number" min="0" value={form.low_stock_threshold ?? 5} onChange={(e) => set("low_stock_threshold", e.target.value)} /></F>
                 </TabsContent>
                 <TabsContent value="variants">
