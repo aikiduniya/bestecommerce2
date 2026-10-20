@@ -6,9 +6,9 @@
 - [x] Shop (search/sort/filters), product page, cart (guest saved), wishlist, recently viewed
 - [x] Account dashboard, COD checkout with server-side price/stock checks, stock deduction, restock on cancel
 - [x] Shipping zones, customers list, branding (colors, fonts, logo, favicon, hero) applied live
-- [ ] End-to-end signed-in test of checkout + admin saves — BLOCKED: owner must create the first (Super Admin) account
+- [x] End-to-end signed-in test of checkout + admin data flows (API level)
 
 ## Next
 - [ ] Stripe card payments
-- [ ] Staff accounts + granular permissions; lock down "first signup = admin"
+- [ ] Staff accounts + granular permissions UI (first-signup-admin removed)
 - [ ] Taxes, multi-currency, discounts, reviews, CMS pages/menus, emails, reports
