@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          entity: string
+          entity_id: string | null
+          id: number
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity: string
+          entity_id?: string | null
+          id?: number
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity?: string
+          entity_id?: string | null
+          id?: number
+        }
+        Relationships: []
+      }
       brands: {
         Row: {
           created_at: string
@@ -156,15 +186,19 @@ export type Database = {
       }
       orders: {
         Row: {
+          cod_collected_at: string | null
+          cod_confirmed_at: string | null
           created_at: string
           currency: string
           customer_email: string
           customer_name: string
           customer_phone: string | null
+          fulfillment_status: string
           id: string
           items: Json
           notes: string | null
           order_number: number
+          payment_fee: number
           payment_method: string
           payment_status: string
           shipping_address: Json
@@ -178,15 +212,19 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          cod_collected_at?: string | null
+          cod_confirmed_at?: string | null
           created_at?: string
           currency?: string
           customer_email: string
           customer_name: string
           customer_phone?: string | null
+          fulfillment_status?: string
           id?: string
           items?: Json
           notes?: string | null
           order_number?: never
+          payment_fee?: number
           payment_method?: string
           payment_status?: string
           shipping_address?: Json
@@ -200,15 +238,19 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          cod_collected_at?: string | null
+          cod_confirmed_at?: string | null
           created_at?: string
           currency?: string
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
+          fulfillment_status?: string
           id?: string
           items?: Json
           notes?: string | null
           order_number?: never
+          payment_fee?: number
           payment_method?: string
           payment_status?: string
           shipping_address?: Json
@@ -341,6 +383,7 @@ export type Database = {
         Row: {
           brand_id: string | null
           category_id: string | null
+          cod_allowed: boolean
           compare_at_price: number | null
           cost_price: number | null
           created_at: string
@@ -365,6 +408,7 @@ export type Database = {
         Insert: {
           brand_id?: string | null
           category_id?: string | null
+          cod_allowed?: boolean
           compare_at_price?: number | null
           cost_price?: number | null
           created_at?: string
@@ -389,6 +433,7 @@ export type Database = {
         Update: {
           brand_id?: string | null
           category_id?: string | null
+          cod_allowed?: boolean
           compare_at_price?: number | null
           cost_price?: number | null
           created_at?: string
@@ -463,12 +508,71 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_members: {
+        Row: {
+          created_at: string
+          email: string
+          is_active: boolean
+          staff_role_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          is_active?: boolean
+          staff_role_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          is_active?: boolean
+          staff_role_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_members_staff_role_id_fkey"
+            columns: ["staff_role_id"]
+            isOneToOne: false
+            referencedRelation: "staff_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_roles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          permissions: string[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          permissions?: string[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          permissions?: string[]
+        }
+        Relationships: []
+      }
       store_settings: {
         Row: {
           accent_color: string | null
           announcement: string | null
           announcement_enabled: boolean
+          cod_countries: string[]
           cod_enabled: boolean
+          cod_excluded_zones: string[]
+          cod_fee: number
+          cod_max_order: number | null
+          cod_min_order: number | null
+          cod_requires_confirmation: boolean
           currency: string
           favicon_url: string | null
           font_body: string
@@ -493,7 +597,13 @@ export type Database = {
           accent_color?: string | null
           announcement?: string | null
           announcement_enabled?: boolean
+          cod_countries?: string[]
           cod_enabled?: boolean
+          cod_excluded_zones?: string[]
+          cod_fee?: number
+          cod_max_order?: number | null
+          cod_min_order?: number | null
+          cod_requires_confirmation?: boolean
           currency?: string
           favicon_url?: string | null
           font_body?: string
@@ -518,7 +628,13 @@ export type Database = {
           accent_color?: string | null
           announcement?: string | null
           announcement_enabled?: boolean
+          cod_countries?: string[]
           cod_enabled?: boolean
+          cod_excluded_zones?: string[]
+          cod_fee?: number
+          cod_max_order?: number | null
+          cod_min_order?: number | null
+          cod_requires_confirmation?: boolean
           currency?: string
           favicon_url?: string | null
           font_body?: string
@@ -590,6 +706,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_staff: {
+        Args: {
+          _active: boolean
+          _email: string
+          _role: string
+          _staff_role_id: string
+        }
+        Returns: string
+      }
+      has_permission: {
+        Args: { _perm: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

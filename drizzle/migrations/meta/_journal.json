@@ -36,6 +36,13 @@
       "when": 1792524388767,
       "tag": "0004_product_costs_private",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792526224632,
+      "tag": "0005_cod_rules_and_staff",
+      "breakpoints": true
     }
   ]
 }
