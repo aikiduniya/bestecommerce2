@@ -40,6 +40,11 @@ function SettingsPage() {
     if (rest.currency && !/^[A-Z]{3}$/.test(rest.currency.toUpperCase())) { setSaving(false); toast.error("Currency must be a 3-letter code like USD"); return; }
     rest.currency = rest.currency.toUpperCase();
     if (rest.cod_min_order !== null && rest.cod_max_order !== null && Number(rest.cod_min_order) > Number(rest.cod_max_order)) { setSaving(false); toast.error("COD minimum cannot be above the maximum"); return; }
+    for (const [k, re, label] of [["ga4_id", /^G-[A-Z0-9]{4,20}$/i, "GA4 ID should look like G-XXXXXXX"], ["gtm_id", /^GTM-[A-Z0-9]{4,12}$/i, "GTM ID should look like GTM-XXXXXX"], ["meta_pixel_id", /^\d{6,20}$/, "Meta Pixel ID should be numbers only"]] as const) {
+      const v = (rest[k] ?? "").trim();
+      if (v && !re.test(v)) { setSaving(false); toast.error(label); return; }
+      rest[k] = v || null;
+    }
     if (Number(rest.cod_fee) < 0) { setSaving(false); toast.error("COD fee cannot be negative"); return; }
     const { error } = await supabase.from("store_settings").update(rest).eq("id", 1);
     setSaving(false);
@@ -73,6 +78,7 @@ function SettingsPage() {
           <TabsTrigger value="store">Store</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
+          <TabsTrigger value="marketing">Marketing & tracking</TabsTrigger>
         </TabsList>
         <TabsContent value="brand">
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
@@ -132,8 +138,8 @@ function SettingsPage() {
               })}</div>
               <p className="text-xs text-muted-foreground">Individual products can be excluded from COD in the product editor (Pricing & stock).</p></div>
             <div className="flex items-center justify-between gap-4 rounded-md border border-dashed p-4 opacity-70">
-              <span><span className="block text-sm font-medium">Card payments (Stripe)</span><span className="text-xs text-muted-foreground">Not connected — cards can't be taken yet. This will be set up in the next phase.</span></span>
-              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">Not connected</span>
+              <span><span className="block text-sm font-medium">Card payments (Stripe)</span><span className="text-xs text-muted-foreground">Pending — card payments stay off until the owner sets up Stripe.</span></span>
+              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">Pending</span>
             </div>
           </Card>
         </TabsContent>
@@ -141,6 +147,20 @@ function SettingsPage() {
           <Card className="grid gap-4 p-6">
             {text("seo_title", "Homepage SEO title")}
             {text("seo_description", "Homepage SEO description")}
+            {text("google_site_verification", "Google Search Console verification code")}
+            <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Default social share image</Label><ImagePicker multiple={false} value={s.og_image_url ? [s.og_image_url] : []} onChange={(v) => set("og_image_url", v[0] ?? null)} /></div>
+            <p className="text-xs text-muted-foreground">Product, page and blog SEO titles/descriptions are edited on each item. A sitemap is published at /sitemap.xml and the Google product feed at /api/public/merchant-feed.</p>
+          </Card>
+        </TabsContent>
+        <TabsContent value="marketing">
+          <Card className="grid gap-4 p-6 sm:grid-cols-2">
+            {text("ga4_id", "Google Analytics 4 measurement ID (G-XXXXXXX)")}
+            {text("gtm_id", "Google Tag Manager container ID (GTM-XXXXXX)")}
+            {text("meta_pixel_id", "Meta Pixel ID (numbers only)")}
+            {text("merchant_center_id", "Google Merchant Center ID")}
+            {toggle("reviews_enabled", "Customer reviews", "Let signed-in customers write product reviews")}
+            {toggle("reviews_require_approval", "Approve reviews before publishing", "New reviews wait in Reviews & Q&A")}
+            <p className="text-xs text-muted-foreground sm:col-span-2">Tracking codes load only on the storefront (never in admin). Leave a field empty to turn that service off.</p>
           </Card>
         </TabsContent>
       </Tabs>

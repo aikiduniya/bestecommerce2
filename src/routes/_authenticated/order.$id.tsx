@@ -53,7 +53,8 @@ function OrderPage() {
           ))}
           <div className="space-y-1 p-4 text-sm">
             <div className="flex justify-between"><span>Subtotal</span><span>{money(o.subtotal, o.currency)}</span></div>
-            <div className="flex justify-between"><span>Shipping</span><span>{money(o.shipping_total, o.currency)}</span></div>
+            {Number(o.discount_total) > 0 && <div className="flex justify-between text-success"><span>Discount{o.coupon_code ? ` (${o.coupon_code})` : ""}</span><span>−{money(o.discount_total, o.currency)}</span></div>}
+<div className="flex justify-between"><span>Shipping</span><span>{money(o.shipping_total, o.currency)}</span></div>
             <div className="flex justify-between font-display text-2xl"><span>Total</span><span>{money(o.total, o.currency)}</span></div>
           </div>
         </div>
