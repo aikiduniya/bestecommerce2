@@ -15,6 +15,13 @@
       "when": 1792522990944,
       "tag": "0001_phase2_catalog_checkout",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792523898637,
+      "tag": "0002_signup_always_customer",
+      "breakpoints": true
     }
   ]
 }
