@@ -148,3 +148,25 @@ export function optionLabel(o: unknown) {
   if (!o || typeof o !== "object") return "";
   return Object.entries(o as Record<string, string>).map(([k, v]) => `${k}: ${v}`).join(" · ");
 }
+
+export type Page = Database["public"]["Tables"]["pages"]["Row"];
+export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
+export type Coupon = Database["public"]["Tables"]["coupons"]["Row"];
+
+export const pagesQuery = queryOptions({
+  queryKey: ["pages"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("pages").select("*").order("sort_order");
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const postsQuery = queryOptions({
+  queryKey: ["posts"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("blog_posts").select("*").order("published_at", { ascending: false, nullsFirst: true });
+    if (error) throw error;
+    return data;
+  },
+});

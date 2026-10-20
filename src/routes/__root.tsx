@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart";
 import { StoreTheme } from "@/components/store/StoreTheme";
+import { Tracking } from "@/components/store/Tracking";
 import { supabase } from "@/integrations/supabase/client";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -137,6 +138,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <CartProvider>
         <StoreTheme />
+        <Tracking />
         <Outlet />
         <Toaster richColors position="top-right" />
       </CartProvider>

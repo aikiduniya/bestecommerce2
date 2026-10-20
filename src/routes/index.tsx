@@ -10,16 +10,26 @@ import { useFromPrice } from "@/lib/useFromPrice";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
+import { getHomeSeo } from "@/lib/content.functions";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Curated essentials, delivered worldwide" },
-      { name: "description", content: "Shop watches, fashion, electronics, beauty and home — curated and shipped worldwide." },
-      { property: "og:title", content: "Curated essentials, delivered worldwide" },
-      { property: "og:description", content: "Shop watches, fashion, electronics, beauty and home — curated and shipped worldwide." },
-    ],
-  }),
+  loader: () => getHomeSeo().catch(() => null),
+  head: ({ loaderData }) => {
+    const title = loaderData?.title || "Curated essentials, delivered worldwide";
+    const description = loaderData?.description || "Shop watches, fashion, electronics, beauty and home — curated and shipped worldwide.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(loaderData?.verification ? [{ name: "google-site-verification", content: loaderData.verification }] : []),
+        ...(loaderData?.image ? [{ property: "og:image", content: loaderData.image }, { name: "twitter:image", content: loaderData.image }] : []),
+      ],
+    };
+  },
   component: Index,
 });
 

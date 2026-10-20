@@ -44,6 +44,57 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author: string | null
+          body: string
+          cover_image: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          is_published: boolean
+          published_at: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          body?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          body?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       brands: {
         Row: {
           created_at: string
@@ -151,6 +202,54 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          max_uses: number | null
+          min_subtotal: number | null
+          per_user_limit: number | null
+          starts_at: string | null
+          used_count: number
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          max_uses?: number | null
+          min_subtotal?: number | null
+          per_user_limit?: number | null
+          starts_at?: string | null
+          used_count?: number
+          value?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          max_uses?: number | null
+          min_subtotal?: number | null
+          per_user_limit?: number | null
+          starts_at?: string | null
+          used_count?: number
+          value?: number
+        }
+        Relationships: []
+      }
       media: {
         Row: {
           created_at: string
@@ -188,11 +287,13 @@ export type Database = {
         Row: {
           cod_collected_at: string | null
           cod_confirmed_at: string | null
+          coupon_code: string | null
           created_at: string
           currency: string
           customer_email: string
           customer_name: string
           customer_phone: string | null
+          discount_total: number
           fulfillment_status: string
           id: string
           items: Json
@@ -214,11 +315,13 @@ export type Database = {
         Insert: {
           cod_collected_at?: string | null
           cod_confirmed_at?: string | null
+          coupon_code?: string | null
           created_at?: string
           currency?: string
           customer_email: string
           customer_name: string
           customer_phone?: string | null
+          discount_total?: number
           fulfillment_status?: string
           id?: string
           items?: Json
@@ -240,11 +343,13 @@ export type Database = {
         Update: {
           cod_collected_at?: string | null
           cod_confirmed_at?: string | null
+          coupon_code?: string | null
           created_at?: string
           currency?: string
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
+          discount_total?: number
           fulfillment_status?: string
           id?: string
           items?: Json
@@ -272,6 +377,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_published: boolean
+          seo_description: string | null
+          seo_title: string | null
+          show_in_footer: boolean
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          show_in_footer?: boolean
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          show_in_footer?: boolean
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       product_collections: {
         Row: {
@@ -324,6 +471,50 @@ export type Database = {
             foreignKeyName: "product_costs_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          author_name: string
+          created_at: string
+          id: string
+          product_id: string
+          question: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          author_name: string
+          created_at?: string
+          id?: string
+          product_id: string
+          question: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          author_name?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          question?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_questions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -472,6 +663,53 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          author_name: string
+          body: string
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+          status: string
+          title: string | null
+          user_id: string
+          verified_purchase: boolean
+        }
+        Insert: {
+          author_name: string
+          body: string
+          created_at?: string
+          id?: string
+          product_id: string
+          rating: number
+          status?: string
+          title?: string | null
+          user_id: string
+          verified_purchase?: boolean
+        }
+        Update: {
+          author_name?: string
+          body?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: number
+          status?: string
+          title?: string | null
+          user_id?: string
+          verified_purchase?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shipping_zones: {
         Row: {
           countries: string[]
@@ -577,13 +815,21 @@ export type Database = {
           favicon_url: string | null
           font_body: string
           font_display: string
+          ga4_id: string | null
+          google_site_verification: string | null
+          gtm_id: string | null
           hero_cta: string | null
           hero_eyebrow: string | null
           hero_image_url: string | null
           id: number
           logo_url: string | null
           maintenance_mode: boolean
+          merchant_center_id: string | null
+          meta_pixel_id: string | null
+          og_image_url: string | null
           primary_color: string | null
+          reviews_enabled: boolean
+          reviews_require_approval: boolean
           seo_description: string | null
           seo_title: string | null
           store_name: string
@@ -608,13 +854,21 @@ export type Database = {
           favicon_url?: string | null
           font_body?: string
           font_display?: string
+          ga4_id?: string | null
+          google_site_verification?: string | null
+          gtm_id?: string | null
           hero_cta?: string | null
           hero_eyebrow?: string | null
           hero_image_url?: string | null
           id?: number
           logo_url?: string | null
           maintenance_mode?: boolean
+          merchant_center_id?: string | null
+          meta_pixel_id?: string | null
+          og_image_url?: string | null
           primary_color?: string | null
+          reviews_enabled?: boolean
+          reviews_require_approval?: boolean
           seo_description?: string | null
           seo_title?: string | null
           store_name?: string
@@ -639,13 +893,21 @@ export type Database = {
           favicon_url?: string | null
           font_body?: string
           font_display?: string
+          ga4_id?: string | null
+          google_site_verification?: string | null
+          gtm_id?: string | null
           hero_cta?: string | null
           hero_eyebrow?: string | null
           hero_image_url?: string | null
           id?: number
           logo_url?: string | null
           maintenance_mode?: boolean
+          merchant_center_id?: string | null
+          meta_pixel_id?: string | null
+          og_image_url?: string | null
           primary_color?: string | null
+          reviews_enabled?: boolean
+          reviews_require_approval?: boolean
           seo_description?: string | null
           seo_title?: string | null
           store_name?: string
@@ -715,6 +977,14 @@ export type Database = {
         }
         Returns: string
       }
+      check_coupon: {
+        Args: { _code: string; _subtotal: number }
+        Returns: Json
+      }
+      coupon_discount: {
+        Args: { _code: string; _ship: number; _subtotal: number; _uid: string }
+        Returns: Json
+      }
       has_permission: {
         Args: { _perm: string; _user_id: string }
         Returns: boolean
@@ -730,6 +1000,7 @@ export type Database = {
       place_order: {
         Args: {
           _address: Json
+          _coupon?: string
           _customer: Json
           _items: Json
           _notes?: string

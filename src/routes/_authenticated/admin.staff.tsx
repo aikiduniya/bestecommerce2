@@ -19,6 +19,8 @@ const PERMISSIONS = [
   { key: "catalog", label: "Catalog", hint: "Products, categories, collections, brands, media" },
   { key: "orders", label: "Orders", hint: "View and update orders, COD collection" },
   { key: "customers", label: "Customers", hint: "Customer list" },
+  { key: "marketing", label: "Marketing", hint: "Coupons, promotions, campaigns" },
+  { key: "content", label: "Content", hint: "Pages, blog, reviews and Q&A" },
 ] as const;
 
 function StaffPage() {

@@ -2,13 +2,14 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { Heart, Search, ShoppingBag, User, Menu, X } from "lucide-react";
-import { categoriesQuery, settingsQuery } from "@/lib/store";
+import { categoriesQuery, pagesQuery, settingsQuery } from "@/lib/store";
 import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s, isLoading } = useQuery(settingsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
+  const { data: pages = [] } = useQuery(pagesQuery);
   const { user } = useSessionUser();
   const isStaff = useIsStaff(user?.id);
   const { count } = useCart();
@@ -77,7 +78,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
       </header>
       <main className="flex-1">{children}</main>
       <footer className="mt-20 border-t bg-card">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-3">
+        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
           <div>
             <p className="font-display text-2xl">{s?.store_name}</p>
             <p className="mt-2 text-sm text-muted-foreground">{s?.tagline}</p>
@@ -85,6 +86,11 @@ export function StoreLayout({ children }: { children: ReactNode }) {
           <div className="text-sm">
             <p className="eyebrow mb-3 text-muted-foreground">Shop</p>
             {topCats.slice(0, 5).map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1 hover:text-gold">{c.name}</Link>)}
+          </div>
+          <div className="text-sm">
+            <p className="eyebrow mb-3 text-muted-foreground">Information</p>
+            <Link to="/blog" className="block py-1 hover:text-gold">Journal</Link>
+            {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/pages/$slug" params={{ slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
           </div>
           <div className="text-sm">
             <p className="eyebrow mb-3 text-muted-foreground">Contact</p>
