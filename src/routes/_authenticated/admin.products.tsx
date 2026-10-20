@@ -64,9 +64,10 @@ function ProductsPage() {
         price: v.price?.toString() ?? "", compare_at_price: v.compare_at_price?.toString() ?? "", stock: v.stock, image_url: v.image_url ?? "", is_active: v.is_active,
       })));
     }
+    const cost = p ? (await supabase.from("product_costs").select("cost_price").eq("product_id", p.id).maybeSingle()).data?.cost_price ?? null : null;
     setForm(
       p
-        ? { ...p, ...(duplicate ? { id: undefined, name: `${p.name} (copy)`, slug: "", sku: null, status: "draft" } : {}), tagsText: p.tags.join(", ") }
+        ? { ...p, cost_price: cost, ...(duplicate ? { id: undefined, name: `${p.name} (copy)`, slug: "", sku: null, status: "draft" } : {}), tagsText: p.tags.join(", ") }
         : { status: "draft", price: 0, stock: 0, low_stock_threshold: 5, is_featured: false, images: [], tagsText: "" },
     );
   }
@@ -90,7 +91,6 @@ function ProductsPage() {
       brand_id: form.brand_id || null,
       price: Number(form.price ?? 0),
       compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
-      cost_price: form.cost_price ? Number(form.cost_price) : null,
       stock: variants.length ? activeVariants.reduce((s, v) => s + v.stock, 0) : Math.max(0, Number(form.stock ?? 0)),
       low_stock_threshold: Number(form.low_stock_threshold ?? 5),
       images: form.images ?? [],
@@ -110,6 +110,10 @@ function ProductsPage() {
         const { data, error } = await supabase.from("products").insert(payload).select("id").single();
         if (error) throw error;
         id = data.id;
+      }
+      {
+        const { error } = await supabase.from("product_costs").upsert({ product_id: id!, cost_price: form.cost_price ? Number(form.cost_price) : null, updated_at: new Date().toISOString() });
+        if (error) throw error;
       }
       // sync variants
       const { data: existing } = await supabase.from("product_variants").select("id").eq("product_id", id);
