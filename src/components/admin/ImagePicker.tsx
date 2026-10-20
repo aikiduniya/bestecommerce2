@@ -45,7 +45,7 @@ export function ImagePicker({ value, onChange, multiple = true }: { value: strin
           <div key={u + i} className="group relative size-20 overflow-hidden rounded border bg-muted">
             <img src={u} alt="" className="size-full object-cover" />
             {i === 0 && multiple && <span className="absolute bottom-0 left-0 right-0 bg-primary/80 text-center text-[9px] uppercase text-primary-foreground">Main</span>}
-            <div className="absolute inset-0 hidden items-start justify-between bg-primary/40 p-1 group-hover:flex">
+            <div className="absolute inset-0 flex items-start justify-between p-1 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 sm:group-hover:bg-primary/40">
               {i > 0 ? <button type="button" onClick={() => move(i)} className="rounded bg-card p-0.5" aria-label="Move left"><ArrowLeft className="size-3" /></button> : <span />}
               <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))} className="rounded bg-card p-0.5" aria-label="Remove"><X className="size-3" /></button>
             </div>
