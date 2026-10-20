@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
@@ -39,6 +40,7 @@ import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminShippingRouteImport } from './routes/_authenticated/admin.shipping'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
 import { Route as AuthenticatedOrderIdRouteImport } from './routes/_authenticated/order.$id'
+import { Route as ApiPublicMerchantFeedRouteImport } from './routes/api/public/merchant-feed'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +69,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
@@ -201,6 +208,11 @@ const AuthenticatedOrderIdRoute = AuthenticatedOrderIdRouteImport.update({
   path: '/order/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicMerchantFeedRoute = ApiPublicMerchantFeedRouteImport.update({
+  id: '/api/public/merchant-feed',
+  path: '/api/public/merchant-feed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -208,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/shop': typeof ShopRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -231,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/order/$id': typeof AuthenticatedOrderIdRoute
+  '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -239,6 +253,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/shop': typeof ShopRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/pages/$slug': typeof PagesSlugRoute
@@ -261,6 +276,7 @@ export interface FileRoutesByTo {
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/order/$id': typeof AuthenticatedOrderIdRoute
+  '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -271,6 +287,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/shop': typeof ShopRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -294,6 +311,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/order/$id': typeof AuthenticatedOrderIdRoute
+  '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -304,6 +322,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/shop'
+    | '/sitemap.xml'
     | '/account'
     | '/admin'
     | '/blog/$slug'
@@ -327,6 +346,7 @@ export interface FileRouteTypes {
     | '/admin/shipping'
     | '/admin/staff'
     | '/order/$id'
+    | '/api/public/merchant-feed'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -335,6 +355,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/shop'
+    | '/sitemap.xml'
     | '/account'
     | '/blog/$slug'
     | '/pages/$slug'
@@ -357,6 +378,7 @@ export interface FileRouteTypes {
     | '/admin/shipping'
     | '/admin/staff'
     | '/order/$id'
+    | '/api/public/merchant-feed'
     | '/admin'
   id:
     | '__root__'
@@ -366,6 +388,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/shop'
+    | '/sitemap.xml'
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/blog/$slug'
@@ -389,6 +412,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/shipping'
     | '/_authenticated/admin/staff'
     | '/_authenticated/order/$id'
+    | '/api/public/merchant-feed'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -399,10 +423,12 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ShopRoute: typeof ShopRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogSlugRoute: typeof BlogSlugRoute
   PagesSlugRoute: typeof PagesSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicMerchantFeedRoute: typeof ApiPublicMerchantFeedRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -447,6 +473,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account': {
@@ -617,6 +650,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/merchant-feed': {
+      id: '/api/public/merchant-feed'
+      path: '/api/public/merchant-feed'
+      fullPath: '/api/public/merchant-feed'
+      preLoaderRoute: typeof ApiPublicMerchantFeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -685,10 +725,12 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ShopRoute: ShopRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogSlugRoute: BlogSlugRoute,
   PagesSlugRoute: PagesSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicMerchantFeedRoute: ApiPublicMerchantFeedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
