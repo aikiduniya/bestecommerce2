@@ -12,6 +12,7 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProductSeo } from "@/lib/seo.functions";
+import { ReviewsQA } from "@/components/store/ReviewsQA";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: ({ params }) => getProductSeo({ data: params.slug }).catch(() => null),
@@ -195,6 +196,7 @@ function ProductPage() {
             {p.description && <div className="mt-10 whitespace-pre-line border-t pt-8 leading-relaxed text-muted-foreground">{p.description}</div>}
           </div>
         </div>
+        <ReviewsQA productId={p.id} reviewsEnabled={s?.reviews_enabled ?? true} />
         {related.length > 0 && (
           <section className="mt-24">
             <h2 className="mb-10 text-4xl">You may also like</h2>
