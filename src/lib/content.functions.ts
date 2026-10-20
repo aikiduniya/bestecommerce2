@@ -1,21 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
-
-function publicClient() {
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  return createClient<Database>(process.env["SUPABASE_URL"]!, key, {
-    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
-}
+import { publicClient } from "@/lib/public-db";
 
 const slugOk = (s: string) => /^[a-z0-9-]{1,120}$/.test(s);
 
@@ -51,3 +35,14 @@ export const getPostSeo = createServerFn({ method: "GET" })
       image: p.cover_image && p.cover_image.startsWith("https://") ? p.cover_image : null,
     };
   });
+
+export const getHomeSeo = createServerFn({ method: "GET" }).handler(async () => {
+  const { data } = await publicClient().from("store_settings").select("store_name, tagline, seo_title, seo_description, google_site_verification, og_image_url").eq("id", 1).maybeSingle();
+  if (!data) return null;
+  return {
+    title: data.seo_title || `${data.store_name} — ${data.tagline ?? ""}`,
+    description: data.seo_description || data.tagline || "",
+    verification: data.google_site_verification?.trim() || null,
+    image: data.og_image_url?.startsWith("https://") ? data.og_image_url : null,
+  };
+});
