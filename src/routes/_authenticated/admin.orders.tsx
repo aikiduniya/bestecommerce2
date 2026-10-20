@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
 
 const STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"];
 const PAY = ["pending", "paid", "refunded", "failed"];
+const FULFIL = ["unfulfilled", "packed", "shipped", "delivered", "returned"];
 
 function OrdersPage() {
   const qc = useQueryClient();
@@ -25,15 +26,17 @@ function OrdersPage() {
   const [filter, setFilter] = useState("all");
   const [q, setQ] = useState("");
   const [view, setView] = useState<Order | null>(null);
-  const list = orders.filter((o) => (filter === "all" || o.status === filter) &&
+  const [payFilter, setPayFilter] = useState("all");
+  const list = orders.filter((o) => (filter === "all" || o.status === filter) && (payFilter === "all" || o.payment_method === payFilter || (payFilter === "cod-pending" && o.payment_method === "cod" && !o.cod_collected_at && o.status !== "cancelled")) &&
     `${o.order_number} ${o.customer_name} ${o.customer_email}`.toLowerCase().includes(q.toLowerCase()));
 
-  async function update(id: string, patch: { status?: string; payment_status?: string }) {
+  async function update(id: string, patch: { status?: string; payment_status?: string; fulfillment_status?: string; cod_confirmed_at?: string; cod_collected_at?: string }) {
     const { error } = await supabase.from("orders").update(patch).eq("id", id);
     if (error) { toast.error(error.message); return; }
     if (patch.status === "cancelled") qc.invalidateQueries({ queryKey: ["products"] });
     toast.success(patch.status === "cancelled" ? "Order cancelled — stock returned to inventory" : "Order updated");
     qc.invalidateQueries({ queryKey: ["orders"] });
+    setView((v) => (v && v.id === id ? { ...v, ...patch } as Order : v));
   }
 
   return (
@@ -42,6 +45,9 @@ function OrdersPage() {
         <select className="h-9 rounded-md border bg-card px-3 text-sm" value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="all">All orders</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select aria-label="Payment filter" className="h-9 rounded-md border bg-card px-3 text-sm" value={payFilter} onChange={(e) => setPayFilter(e.target.value)}>
+          <option value="all">All payments</option><option value="cod">Cash on Delivery</option><option value="cod-pending">COD awaiting collection</option><option value="card">Card</option>
         </select>
       </PageHeader>
       <Card className="p-4">
@@ -72,7 +78,8 @@ function OrdersPage() {
                   <p>{o.customer_name}</p>
                   <p className="text-xs text-muted-foreground">{o.customer_email}</p>
                 </TableCell>
-                <TableCell className="uppercase text-xs">{o.payment_method}</TableCell>
+                <TableCell className="text-xs"><span className="uppercase">{o.payment_method}</span>
+                  {o.payment_method === "cod" && o.status !== "cancelled" && <span className="block text-muted-foreground">{o.cod_collected_at ? "Collected" : o.cod_confirmed_at ? "Confirmed" : "Awaiting confirmation"}</span>}</TableCell>
                 <TableCell>{money(o.total, o.currency)}</TableCell>
                 <TableCell>
                   <select className="h-8 rounded border bg-background px-2 text-xs capitalize" value={o.status} onChange={(e) => update(o.id, { status: e.target.value })}>
@@ -108,6 +115,7 @@ function OrdersPage() {
                 <div className="space-y-1 p-3">
                   <div className="flex justify-between"><span>Subtotal</span><span>{money(view.subtotal, view.currency)}</span></div>
                   <div className="flex justify-between"><span>Shipping</span><span>{money(view.shipping_total, view.currency)}</span></div>
+                  {Number(view.payment_fee) > 0 && <div className="flex justify-between"><span>COD fee</span><span>{money(view.payment_fee, view.currency)}</span></div>}
                   <div className="flex justify-between font-semibold"><span>Total</span><span>{money(view.total, view.currency)}</span></div>
                 </div>
               </div>
@@ -116,6 +124,20 @@ function OrdersPage() {
                 <div><p className="eyebrow mb-1 text-muted-foreground">Ship to</p>{Object.entries(view.shipping_address as Record<string, string>).filter(([, v]) => v).map(([k, v]) => <p key={k}>{v}</p>)}</div>
               </div>
               {view.notes && <p className="rounded bg-muted p-3 text-sm">Note: {view.notes}</p>}
+              <div className="flex flex-wrap items-center gap-3 rounded border p-3 text-sm">
+                <span className="text-muted-foreground">Fulfilment</span>
+                <select aria-label="Fulfilment status" className="h-8 rounded border bg-background px-2 text-xs capitalize" value={view.fulfillment_status} onChange={(e) => update(view.id, { fulfillment_status: e.target.value })}>
+                  {FULFIL.map((s) => <option key={s}>{s}</option>)}
+                </select>
+                {view.payment_method === "cod" && view.status !== "cancelled" && (
+                  <>
+                    {view.cod_confirmed_at ? <span className="text-xs text-muted-foreground">COD confirmed {new Date(view.cod_confirmed_at).toLocaleString()}</span>
+                      : <Button size="sm" variant="outline" onClick={() => update(view.id, { cod_confirmed_at: new Date().toISOString(), status: view.status === "pending" ? "processing" : view.status })}>Confirm COD order</Button>}
+                    {view.cod_collected_at ? <span className="text-xs text-muted-foreground">Cash collected {new Date(view.cod_collected_at).toLocaleString()}</span>
+                      : <Button size="sm" variant="gold" onClick={() => update(view.id, { cod_collected_at: new Date().toISOString(), payment_status: "paid" })}>Mark cash collected</Button>}
+                  </>
+                )}
+              </div>
             </>
           )}
         </DialogContent>

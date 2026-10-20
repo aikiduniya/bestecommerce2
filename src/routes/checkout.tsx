@@ -43,6 +43,14 @@ function Checkout() {
   const zone = available.find((z) => z.id === zoneId) ?? available[0];
   const shipping = zone ? (zone.free_over !== null && cart.subtotal >= Number(zone.free_over) ? 0 : Number(zone.rate)) : 0;
 
+  const codFee = Number(s?.cod_fee ?? 0);
+  const codIssue = !s ? null
+    : s.cod_countries.length && country && !s.cod_countries.includes(country) ? `Cash on Delivery is not available in ${country}.`
+    : zone && s.cod_excluded_zones.includes(zone.id) ? `Cash on Delivery is not available with ${zone.name}.`
+    : s.cod_min_order !== null && cart.subtotal < Number(s.cod_min_order) ? `Cash on Delivery requires a minimum order of ${money(s.cod_min_order, cur)}.`
+    : s.cod_max_order !== null && cart.subtotal > Number(s.cod_max_order) ? `Cash on Delivery is limited to orders up to ${money(s.cod_max_order, cur)}.`
+    : null;
+
   async function place(e: React.FormEvent) {
     e.preventDefault();
     if (!zone) { toast.error("No shipping method available for this country"); return; }
@@ -145,9 +153,11 @@ function Checkout() {
           <div className="mt-4 space-y-2 border-t pt-4 text-sm">
             <div className="flex justify-between"><span>Subtotal</span><span>{money(cart.subtotal, cur)}</span></div>
             <div className="flex justify-between"><span>Shipping</span><span>{zone ? money(shipping, cur) : "—"}</span></div>
-            <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(cart.subtotal + shipping, cur)}</span></div>
+            {codFee > 0 && <div className="flex justify-between"><span>Cash on Delivery fee</span><span>{money(codFee, cur)}</span></div>}
+            <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(cart.subtotal + shipping + codFee, cur)}</span></div>
+            {codIssue && <p className="text-xs text-destructive">{codIssue}</p>}
           </div>
-          <Button type="submit" size="lg" className="mt-6 w-full" disabled={placing || !s?.cod_enabled || !zone}>
+          <Button type="submit" size="lg" className="mt-6 w-full" disabled={placing || !s?.cod_enabled || !zone || !!codIssue}>
             {placing ? "Placing order…" : "Place order"}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">Prices and stock are verified when you place the order.</p>
