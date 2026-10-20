@@ -71,7 +71,7 @@ function ProductPage() {
   useEffect(() => {
     if (p) {
       pushRecentlyViewed(p.id);
-      document.title = p.seo_title || `${p.name} · ${s?.store_name ?? ""}`;
+      document.title = p.seo_title || `${p.name} | ${s?.store_name ?? ""}`;
     }
   }, [p, s?.store_name]);
 
