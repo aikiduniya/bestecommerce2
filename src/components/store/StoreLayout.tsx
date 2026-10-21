@@ -23,6 +23,30 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const headerItems = navItems(menus.find((m) => m.handle === "header"));
   const footerItems = navItems(menus.find((m) => m.handle === "footer"));
 
+  // Multi-currency display: restore the visitor's choice after mount, keep it valid.
+  const dc = useDisplayCurrency();
+  const baseCurrency = s?.currency ?? "USD";
+  const extras = extraCurrencies(s?.currencies);
+  useEffect(() => { initDisplayCurrency(); }, []);
+  useEffect(() => {
+    if (!s || !dc) return;
+    if (dc.code !== baseCurrency && !extras.some((c) => c.code === dc.code)) setDisplayCurrency(null);
+  }, [s, dc, baseCurrency, extras]);
+  const currencyPicker = extras.length > 0 && (
+    <select
+      aria-label="Currency"
+      className="h-8 rounded-full border bg-card px-2 text-xs outline-none focus:border-gold"
+      value={dc?.code ?? baseCurrency}
+      onChange={(e) => {
+        const code = e.target.value;
+        setDisplayCurrency(code === baseCurrency ? null : { code, rate: extras.find((c) => c.code === code)!.rate });
+      }}
+    >
+      <option value={baseCurrency}>{baseCurrency}</option>
+      {extras.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
+    </select>
+  );
+
   if (s?.maintenance_mode && !isStaff) {
     return (
       <div className="bg-hero flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center text-primary-foreground">
