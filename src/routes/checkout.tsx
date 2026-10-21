@@ -186,6 +186,7 @@ function Checkout() {
           </div>
           <div className="mt-4 space-y-2 border-t pt-4 text-sm">
             <div className="flex justify-between"><span>Subtotal</span><span>{money(cart.subtotal, cur)}</span></div>
+            {autoDiscount > 0 && <div className="flex justify-between text-success"><span>Discount{autoDisc?.name ? ` (${autoDisc.name})` : ""}</span><span>−{money(autoDiscount, cur)}</span></div>}
             <div className="flex justify-between"><span>Shipping</span><span>{zone ? money(shipping, cur) : "—"}</span></div>
             {coupon && <div className="flex justify-between text-success"><span>Coupon {coupon.code} <button type="button" className="ml-1 text-xs underline" onClick={() => setCoupon(null)}>remove</button></span><span>{coupon.free_shipping ? "Free shipping" : `−${money(discount, cur)}`}</span></div>}
             {codFee > 0 && <div className="flex justify-between"><span>Cash on Delivery fee</span><span>{money(codFee, cur)}</span></div>}
