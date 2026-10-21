@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
-import { Heart, Search, ShoppingBag, User, Menu, X } from "lucide-react";
+import { Heart, Search, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
 import { categoriesQuery, pagesQuery, settingsQuery } from "@/lib/store";
+import { menusQuery, navItems } from "@/lib/sections";
 import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
 
@@ -10,6 +11,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s, isLoading } = useQuery(settingsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
   const { data: pages = [] } = useQuery(pagesQuery);
+  const { data: menus = [] } = useQuery(menusQuery);
   const { user } = useSessionUser();
   const isStaff = useIsStaff(user?.id);
   const { count } = useCart();
@@ -17,6 +19,8 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const topCats = cats.filter((c) => c.is_active && !c.parent_id);
+  const headerItems = navItems(menus.find((m) => m.handle === "header"));
+  const footerItems = navItems(menus.find((m) => m.handle === "footer"));
 
   if (s?.maintenance_mode && !isStaff) {
     return (
