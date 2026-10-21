@@ -33,13 +33,12 @@ function SettingsPage() {
   if (!s) return null;
 
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => setS({ ...s, [k]: v });
+  const currencyList: DisplayCurrency[] = Array.isArray(s.currencies) ? (s.currencies as DisplayCurrency[]) : [];
   const updateCurrency = (i: number, c: DisplayCurrency | null) => {
-    const list = extraCurrencies(s.currencies).concat(Array.isArray(s.currencies) ? [] : []);
-    const raw = (Array.isArray(s.currencies) ? (s.currencies as DisplayCurrency[]) : []).slice();
+    const raw = currencyList.slice();
     if (i === -1 && c) raw.push(c);
     else if (c) raw[i] = c;
     else raw.splice(i, 1);
-    void list;
     set("currencies", raw as never);
   };
 
@@ -134,7 +133,7 @@ function SettingsPage() {
             {toggle("maintenance_mode", "Maintenance mode", "Hides the storefront from visitors")}
             <div className="space-y-2 sm:col-span-2">
               <Label className="text-xs text-muted-foreground">Extra display currencies (visitors can switch; rates are per 1 {s.currency || "USD"})</Label>
-              {extraCurrencies(s.currencies).map((c, i) => (
+              {currencyList.map((c, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Input className="w-24 uppercase" maxLength={3} placeholder="PKR" value={c.code}
                     onChange={(e) => updateCurrency(i, { ...c, code: e.target.value.toUpperCase() })} />
