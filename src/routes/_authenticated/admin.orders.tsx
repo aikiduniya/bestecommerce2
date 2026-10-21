@@ -111,7 +111,10 @@ function OrdersPage() {
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle className="font-display text-3xl">Order #{view.order_number}</DialogTitle>
-                  <Button size="sm" variant="outline" asChild><Link to="/admin/invoice/$id" params={{ id: view.id }} target="_blank"><Printer className="size-4" /> Invoice</Link></Button>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" asChild><Link to="/admin/invoice/$id" params={{ id: view.id }} target="_blank"><Printer className="size-4" /> Invoice</Link></Button>
+                    <Button size="sm" variant="outline" asChild><Link to="/admin/packing/$id" params={{ id: view.id }} target="_blank"><Printer className="size-4" /> Packing slip</Link></Button>
+                  </div>
                 </div>
               </DialogHeader>
               <div className="divide-y rounded border text-sm">
@@ -147,6 +150,7 @@ function OrdersPage() {
                   </>
                 )}
               </div>
+              <TrackingEditor order={view} onSaved={(patch) => setView((v) => (v ? { ...v, ...patch } as Order : v))} />
               <div>
                 <p className="eyebrow mb-2 text-muted-foreground">Timeline</p>
                 <OrderTimeline orderId={view.id} />
@@ -160,6 +164,32 @@ function OrdersPage() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function TrackingEditor({ order, onSaved }: { order: Order; onSaved: (patch: { tracking_number: string | null; tracking_url: string | null }) => void }) {
+  const qc = useQueryClient();
+  const [num, setNum] = useState(order.tracking_number ?? "");
+  const [url, setUrl] = useState(order.tracking_url ?? "");
+
+  async function save() {
+    const patch = { tracking_number: num.trim() || null, tracking_url: url.trim() || null };
+    const { error } = await supabase.from("orders").update(patch).eq("id", order.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Tracking saved");
+    onSaved(patch);
+    qc.invalidateQueries({ queryKey: ["orders"] });
+  }
+
+  return (
+    <div className="space-y-2 rounded border p-3">
+      <p className="eyebrow text-muted-foreground">Shipment tracking</p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Input placeholder="Tracking number" value={num} onChange={(e) => setNum(e.target.value)} />
+        <Input placeholder="Tracking URL (optional)" value={url} onChange={(e) => setUrl(e.target.value)} />
+      </div>
+      <Button size="sm" variant="outline" onClick={save}>Save tracking</Button>
+    </div>
   );
 }
 
