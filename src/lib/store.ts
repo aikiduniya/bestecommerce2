@@ -471,3 +471,24 @@ export const cartSnapshotsQuery = queryOptions({
     return data;
   },
 });
+
+export const faqCategoriesQuery = queryOptions({
+  queryKey: ["faq_categories"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("faq_categories").select("*").order("sort_order");
+    if (error) throw error;
+    return data;
+  },
+});
+export const faqsQuery = queryOptions({
+  queryKey: ["faqs"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("faqs").select("*").order("sort_order");
+    if (error) throw error;
+    return data;
+  },
+});
+export type SocialLink = { network: string; url: string };
+export function socialLinks(v: unknown): SocialLink[] {
+  return Array.isArray(v) ? (v as SocialLink[]).filter((x) => x && typeof x.url === "string" && /^https:\/\//.test(x.url)) : [];
+}

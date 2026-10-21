@@ -36,7 +36,8 @@ export function ContentEditor({ kind, rows, queryKey }: { kind: "pages" | "blog_
     setSaving(true);
     const { id, created_at: _c, updated_at: _u, ...rest } = edit;
     const payload: Record<string, unknown> = { ...rest, title, slug };
-    for (const k of ["seo_title", "seo_description", "excerpt", "author", "meta_keywords", "canonical_url", "og_image_url", "cover_alt"]) if (k in payload && payload[k] === "") payload[k] = null;
+    if (!isBlog && payload["is_published"]) payload["is_draft_sample"] = false;
+    for (const k of ["seo_title", "seo_description", "excerpt", "author", "meta_keywords", "canonical_url", "og_image_url", "cover_alt", "image_alt"]) if (k in payload && payload[k] === "") payload[k] = null;
     if (isBlog && payload["is_published"] && !payload["published_at"]) payload["published_at"] = new Date().toISOString();
     const q = id ? supabase.from(kind).update(payload as never).eq("id", id) : supabase.from(kind).insert(payload as never);
     const { error } = await q;
@@ -75,6 +76,8 @@ export function ContentEditor({ kind, rows, queryKey }: { kind: "pages" | "blog_
             <Card className="space-y-4 p-6">
               <label className="flex items-center justify-between text-sm">Published <Switch checked={edit.is_published} onCheckedChange={(v) => set("is_published", v)} /></label>
               {!isBlog && <label className="flex items-center justify-between text-sm">Show in footer <Switch checked={!!edit["show_in_footer"]} onCheckedChange={(v) => set("show_in_footer", v)} /></label>}
+              {!isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Page image (optional)</Label><ImagePicker multiple={false} value={edit["image_url"] ? [String(edit["image_url"])] : []} onChange={(v) => set("image_url", v[0] ?? null)} /></div>}
+              {!isBlog && !!edit["image_url"] && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Image alt text</Label><div className="flex gap-2"><Input value={str("image_alt")} onChange={(e) => set("image_alt", e.target.value)} /><Button type="button" variant="outline" size="sm" onClick={() => set("image_alt", str("title"))}>Suggest</Button></div></div>}
               {!isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Footer order</Label><Input type="number" value={str("sort_order")} onChange={(e) => set("sort_order", Number(e.target.value))} /></div>}
               {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Author</Label><Input value={str("author")} onChange={(e) => set("author", e.target.value)} /></div>}
               {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Tags (comma separated)</Label><Input value={((edit["tags"] as string[]) ?? []).join(", ")} onChange={(e) => set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} /></div>}
@@ -106,6 +109,8 @@ export function ContentEditor({ kind, rows, queryKey }: { kind: "pages" | "blog_
         {rows.map((r) => (
           <div key={r.id} className="flex items-center gap-4 p-4">
             <div className="flex-1"><p className="font-medium">{r.title}</p><p className="text-xs text-muted-foreground">{isBlog ? "/blog/" : "/pages/"}{r.slug}</p></div>
+            {!!r["is_draft_sample"] && <span className="rounded-full bg-warning/20 px-2.5 py-0.5 text-xs">Sample text — review</span>}
+            {!isBlog && <a href={`/pages/${r.slug}`} target="_blank" rel="noreferrer" className="text-xs text-gold hover:underline">Preview</a>}
             <StatusPill value={r.is_published ? "active" : "draft"} />
             <Button size="icon" variant="ghost" onClick={() => setEdit(r)} aria-label="Edit"><Pencil /></Button>
             <Button size="icon" variant="ghost" onClick={() => remove(r)} aria-label="Delete"><Trash2 /></Button>

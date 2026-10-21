@@ -247,13 +247,35 @@ function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: str
     case "hero":
       return (
         <>
-          {txt("eyebrow", "Eyebrow text", "e.g. New season")}
-          <div>
-            <label className="text-xs font-medium">Background image</label>
-            <SingleImage value={cfg.image_url ?? ""} onChange={(v) => set("image_url", v)} />
+          <div className="grid grid-cols-3 gap-2">
+            <div><label className="text-xs font-medium">Layout</label>
+              <select aria-label="Banner layout" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={cfg.layout ?? "full"} onChange={(e) => set("layout", e.target.value)}><option value="split">Split (text + framed image)</option><option value="full">Full-width image</option></select></div>
+            <div><label className="text-xs font-medium">Height</label>
+              <select aria-label="Banner height" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={cfg.height ?? ""} onChange={(e) => set("height", e.target.value)}><option value="">Theme default</option><option value="compact">Compact</option><option value="medium">Medium</option><option value="tall">Tall</option><option value="full">Full screen</option></select></div>
+            <div><label className="text-xs font-medium">Auto-play (sec, 0 = off)</label><Input type="number" min={0} max={30} value={cfg.autoplay ?? 6} onChange={(e) => set("autoplay", Number(e.target.value))} /></div>
           </div>
-          {txt("cta_label", "Button label", "Shop now")}
-          {txt("cta_link", "Button link", "/shop")}
+          <SlidesEditor slides={Array.isArray(cfg.slides) && cfg.slides.length ? cfg.slides : [{ eyebrow: cfg.eyebrow ?? "", image_url: cfg.image_url ?? "", cta_label: cfg.cta_label ?? "", cta_link: cfg.cta_link ?? "" }]} onChange={(v) => set("slides", v)} />
+        </>
+      );
+    case "about":
+      return (
+        <>
+          {txt("eyebrow", "Small label", "Our story")}
+          <div><label className="text-xs font-medium">Text</label><Textarea rows={6} value={cfg.body ?? ""} onChange={(e) => set("body", e.target.value)} /></div>
+          <div><label className="text-xs font-medium">Image</label><SingleImage value={cfg.image_url ?? ""} onChange={(v) => set("image_url", v)} /></div>
+          {txt("image_alt", "Image alt text")}
+          <div><label className="text-xs font-medium">Image side</label><select className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={cfg.image_side ?? "right"} onChange={(e) => set("image_side", e.target.value)}><option value="right">Right</option><option value="left">Left</option></select></div>
+          {txt("cta_label", "Button text", "Read our story")}
+          {txt("cta_link", "Button link", "/pages/about")}
+        </>
+      );
+    case "contact":
+      return (
+        <>
+          {txt("eyebrow", "Small label", "Contact")}
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={cfg.show_form !== false} onChange={(e) => set("show_form", e.target.checked)} /> Show the contact form (otherwise a button to the Contact page)</label>
+          {cfg.show_form === false && txt("cta_label", "Button text", "Contact us")}
+          <p className="text-xs text-muted-foreground">Email, phone, address and hours come from Settings → Store and Social & chat.</p>
         </>
       );
     case "categories":
@@ -332,7 +354,13 @@ function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: str
     case "testimonials":
       return <ItemsEditor items={cfg.items ?? []} onChange={(v) => set("items", v)} fields={[{ k: "name", label: "Name" }, { k: "text", label: "Quote" }, { k: "rating", label: "Rating (1-5)", num: true }]} addLabel="Add testimonial" />;
     case "faq":
-      return <ItemsEditor items={cfg.items ?? []} onChange={(v) => set("items", v)} fields={[{ k: "q", label: "Question" }, { k: "a", label: "Answer" }]} addLabel="Add question" />;
+      return (
+        <>
+          <div><label className="text-xs font-medium">Questions</label>
+            <select aria-label="FAQ source" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={cfg.source ?? "manual"} onChange={(e) => set("source", e.target.value)}><option value="db">From the FAQs page (marked "On homepage")</option><option value="manual">Write them here</option></select></div>
+          {cfg.source === "db" ? num("count", "How many to show") : <ItemsEditor items={cfg.items ?? []} onChange={(v) => set("items", v)} fields={[{ k: "q", label: "Question" }, { k: "a", label: "Answer" }]} addLabel="Add question" />}
+        </>
+      );
     default:
       return <p className="text-xs text-muted-foreground">This section has no extra settings.</p>;
   }
@@ -365,6 +393,43 @@ function ItemsEditor({ items, onChange, fields, addLabel }: {
         </div>
       ))}
       <Button type="button" variant="outline" size="sm" onClick={() => onChange([...items, {}])}><Plus className="size-3.5" /> {addLabel}</Button>
+    </div>
+  );
+}
+
+const SLIDE_TEXT: [string, string][] = [["eyebrow", "Small label"], ["title", "Heading"], ["subtitle", "Subtitle"], ["description", "Description"], ["cta_label", "Button text"], ["cta_link", "Button link"], ["cta2_label", "Second button text"], ["cta2_link", "Second button link"], ["image_alt", "Image alt text"]];
+function SlidesEditor({ slides, onChange }: { slides: Cfg[]; onChange: (v: Cfg[]) => void }) {
+  const up = (i: number, k: string, v: unknown) => onChange(slides.map((s, j) => (j === i ? { ...s, [k]: v } : s)));
+  const move = (i: number, d: number) => { const v = [...slides]; const t = v[i + d]; if (!t) return; v[i + d] = v[i]; v[i] = t; onChange(v); };
+  const sel = "h-9 w-full rounded-md border bg-background px-2 text-sm";
+  return (
+    <div className="space-y-3">
+      {slides.map((s, i) => (
+        <div key={i} className="space-y-2 rounded border p-3" data-slide={i}>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-muted-foreground">Slide {i + 1}</p>
+            <div className="flex gap-2 text-xs">
+              <button type="button" onClick={() => move(i, -1)} disabled={i === 0}>↑ Up</button>
+              <button type="button" onClick={() => move(i, 1)} disabled={i === slides.length - 1}>↓ Down</button>
+              <button type="button" className="text-destructive" onClick={() => onChange(slides.filter((_, j) => j !== i))} disabled={slides.length === 1}>Remove</button>
+            </div>
+          </div>
+          {SLIDE_TEXT.map(([k, label]) => k === "description"
+            ? <Textarea key={k} aria-label={`Slide ${i + 1} ${label}`} rows={2} placeholder={label} value={s[k] ?? ""} onChange={(e) => up(i, k, e.target.value)} />
+            : <Input key={k} aria-label={`Slide ${i + 1} ${label}`} placeholder={label} value={s[k] ?? ""} onChange={(e) => up(i, k, e.target.value)} />)}
+          <div className="grid grid-cols-2 gap-2">
+            <div><label className="text-xs">Desktop image</label><SingleImage value={s.image_url ?? ""} onChange={(v) => up(i, "image_url", v)} /></div>
+            <div><label className="text-xs">Mobile image (optional)</label><SingleImage value={s.mobile_image_url ?? ""} onChange={(v) => up(i, "mobile_image_url", v)} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div><label className="text-xs">Button icon</label><select className={sel} value={s.cta_icon ?? "arrow"} onChange={(e) => up(i, "cta_icon", e.target.value)}><option value="arrow">Arrow</option><option value="bag">Shopping bag</option><option value="sparkles">Sparkles</option><option value="star">Star</option><option value="play">Play</option></select></div>
+            <div><label className="text-xs">Text alignment</label><select className={sel} value={s.align ?? "left"} onChange={(e) => up(i, "align", e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div>
+            <div><label className="text-xs">Colours</label><select className={sel} value={s.tone ?? "light"} onChange={(e) => up(i, "tone", e.target.value)}><option value="light">Light text on brand colour</option><option value="dark">Dark text on light background</option></select></div>
+            <div><label className="text-xs">Overlay % ({s.overlay ?? 35})</label><input type="range" min={0} max={90} step={5} value={s.overlay ?? 35} onChange={(e) => up(i, "overlay", Number(e.target.value))} className="w-full" /></div>
+          </div>
+        </div>
+      ))}
+      <Button type="button" variant="outline" size="sm" onClick={() => onChange([...slides, { title: "", cta_label: "Shop now", cta_link: "/shop", align: "left", tone: "light", overlay: 35 }])}><Plus className="size-3.5" /> Add slide</Button>
     </div>
   );
 }

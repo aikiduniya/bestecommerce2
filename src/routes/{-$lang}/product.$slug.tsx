@@ -11,6 +11,7 @@ import { pushRecentlyViewed, useCart } from "@/lib/cart";
 import { effectivePrice, regularPrice, saleActive } from "@/lib/sale";
 import { trackAddToCart, trackViewItem } from "@/lib/analytics";
 import { useSessionUser } from "@/lib/auth";
+import { ProductGallery } from "@/components/store/ProductGallery";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { NotifyMe } from "@/components/store/NotifyMe";
@@ -166,18 +167,9 @@ function ProductPage() {
         </nav>
         <div className="grid gap-12 md:grid-cols-2">
           <div>
-            <div className="aspect-square overflow-hidden rounded bg-secondary">
-              {images[img] ? <img src={images[img]} alt={(p as { image_alts?: string[] }).image_alts?.[img] || p.name} className="size-full object-cover" /> : <div className="flex size-full items-center justify-center font-display text-8xl text-muted-foreground/30">{p.name[0]}</div>}
-            </div>
-            {images.length > 1 && (
-              <div className="mt-3 grid grid-cols-5 gap-3">
-                {images.map((u, i) => (
-                  <button key={u} onClick={() => setImg(i)} className={`aspect-square overflow-hidden rounded border-2 ${i === img ? "border-gold" : "border-transparent"}`}>
-                    <img src={u} alt="" className="size-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+            <ProductGallery
+              images={images.map((u) => ({ src: u, alt: (p as { image_alts?: string[] }).image_alts?.[p.images.indexOf(u)] || p.name }))}
+              fallback={p.name[0] ?? ""} index={Math.min(img, Math.max(0, images.length - 1))} onIndex={setImg} />
           </div>
           <div>
             {brands.find((b) => b.id === p.brand_id) && <p className="eyebrow text-gold">{applyTranslation(tIndex, "brand", brands.find((b) => b.id === p.brand_id)!, lang).name}</p>}

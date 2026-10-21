@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, type Settings } from "@/lib/store";
 import { extraCurrencies, type DisplayCurrency } from "@/lib/currency";
@@ -110,6 +111,12 @@ function SettingsPage() {
       if (v && !re.test(v)) { setSaving(false); toast.error(label); return; }
       rest[k] = v || null;
     }
+    if (rest.whatsapp_number && !/^\+?[0-9]{7,15}$/.test(rest.whatsapp_number.replace(/[\s-]/g, ""))) { setSaving(false); toast.error("WhatsApp number must be digits with country code"); return; }
+    if (rest.whatsapp_enabled && !rest.whatsapp_number) { setSaving(false); toast.error("Enter a WhatsApp number to show the button"); return; }
+    for (const k of ["tawk_property_id", "tawk_widget_id"] as const) if (rest[k] && !/^[a-z0-9]{6,40}$/i.test(rest[k]!)) { setSaving(false); toast.error("Tawk.to IDs may only contain letters and numbers"); return; }
+    if (rest.tawk_enabled && (!rest.tawk_property_id || !rest.tawk_widget_id)) { setSaving(false); toast.error("Enter both Tawk.to IDs to enable live chat"); return; }
+    if (rest.contact_notify_email && !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(rest.contact_notify_email)) { setSaving(false); toast.error("Contact notification email is not valid"); return; }
+    rest.social_links = (Array.isArray(rest.social_links) ? rest.social_links : []).filter((l) => l && typeof l === "object" && /^https:\/\//.test(String((l as { url?: string }).url ?? ""))) as never;
     if (Number(rest.cod_fee) < 0) { setSaving(false); toast.error("COD fee cannot be negative"); return; }
     const { error } = await supabase.from("store_settings").update(rest).eq("id", 1);
     setSaving(false);
@@ -149,6 +156,7 @@ function SettingsPage() {
         <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="brand">Branding</TabsTrigger>
           <TabsTrigger value="layout">Layout</TabsTrigger>
+          <TabsTrigger value="social">Social & chat</TabsTrigger>
           <TabsTrigger value="home">Homepage</TabsTrigger>
           <TabsTrigger value="store">Store</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
@@ -229,6 +237,9 @@ function SettingsPage() {
             <div className="sm:col-span-2">{text("footer_text" as never, "Copyright line (leave empty for © year + store name)")}</div>
             <p className="text-xs text-muted-foreground sm:col-span-2 lg:col-span-3">Colours, fonts, buttons and product cards are on the Branding tab. Menu links are edited in Navigation, homepage sections in the Homepage builder.</p>
           </Card>
+        </TabsContent>
+        <TabsContent value="social">
+          <SocialSettings s={s} setS={setS} text={text} toggle={toggle} />
         </TabsContent>
         <TabsContent value="home">
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
@@ -438,6 +449,56 @@ function ThemePreview({ s }: { s: { primary_color: string | null; accent_color: 
           <p className="text-xs">$1,250.00</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+const NETWORKS = ["instagram", "facebook", "x", "tiktok", "youtube", "linkedin", "pinterest", "whatsapp"] as const;
+function SocialSettings({ s, setS, text, toggle }: { s: Settings; setS: (v: Settings) => void; text: (k: keyof Settings, label: string, type?: string) => React.ReactNode; toggle: (k: keyof Settings, label: string, hint: string) => React.ReactNode }) {
+  const links = (Array.isArray(s.social_links) ? s.social_links : []) as { network: string; url: string }[];
+  const setLinks = (v: { network: string; url: string }[]) => setS({ ...s, social_links: v as never });
+  const bad = links.some((l) => l.url && !/^https:\/\//.test(l.url));
+  const waBad = !!s.whatsapp_number && !/^\+?[0-9]{7,15}$/.test(s.whatsapp_number.replace(/[\s-]/g, ""));
+  const idBad = (v: string | null) => !!v && !/^[a-z0-9]{6,40}$/i.test(v);
+  return (
+    <div className="space-y-6">
+      <Card className="space-y-3 p-6">
+        <p className="text-sm font-medium">Social media links</p>
+        <p className="text-xs text-muted-foreground">Shown as icons in the header and footer. Links must start with https://</p>
+        {links.map((l, i) => (
+          <div key={i} className="flex gap-2">
+            <select aria-label="Network" className="h-9 rounded-md border bg-background px-3 text-sm capitalize" value={l.network} onChange={(e) => setLinks(links.map((x, j) => (j === i ? { ...x, network: e.target.value } : x)))}>{NETWORKS.map((n) => <option key={n} value={n}>{n}</option>)}</select>
+            <Input aria-label={`${l.network} URL`} placeholder="https://" value={l.url} onChange={(e) => setLinks(links.map((x, j) => (j === i ? { ...x, url: e.target.value.trim() } : x)))} />
+            <Button variant="ghost" size="icon" aria-label="Remove link" onClick={() => setLinks(links.filter((_, j) => j !== i))}><Trash2 /></Button>
+          </div>
+        ))}
+        {bad && <p className="text-xs text-destructive">Every link must start with https:// — invalid links are hidden on the store.</p>}
+        <Button variant="outline" size="sm" onClick={() => setLinks([...links, { network: NETWORKS.find((n) => !links.some((l) => l.network === n)) ?? "instagram", url: "" }])}><Plus /> Add link</Button>
+      </Card>
+      <Card className="grid gap-4 p-6 sm:grid-cols-2">
+        <p className="text-sm font-medium sm:col-span-2">Floating WhatsApp button</p>
+        <div className="sm:col-span-2">{toggle("whatsapp_enabled", "Show WhatsApp button", "A chat button in the corner of every store page")}</div>
+        <div>{text("whatsapp_number", "WhatsApp number with country code (e.g. +923001234567)")}{waBad && <p className="mt-1 text-xs text-destructive">Use digits only, with country code</p>}</div>
+        {text("whatsapp_message", "Pre-filled message")}
+        <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Position</Label>
+          <select aria-label="WhatsApp position" className="h-9 w-full rounded-md border bg-background px-3 text-sm" value={s.whatsapp_position} onChange={(e) => setS({ ...s, whatsapp_position: e.target.value })}><option value="right">Bottom right</option><option value="left">Bottom left</option></select></div>
+        {toggle("whatsapp_mobile", "Show on phones", "Turn off to show the button on larger screens only")}
+      </Card>
+      <Card className="grid gap-4 p-6 sm:grid-cols-2">
+        <p className="text-sm font-medium sm:col-span-2">Tawk.to live chat</p>
+        <div className="sm:col-span-2">{toggle("tawk_enabled", "Enable live chat", "Loads the Tawk.to chat widget on store pages")}</div>
+        <div>{text("tawk_property_id", "Property ID")}{idBad(s.tawk_property_id) && <p className="mt-1 text-xs text-destructive">Letters and numbers only</p>}</div>
+        <div>{text("tawk_widget_id", "Widget ID")}{idBad(s.tawk_widget_id) && <p className="mt-1 text-xs text-destructive">Letters and numbers only</p>}</div>
+        <p className="text-xs text-muted-foreground sm:col-span-2">Find both in Tawk.to → Administration → Chat widget: the link looks like embed.tawk.to/PROPERTY_ID/WIDGET_ID.</p>
+      </Card>
+      <Card className="grid gap-4 p-6 sm:grid-cols-2">
+        <p className="text-sm font-medium sm:col-span-2">Contact details & newsletter</p>
+        {text("contact_notify_email", "Send new contact inquiries to (email)", "email")}
+        {text("contact_hours", "Opening hours")}
+        <div className="sm:col-span-2">{text("contact_address", "Address")}</div>
+        {toggle("newsletter_enabled", "Newsletter signup in footer", "Collects emails into Admin → Inbox → Newsletter")}
+        {text("newsletter_text", "Footer newsletter text")}
+      </Card>
     </div>
   );
 }

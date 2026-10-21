@@ -54,6 +54,8 @@ export const SECTION_TYPES = [
   { type: "image", label: "Image banner" },
   { type: "video", label: "Video" },
   { type: "faq", label: "FAQ" },
+  { type: "about", label: "About us" },
+  { type: "contact", label: "Contact us" },
   { type: "recently_viewed", label: "Recently viewed" },
 ] as const;
 
@@ -67,7 +69,11 @@ export function sectionLabel(type: string) {
 export function defaultConfig(type: string): Record<string, unknown> {
   switch (type) {
     case "hero":
-      return { eyebrow: "", image_url: "", cta_label: "Shop now", cta_link: "/shop" };
+      return { layout: "split", height: "tall", autoplay: 6, slides: [{ eyebrow: "New collection", title: "Timeless pieces, crafted to last", description: "", image_url: "", cta_label: "Shop now", cta_link: "/shop", cta_icon: "arrow", align: "left", tone: "light", overlay: 35 }] };
+    case "about":
+      return { eyebrow: "Our story", body: "", image_url: "", image_alt: "", cta_label: "Read our story", cta_link: "/pages/about", image_side: "right" };
+    case "contact":
+      return { eyebrow: "Contact", show_form: true };
     case "trust_badges":
       return { items: [{ icon: "truck", text: "Free worldwide shipping" }, { icon: "shield", text: "Secure payment" }, { icon: "rotate", text: "Easy returns" }] };
     case "categories":
@@ -95,7 +101,7 @@ export function defaultConfig(type: string): Record<string, unknown> {
     case "video":
       return { video_url: "", poster: "" };
     case "faq":
-      return { items: [{ q: "How long does shipping take?", a: "Most orders arrive within 5–10 business days." }] };
+      return { source: "db", count: 6, items: [] };
     default:
       return {};
   }
