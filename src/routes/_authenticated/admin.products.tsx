@@ -280,6 +280,9 @@ function ProductsPage() {
                   <F label="Price *"><Input type="number" step="0.01" min="0" required value={form.price ?? ""} onChange={(e) => set("price", e.target.value)} /></F>
                   <F label="Compare-at price"><Input type="number" step="0.01" min="0" value={form.compare_at_price ?? ""} onChange={(e) => set("compare_at_price", e.target.value)} /></F>
                   <F label={`Cost price${margin !== null ? ` · ${margin}% margin` : ""}`}><Input type="number" step="0.01" min="0" value={form.cost_price ?? ""} onChange={(e) => set("cost_price", e.target.value)} /></F>
+                  <F label="Sale price (flash sale)"><Input type="number" step="0.01" min="0" value={form.sale_price ?? ""} onChange={(e) => set("sale_price", e.target.value)} /></F>
+                  <F label="Sale starts (optional)"><Input type="datetime-local" value={form.sale_starts_at ?? ""} onChange={(e) => set("sale_starts_at", e.target.value)} /></F>
+                  <F label="Sale ends (optional)"><Input type="datetime-local" value={form.sale_ends_at ?? ""} onChange={(e) => set("sale_ends_at", e.target.value)} /></F>
                   <F label={variants.length ? "Stock (sum of variants)" : "Stock"}>
                     <Input type="number" min="0" disabled={variants.length > 0} value={variants.length ? variants.filter((v) => v.is_active).reduce((s, v) => s + v.stock, 0) : form.stock ?? 0} onChange={(e) => set("stock", e.target.value)} />
                   </F>
