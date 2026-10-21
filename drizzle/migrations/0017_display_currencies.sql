@@ -1,0 +1,2 @@
+ALTER TABLE public.store_settings ADD COLUMN currencies jsonb NOT NULL DEFAULT '[]'::jsonb;
+COMMENT ON COLUMN public.store_settings.currencies IS 'Additional display currencies: [{code, rate}] — rate = units per 1 base currency. Display only; orders are always charged in the base currency.';
