@@ -25,7 +25,12 @@ export const Route = createFileRoute("/_authenticated/admin/products")({
   component: ProductsPage,
 });
 
-type Form = { [K in keyof Product]?: Product[K] | undefined } & { tagsText?: string | undefined };
+type Form = Partial<Omit<Product, "sale_price" | "sale_starts_at" | "sale_ends_at">> & {
+  tagsText?: string | undefined;
+  sale_price?: number | string | null | undefined;
+  sale_starts_at?: string | null | undefined;
+  sale_ends_at?: string | null | undefined;
+};
 
 function ProductsPage() {
   const qc = useQueryClient();
