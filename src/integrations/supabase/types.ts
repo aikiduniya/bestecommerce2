@@ -1203,6 +1203,36 @@ export type Database = {
           },
         ]
       }
+      redirects: {
+        Row: {
+          created_at: string
+          from_path: string
+          hits: number
+          id: string
+          is_active: boolean
+          status_code: number
+          to_path: string
+        }
+        Insert: {
+          created_at?: string
+          from_path: string
+          hits?: number
+          id?: string
+          is_active?: boolean
+          status_code?: number
+          to_path: string
+        }
+        Update: {
+          created_at?: string
+          from_path?: string
+          hits?: number
+          id?: string
+          is_active?: boolean
+          status_code?: number
+          to_path?: string
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           code: string
@@ -1471,6 +1501,7 @@ export type Database = {
           accent_color: string | null
           announcement: string | null
           announcement_enabled: boolean
+          bing_site_verification: string | null
           cod_countries: string[]
           cod_enabled: boolean
           cod_excluded_zones: string[]
@@ -1493,6 +1524,7 @@ export type Database = {
           hero_image_url: string | null
           id: number
           languages: Json
+          llms_txt: string | null
           logo_url: string | null
           loyalty_earn_rate: number
           loyalty_enabled: boolean
@@ -1507,6 +1539,7 @@ export type Database = {
           referral_reward_points: number
           reviews_enabled: boolean
           reviews_require_approval: boolean
+          robots_txt: string | null
           seo_description: string | null
           seo_title: string | null
           store_name: string
@@ -1524,6 +1557,7 @@ export type Database = {
           accent_color?: string | null
           announcement?: string | null
           announcement_enabled?: boolean
+          bing_site_verification?: string | null
           cod_countries?: string[]
           cod_enabled?: boolean
           cod_excluded_zones?: string[]
@@ -1546,6 +1580,7 @@ export type Database = {
           hero_image_url?: string | null
           id?: number
           languages?: Json
+          llms_txt?: string | null
           logo_url?: string | null
           loyalty_earn_rate?: number
           loyalty_enabled?: boolean
@@ -1560,6 +1595,7 @@ export type Database = {
           referral_reward_points?: number
           reviews_enabled?: boolean
           reviews_require_approval?: boolean
+          robots_txt?: string | null
           seo_description?: string | null
           seo_title?: string | null
           store_name?: string
@@ -1577,6 +1613,7 @@ export type Database = {
           accent_color?: string | null
           announcement?: string | null
           announcement_enabled?: boolean
+          bing_site_verification?: string | null
           cod_countries?: string[]
           cod_enabled?: boolean
           cod_excluded_zones?: string[]
@@ -1599,6 +1636,7 @@ export type Database = {
           hero_image_url?: string | null
           id?: number
           languages?: Json
+          llms_txt?: string | null
           logo_url?: string | null
           loyalty_earn_rate?: number
           loyalty_enabled?: boolean
@@ -1613,6 +1651,7 @@ export type Database = {
           referral_reward_points?: number
           reviews_enabled?: boolean
           reviews_require_approval?: boolean
+          robots_txt?: string | null
           seo_description?: string | null
           seo_title?: string | null
           store_name?: string
