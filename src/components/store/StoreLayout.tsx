@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Heart, Search, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
 import { categoriesQuery, pagesQuery, settingsQuery } from "@/lib/store";
 import { menusQuery, navItems } from "@/lib/sections";
 import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
+import { extraCurrencies, initDisplayCurrency, setDisplayCurrency, useDisplayCurrency } from "@/lib/currency";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s, isLoading } = useQuery(settingsQuery);

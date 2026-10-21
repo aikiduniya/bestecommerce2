@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getDisplayCurrency } from "@/lib/currency";
 import type { Database } from "@/integrations/supabase/types";
 
 export type Settings = Database["public"]["Tables"]["store_settings"]["Row"];
