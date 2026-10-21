@@ -49,6 +49,8 @@ const groups = [
     label: "Marketing & content",
     items: [
       { perm: "marketing", to: "/admin/coupons", label: "Coupons & promos", icon: TicketPercent },
+      { perm: "content", to: "/admin/homepage", label: "Homepage builder", icon: LayoutTemplate },
+      { perm: "content", to: "/admin/navigation", label: "Navigation", icon: MenuSquare },
       { perm: "content", to: "/admin/reviews", label: "Reviews & Q&A", icon: MessageSquareText },
       { perm: "content", to: "/admin/pages", label: "Pages", icon: FileText },
       { perm: "content", to: "/admin/blog", label: "Blog", icon: Newspaper },
