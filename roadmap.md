@@ -1,56 +1,14 @@
 # Roadmap
 
-## Phase 1 — Admin foundation (done)
-## Phase 2 — Catalog & storefront (done, verified)
+## Done
+- Phases 1–2: storefront, auth, admin CRUD, variants, collections, media, categories, wishlist, recently viewed, shipping zones, search/filter/sort, cart, account, COD checkout (place_order server-validated).
+- Phase 3: COD rules + fee + confirm/collect, staff roles/permissions (has_permission), activity log, admin Payments tab.
+- Phase 4A: coupons, reviews/Q&A (pending-forced), CMS pages, blog, SEO + tracking settings, sitemap, merchant feed.
+- Phase 4B: homepage builder (16 section types, drag reorder), nav menu editor, dashboard, reports + CSV, order timeline, internal notes, invoices, flash sales + automatic discounts, analytics events, ⌘K search, notifications bell, bulk product actions, multi-currency, multilingual UI + content translations + hreflang + RTL, email module (templates/rules/settings/logs/retry, delivery disabled until provider).
+- Verification: COD regression PASS, coupons PASS, permissions PASS, mobile 390px PASS (storefront + admin), hydration fixed (mounted gating in StoreLayout), language URLs/RTL/hreflang PASS, emails admin PASS.
 
-## Phase 3
-- [x] Advanced COD: countries, min/max, fee, product + shipping restrictions, confirmation, collection, COD report
-- [x] Staff: custom roles, granular permissions (catalog/orders/customers), enable/disable, Super Admin assignment, activity log, permission-based menu, server-side enforcement
-- [x] Order fulfilment status, COD fee on orders, payment filters
-- [ ] Built-in Stripe card payments — ON HOLD by owner (do not ask again until requested)
-- [x] Order timeline (auto-logged status/payment/fulfilment events), internal staff-only notes, printable invoice/PDF
-- [ ] Refunds/transactions (with Stripe)
-- [ ] Admin dashboard upgrade: collapsible sidebar, global search, notifications, bulk actions (charts done)
-- [ ] Staff invite emails + login activity (needs email sending setup)
-- [ ] Remaining tests: Google sign-in, email signup/password reset emails (need real inbox), tablet layout
-
-## Phase 4A (done, tested)
-- [x] Coupons & promotions: percent / fixed / free shipping, min order, total + per-customer limits, start/end schedule (flash campaigns), server-enforced in checkout
-- [x] Reviews (moderation, verified buyer) + customer Q&A with admin answers
-- [x] CMS pages (footer links) + blog with per-item SEO
-- [x] SEO: homepage SEO + Search Console verification, share image, sitemap.xml, Google Merchant product feed
-- [x] GA4 / GTM / Meta Pixel / Merchant Center ID settings; tracking loads on storefront only
-- [x] Staff permissions: marketing, content
-
-## Phase 4B
-- [x] Coupon fix: cancellation restores coupon usage (guarded, no double-restore); usage-limit increment is atomic
-- [x] Drag-and-drop homepage section builder (16 section types, reorder/duplicate/enable/disable, live storefront)
-- [x] Navigation/menu editor (header + footer, nested dropdowns, storefront falls back to built-in when empty)
-- [x] Flash sale prices with countdown + automatic (no-code) discounts, coupons stack on top
-- [x] Dashboard upgrade: period comparison, top products, recent activity, quick actions, 30-day chart
-- [x] Advanced reports: sales (date ranges, period comparison, product performance), COD, coupons, inventory — all with CSV export
-- [x] Order timeline, internal notes, printable invoice
-- [x] Collapsible admin sidebar, global admin search (Cmd+K), notifications center, bulk actions on products
-- [ ] Email templates & notifications (needs email domain setup)
-- [x] GA4 + Meta Pixel ecommerce events: view_item, add_to_cart, begin_checkout, purchase
-- [x] Multi-currency display: admin-managed rates, storefront switcher, orders always charged in base currency
-- [x] Languages / translations: admin-managed languages (10-language catalog, RTL support), per-language storefront text editor with English fallback, header/mobile language switcher, html lang+dir
-
-## Phase 4B completion work order (in progress)
-- [ ] Multilingual content: content_translations table (done), admin translations editor, storefront field fallback, language-prefixed URLs, hreflang tags, RTL
-- [ ] Email templates & notifications module: email_templates/email_settings/notification_rules/email_logs tables (done), admin UI (templates+preview, rules, sender/provider settings, logs+retry), send pipeline (delivery disabled until provider verified)
-- [ ] Mobile responsiveness tests: language/currency switchers, homepage builder, admin dashboard, checkout
-- [ ] Regression: COD checkout, totals, inventory, coupons, permissions
-- [ ] Gap analysis vs MASTER_PROMPT
-
-## Phase 4B completion work order — status update
-- [x] DB: content_translations + email module migrations (0019, 0020)
-- [x] Translations library + admin Translations editor (/admin/translations)
-- [x] Email module: lib, send pipeline (delivery disabled until provider verified), admin Emails page (/admin/emails), order emails wired into checkout
-- [x] Language-prefixed URLs (/{-$lang}/...) for all 8 storefront routes + hreflang tags + translated-slug resolution (client + SEO server fns)
-- [x] Browser-verified: /ur/shop RTL + hreflang + translated product name; /ur/product/<translated-slug> resolves with translated title; /xx/shop → 404; typecheck+build clean
-- [ ] Email admin page browser test (templates/rules/settings/logs tabs)
-- [ ] Mobile responsiveness tests (390px): switchers, homepage builder, admin, checkout
-- [ ] COD/totals/inventory/coupons/permissions regression after route move
-- [ ] Gap analysis vs MASTER_PROMPT
-- Known issue: pre-existing hydration mismatch on announcement bar (SSR has no settings data) — cosmetic, client regenerates
+## Open
+- Stripe: ON HOLD per owner — never ask for onboarding until requested; live card payments disabled.
+- Email delivery: blocked until a verified provider is configured (module built, logs as queued_disabled).
+- Gap analysis delivered; remaining spec items prioritized there (taxes, returns/RMA, guest checkout, import/export, support tickets, etc.).
+- Print-to-PDF for invoices untested; tracking events not verified against real GA4/Meta dashboards.
