@@ -66,9 +66,32 @@ function OrderPage() {
           <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Payment</p><p>Cash on Delivery</p><p className="text-muted-foreground">{o.customer_email}</p></div>
         </div>
         <OrderTimeline orderId={o.id} />
+        <ReturnSection order={o} />
         <Link to="/account" className="mt-10 inline-block text-sm text-gold">← All orders</Link>
       </div>
     </StoreLayout>
+  );
+}
+
+function ReturnSection({ order: o }: { order: { id: string; order_number: number; status: string; customer_email: string; items: unknown } }) {
+  const { data: returns = [] } = useQuery(orderReturnsQuery(o.id));
+  if (o.status !== "delivered" && returns.length === 0) return null;
+  return (
+    <div className="mt-6 space-y-4">
+      {returns.map((r) => (
+        <div key={r.id} className="rounded border bg-card p-4 text-sm">
+          <div className="flex items-center justify-between">
+            <p className="eyebrow text-muted-foreground">Return request</p>
+            <StatusPill value={r.status} />
+          </div>
+          <p className="mt-2">{r.items.map((l) => `${l.name} × ${l.qty}`).join(", ")}</p>
+          {r.admin_note && <p className="mt-1 text-xs text-muted-foreground">Note from our team: {r.admin_note}</p>}
+        </div>
+      ))}
+      {o.status === "delivered" && !returns.some((r) => ["requested", "approved", "received"].includes(r.status)) && (
+        <ReturnRequestForm orderNumber={o.order_number} email={o.customer_email} items={o.items as ReturnLine[]} />
+      )}
+    </div>
   );
 }
 
