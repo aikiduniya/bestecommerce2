@@ -1034,6 +1034,12 @@ export type Database = {
         }
         Returns: string
       }
+      best_seller_ids: {
+        Args: { _limit?: number }
+        Returns: {
+          product_id: string
+        }[]
+      }
       check_coupon: {
         Args: { _code: string; _subtotal: number }
         Returns: Json
