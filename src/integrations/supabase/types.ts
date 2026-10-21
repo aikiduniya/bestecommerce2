@@ -209,6 +209,36 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_snapshots: {
+        Row: {
+          email: string
+          id: string
+          items: Json
+          recovered_order_id: string | null
+          subtotal: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          items?: Json
+          recovered_order_id?: string | null
+          subtotal?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          items?: Json
+          recovered_order_id?: string | null
+          subtotal?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -481,6 +511,42 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_cards: {
+        Row: {
+          balance: number
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          initial_balance: number
+          is_active: boolean
+          note: string | null
+        }
+        Insert: {
+          balance: number
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          initial_balance: number
+          is_active?: boolean
+          note?: string | null
+        }
+        Update: {
+          balance?: number
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          initial_balance?: number
+          is_active?: boolean
+          note?: string | null
+        }
+        Relationships: []
+      }
       homepage_sections: {
         Row: {
           config: Json
@@ -514,6 +580,36 @@ export type Database = {
           title?: string | null
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      loyalty_transactions: {
+        Row: {
+          created_at: string
+          id: number
+          kind: string
+          note: string | null
+          order_id: string | null
+          points: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          kind: string
+          note?: string | null
+          order_id?: string | null
+          points: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          kind?: string
+          note?: string | null
+          order_id?: string | null
+          points?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -687,6 +783,8 @@ export type Database = {
           customer_phone: string | null
           discount_total: number
           fulfillment_status: string
+          gift_card_applied: number
+          gift_card_code: string | null
           guest_token: string | null
           id: string
           items: Json
@@ -695,6 +793,8 @@ export type Database = {
           payment_fee: number
           payment_method: string
           payment_status: string
+          points_discount: number
+          points_redeemed: number
           shipping_address: Json
           shipping_total: number
           shipping_zone_id: string | null
@@ -721,6 +821,8 @@ export type Database = {
           customer_phone?: string | null
           discount_total?: number
           fulfillment_status?: string
+          gift_card_applied?: number
+          gift_card_code?: string | null
           guest_token?: string | null
           id?: string
           items?: Json
@@ -729,6 +831,8 @@ export type Database = {
           payment_fee?: number
           payment_method?: string
           payment_status?: string
+          points_discount?: number
+          points_redeemed?: number
           shipping_address?: Json
           shipping_total?: number
           shipping_zone_id?: string | null
@@ -755,6 +859,8 @@ export type Database = {
           customer_phone?: string | null
           discount_total?: number
           fulfillment_status?: string
+          gift_card_applied?: number
+          gift_card_code?: string | null
           guest_token?: string | null
           id?: string
           items?: Json
@@ -763,6 +869,8 @@ export type Database = {
           payment_fee?: number
           payment_method?: string
           payment_status?: string
+          points_discount?: number
+          points_redeemed?: number
           shipping_address?: Json
           shipping_total?: number
           shipping_zone_id?: string | null
@@ -1095,6 +1203,51 @@ export type Database = {
           },
         ]
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_uses: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string | null
+          referee_id: string
+          referrer_id: string
+          rewarded: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          referee_id: string
+          referrer_id: string
+          rewarded?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          referee_id?: string
+          referrer_id?: string
+          rewarded?: boolean
+        }
+        Relationships: []
+      }
       return_requests: {
         Row: {
           admin_note: string | null
@@ -1341,11 +1494,17 @@ export type Database = {
           id: number
           languages: Json
           logo_url: string | null
+          loyalty_earn_rate: number
+          loyalty_enabled: boolean
+          loyalty_min_redeem: number
+          loyalty_redeem_value: number
           maintenance_mode: boolean
           merchant_center_id: string | null
           meta_pixel_id: string | null
           og_image_url: string | null
           primary_color: string | null
+          referral_enabled: boolean
+          referral_reward_points: number
           reviews_enabled: boolean
           reviews_require_approval: boolean
           seo_description: string | null
@@ -1388,11 +1547,17 @@ export type Database = {
           id?: number
           languages?: Json
           logo_url?: string | null
+          loyalty_earn_rate?: number
+          loyalty_enabled?: boolean
+          loyalty_min_redeem?: number
+          loyalty_redeem_value?: number
           maintenance_mode?: boolean
           merchant_center_id?: string | null
           meta_pixel_id?: string | null
           og_image_url?: string | null
           primary_color?: string | null
+          referral_enabled?: boolean
+          referral_reward_points?: number
           reviews_enabled?: boolean
           reviews_require_approval?: boolean
           seo_description?: string | null
@@ -1435,11 +1600,17 @@ export type Database = {
           id?: number
           languages?: Json
           logo_url?: string | null
+          loyalty_earn_rate?: number
+          loyalty_enabled?: boolean
+          loyalty_min_redeem?: number
+          loyalty_redeem_value?: number
           maintenance_mode?: boolean
           merchant_center_id?: string | null
           meta_pixel_id?: string | null
           og_image_url?: string | null
           primary_color?: string | null
+          referral_enabled?: boolean
+          referral_reward_points?: number
           reviews_enabled?: boolean
           reviews_require_approval?: boolean
           seo_description?: string | null
@@ -1616,6 +1787,7 @@ export type Database = {
         }
         Returns: string
       }
+      apply_referral_code: { Args: { _code: string }; Returns: boolean }
       automatic_discount: {
         Args: { _items: Json; _subtotal: number }
         Returns: Json
@@ -1634,6 +1806,7 @@ export type Database = {
         Args: { _code: string; _subtotal: number }
         Returns: Json
       }
+      check_gift_card: { Args: { _code: string }; Returns: Json }
       coupon_discount: {
         Args: { _code: string; _ship: number; _subtotal: number; _uid: string }
         Returns: Json
@@ -1661,13 +1834,16 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      my_referral_code: { Args: never; Returns: string }
       place_order: {
         Args: {
           _address: Json
           _coupon?: string
           _customer: Json
+          _gift_card?: string
           _items: Json
           _notes?: string
+          _points?: number
           _zone_id: string
         }
         Returns: Json

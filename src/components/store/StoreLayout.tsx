@@ -230,6 +230,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
                 <p className="eyebrow mb-3 text-muted-foreground">{t("footer.information")}</p>
                 <Link to="/{-$lang}/blog" params={lp} className="block py-1 hover:text-gold">{t("footer.journal")}</Link>
                 <a href={lp.lang ? `/${lp.lang}/track` : "/track"} className="block py-1 hover:text-gold">Track your order</a>
+                <a href={lp.lang ? `/${lp.lang}/compare` : "/compare"} className="block py-1 hover:text-gold">Compare products</a>
                 {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/{-$lang}/pages/$slug" params={{ ...lp, slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
               </div>
             </>

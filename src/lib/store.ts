@@ -410,3 +410,64 @@ export const ticketMessagesQuery = (ticketId: string) =>
       return data;
     },
   });
+
+export type GiftCard = Database["public"]["Tables"]["gift_cards"]["Row"];
+export type LoyaltyTx = Database["public"]["Tables"]["loyalty_transactions"]["Row"];
+export type ReferralUse = Database["public"]["Tables"]["referral_uses"]["Row"];
+export type CartSnapshot = Database["public"]["Tables"]["cart_snapshots"]["Row"];
+
+export const giftCardsQuery = queryOptions({
+  queryKey: ["gift-cards"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("gift_cards").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const myLoyaltyQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["loyalty", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("loyalty_transactions").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const adminLoyaltyQuery = queryOptions({
+  queryKey: ["loyalty-admin"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("loyalty_transactions").select("*").order("created_at", { ascending: false }).limit(500);
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const myReferralUsesQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["referral-uses", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("referral_uses").select("*").or(`referrer_id.eq.${userId},referee_id.eq.${userId}`);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const adminReferralsQuery = queryOptions({
+  queryKey: ["referrals-admin"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("referral_uses").select("*").order("created_at", { ascending: false }).limit(500);
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const cartSnapshotsQuery = queryOptions({
+  queryKey: ["cart-snapshots"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("cart_snapshots").select("*").is("recovered_order_id", null).order("updated_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+});
