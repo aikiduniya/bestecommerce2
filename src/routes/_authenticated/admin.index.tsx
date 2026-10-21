@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { DollarSign, Package, ShoppingBag, AlertTriangle, TrendingUp, Users, ArrowUpRight, ArrowDownRight, Plus, TicketPercent, LayoutTemplate, History } from "lucide-react";
 import { ordersQuery, productsQuery, settingsQuery, activityQuery, money, type Order } from "@/lib/store";
-import { PageHeader, StatusPill } from "@/components/admin/PageHeader";
+import { KpiCard, PageHeader, StatusPill } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -85,17 +85,8 @@ function Dashboard() {
       </PageHeader>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((s) => (
-          <Card key={s.label} className="p-5">
-            <div className="flex items-center justify-between">
-              <p className="eyebrow text-muted-foreground">{s.label}</p>
-              <s.icon className="size-4 text-gold" />
-            </div>
-            <p className="mt-3 font-display text-4xl">{s.value}</p>
-            <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              {s.label.startsWith("Revenue") && delta !== null && (s.up ? <ArrowUpRight className="size-3 text-success" /> : <ArrowDownRight className="size-3 text-destructive" />)}
-              {s.sub}
-            </p>
-          </Card>
+          <KpiCard key={s.label} label={s.label} value={s.value} icon={s.icon} tone={s.label === "Low stock" && !s.up ? "warn" : "default"}
+            sub={<>{s.label.startsWith("Revenue") && delta !== null && (s.up ? <ArrowUpRight className="size-3 text-success" /> : <ArrowDownRight className="size-3 text-destructive" />)}{s.sub}</>} />
         ))}
       </div>
 
