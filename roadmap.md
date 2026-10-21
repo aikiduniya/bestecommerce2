@@ -39,3 +39,15 @@
 - [x] Layout tab: header, nav, announcement, banner height/strength, width, spacing, grid, footer
 - [x] Category/brand/collection SEO + alt text; shop/blog page SEO
 - [x] Tested: SEO save/reload, canonical, JSON-LD, sitemap noindex, robots, llms, redirects, mobile/tablet
+
+## Brief 8 — CMS, contact, SMTP, social, header/footer, banner, gallery
+- [ ] S1 DB: page images, contact inbox, FAQs, SMTP profiles, social/WhatsApp/Tawk settings
+- [ ] S2 Legal/CMS draft pages + footer/sitemap
+- [ ] S3 Contact form + admin inbox
+- [ ] S4 FAQ admin + homepage FAQ/About/Contact sections
+- [ ] S5 SMTP admin (encrypted, test, per-notification assignment)
+- [ ] S6 Social links, WhatsApp, Tawk
+- [ ] S7 Header/footer redesign (mega menu, newsletter, socials)
+- [ ] S8 Banner slider (multiple slides, desktop/mobile images) — reference image not uploaded
+- [ ] S9 Product gallery lightbox/zoom
+- [ ] S10 Testing

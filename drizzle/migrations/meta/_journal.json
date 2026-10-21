@@ -218,6 +218,20 @@
       "when": 1792588483731,
       "tag": "0030_taxonomy_seo_and_layout_theme",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792589578316,
+      "tag": "0031_cms_contact_faq_smtp_social",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792589662970,
+      "tag": "0032_contact_notified",
+      "breakpoints": true
     }
   ]
 }

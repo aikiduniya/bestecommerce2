@@ -397,6 +397,54 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_messages: {
+        Row: {
+          admin_reply: string | null
+          created_at: string
+          email: string
+          id: string
+          is_read: boolean
+          message: string
+          name: string
+          notified_at: string | null
+          phone: string | null
+          replied_at: string | null
+          replied_by: string | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          admin_reply?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          is_read?: boolean
+          message: string
+          name: string
+          notified_at?: string | null
+          phone?: string | null
+          replied_at?: string | null
+          replied_by?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          admin_reply?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          name?: string
+          notified_at?: string | null
+          phone?: string | null
+          replied_at?: string | null
+          replied_by?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
       content_translations: {
         Row: {
           entity_id: string
@@ -482,6 +530,7 @@ export type Database = {
           last_attempt_at: string | null
           payload: Json
           recipient_email: string
+          smtp_profile: string | null
           status: string
           subject: string
           template_key: string | null
@@ -495,6 +544,7 @@ export type Database = {
           last_attempt_at?: string | null
           payload?: Json
           recipient_email: string
+          smtp_profile?: string | null
           status: string
           subject: string
           template_key?: string | null
@@ -508,6 +558,7 @@ export type Database = {
           last_attempt_at?: string | null
           payload?: Json
           recipient_email?: string
+          smtp_profile?: string | null
           status?: string
           subject?: string
           template_key?: string | null
@@ -588,6 +639,68 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      faq_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      faqs: {
+        Row: {
+          answer: string
+          category_id: string | null
+          created_at: string
+          id: string
+          is_published: boolean
+          question: string
+          show_on_home: boolean
+          sort_order: number
+        }
+        Insert: {
+          answer: string
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          question: string
+          show_on_home?: boolean
+          sort_order?: number
+        }
+        Update: {
+          answer?: string
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          question?: string
+          show_on_home?: boolean
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faqs_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "faq_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gift_cards: {
         Row: {
@@ -748,6 +861,24 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       notification_rules: {
         Row: {
           created_at: string
@@ -755,6 +886,7 @@ export type Database = {
           id: string
           is_enabled: boolean
           recipient: string
+          smtp_profile: string
           template_key: string | null
         }
         Insert: {
@@ -763,6 +895,7 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           recipient?: string
+          smtp_profile?: string
           template_key?: string | null
         }
         Update: {
@@ -771,6 +904,7 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           recipient?: string
+          smtp_profile?: string
           template_key?: string | null
         }
         Relationships: [
@@ -981,6 +1115,9 @@ export type Database = {
           canonical_url: string | null
           created_at: string
           id: string
+          image_alt: string | null
+          image_url: string | null
+          is_draft_sample: boolean
           is_published: boolean
           meta_keywords: string | null
           og_image_url: string | null
@@ -998,6 +1135,9 @@ export type Database = {
           canonical_url?: string | null
           created_at?: string
           id?: string
+          image_alt?: string | null
+          image_url?: string | null
+          is_draft_sample?: boolean
           is_published?: boolean
           meta_keywords?: string | null
           og_image_url?: string | null
@@ -1015,6 +1155,9 @@ export type Database = {
           canonical_url?: string | null
           created_at?: string
           id?: string
+          image_alt?: string | null
+          image_url?: string | null
+          is_draft_sample?: boolean
           is_published?: boolean
           meta_keywords?: string | null
           og_image_url?: string | null
@@ -1519,6 +1662,54 @@ export type Database = {
         }
         Relationships: []
       }
+      smtp_profiles: {
+        Row: {
+          encryption: string
+          host: string | null
+          is_enabled: boolean
+          last_test_at: string | null
+          last_test_error: string | null
+          last_test_ok: boolean | null
+          password_encrypted: string | null
+          port: number
+          purpose: string
+          sender_email: string | null
+          sender_name: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          encryption?: string
+          host?: string | null
+          is_enabled?: boolean
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_ok?: boolean | null
+          password_encrypted?: string | null
+          port?: number
+          purpose: string
+          sender_email?: string | null
+          sender_name?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          encryption?: string
+          host?: string | null
+          is_enabled?: boolean
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_ok?: boolean | null
+          password_encrypted?: string | null
+          port?: number
+          purpose?: string
+          sender_email?: string | null
+          sender_name?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       staff_members: {
         Row: {
           created_at: string
@@ -1621,6 +1812,9 @@ export type Database = {
           cod_max_order: number | null
           cod_min_order: number | null
           cod_requires_confirmation: boolean
+          contact_address: string | null
+          contact_hours: string | null
+          contact_notify_email: string | null
           container_width: string
           cookie_consent_enabled: boolean
           cookie_consent_text: string
@@ -1655,6 +1849,8 @@ export type Database = {
           merchant_center_id: string | null
           meta_pixel_id: string | null
           nav_style: string
+          newsletter_enabled: boolean
+          newsletter_text: string | null
           og_image_url: string | null
           page_seo: Json
           primary_color: string | null
@@ -1667,18 +1863,27 @@ export type Database = {
           section_spacing: string
           seo_description: string | null
           seo_title: string | null
+          social_links: Json
           store_name: string
           stripe_enabled: boolean
           support_email: string | null
           support_phone: string | null
           surface_color: string | null
           tagline: string | null
+          tawk_enabled: boolean
+          tawk_property_id: string | null
+          tawk_widget_id: string | null
           tax_enabled: boolean
           tax_inclusive: boolean
           tax_label: string
           theme_preset: string
           translations: Json
           updated_at: string
+          whatsapp_enabled: boolean
+          whatsapp_message: string | null
+          whatsapp_mobile: boolean
+          whatsapp_number: string | null
+          whatsapp_position: string
         }
         Insert: {
           accent_color?: string | null
@@ -1696,6 +1901,9 @@ export type Database = {
           cod_max_order?: number | null
           cod_min_order?: number | null
           cod_requires_confirmation?: boolean
+          contact_address?: string | null
+          contact_hours?: string | null
+          contact_notify_email?: string | null
           container_width?: string
           cookie_consent_enabled?: boolean
           cookie_consent_text?: string
@@ -1730,6 +1938,8 @@ export type Database = {
           merchant_center_id?: string | null
           meta_pixel_id?: string | null
           nav_style?: string
+          newsletter_enabled?: boolean
+          newsletter_text?: string | null
           og_image_url?: string | null
           page_seo?: Json
           primary_color?: string | null
@@ -1742,18 +1952,27 @@ export type Database = {
           section_spacing?: string
           seo_description?: string | null
           seo_title?: string | null
+          social_links?: Json
           store_name?: string
           stripe_enabled?: boolean
           support_email?: string | null
           support_phone?: string | null
           surface_color?: string | null
           tagline?: string | null
+          tawk_enabled?: boolean
+          tawk_property_id?: string | null
+          tawk_widget_id?: string | null
           tax_enabled?: boolean
           tax_inclusive?: boolean
           tax_label?: string
           theme_preset?: string
           translations?: Json
           updated_at?: string
+          whatsapp_enabled?: boolean
+          whatsapp_message?: string | null
+          whatsapp_mobile?: boolean
+          whatsapp_number?: string | null
+          whatsapp_position?: string
         }
         Update: {
           accent_color?: string | null
@@ -1771,6 +1990,9 @@ export type Database = {
           cod_max_order?: number | null
           cod_min_order?: number | null
           cod_requires_confirmation?: boolean
+          contact_address?: string | null
+          contact_hours?: string | null
+          contact_notify_email?: string | null
           container_width?: string
           cookie_consent_enabled?: boolean
           cookie_consent_text?: string
@@ -1805,6 +2027,8 @@ export type Database = {
           merchant_center_id?: string | null
           meta_pixel_id?: string | null
           nav_style?: string
+          newsletter_enabled?: boolean
+          newsletter_text?: string | null
           og_image_url?: string | null
           page_seo?: Json
           primary_color?: string | null
@@ -1817,18 +2041,27 @@ export type Database = {
           section_spacing?: string
           seo_description?: string | null
           seo_title?: string | null
+          social_links?: Json
           store_name?: string
           stripe_enabled?: boolean
           support_email?: string | null
           support_phone?: string | null
           surface_color?: string | null
           tagline?: string | null
+          tawk_enabled?: boolean
+          tawk_property_id?: string | null
+          tawk_widget_id?: string | null
           tax_enabled?: boolean
           tax_inclusive?: boolean
           tax_label?: string
           theme_preset?: string
           translations?: Json
           updated_at?: string
+          whatsapp_enabled?: boolean
+          whatsapp_message?: string | null
+          whatsapp_mobile?: boolean
+          whatsapp_number?: string | null
+          whatsapp_position?: string
         }
         Relationships: []
       }
@@ -2055,6 +2288,16 @@ export type Database = {
       process_return: {
         Args: { _action: string; _id: string; _note: string; _restock: boolean }
         Returns: Json
+      }
+      submit_contact: {
+        Args: {
+          _email: string
+          _message: string
+          _name: string
+          _phone: string
+          _subject: string
+        }
+        Returns: string
       }
       submit_return: {
         Args: {

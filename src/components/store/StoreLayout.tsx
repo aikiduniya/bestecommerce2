@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
-import { Heart, Search, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
+import { Heart, Search, ShoppingBag, User, Menu, X, ChevronDown, Phone, Mail, MapPin, Truck, PackageSearch, BookOpen, Scale, ArrowRight, Store } from "lucide-react";
 import { categoriesQuery, pagesQuery, productsQuery, settingsQuery } from "@/lib/store";
 import { menusQuery, navItems } from "@/lib/sections";
 import { useCart } from "@/lib/cart";
@@ -9,6 +9,8 @@ import { useIsStaff, useSessionUser } from "@/lib/auth";
 import { extraCurrencies, initDisplayCurrency, setDisplayCurrency, useDisplayCurrency } from "@/lib/currency";
 import { DEFAULT_LANG, extraLanguages, initLang, langDir, langUrl, setLang, translate, useLang, useLangParam } from "@/lib/i18n";
 import { CookieConsent } from "@/components/store/CookieConsent";
+import { SocialIcons, TawkChat, WhatsAppButton } from "@/components/store/SocialWidgets";
+import { NewsletterForm } from "@/components/store/NewsletterForm";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s } = useQuery(settingsQuery);
@@ -122,6 +124,20 @@ export function StoreLayout({ children }: { children: ReactNode }) {
       {mounted && s?.announcement_enabled && s.announcement && (
         <div className={`py-2 text-center text-xs tracking-wide ${s.announcement_style === "gold" ? "bg-gold text-accent-foreground" : s.announcement_style === "outline" ? "border-b border-gold/40 bg-background text-foreground" : "bg-primary text-primary-foreground"}`}>{s.announcement}</div>
       )}
+      {mounted && (s?.support_phone || s?.support_email) && (
+        <div className="hidden border-b bg-secondary/60 text-xs text-muted-foreground md:block">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-1.5">
+            <div className="flex items-center gap-5">
+              {s?.support_phone && <span className="flex items-center gap-1.5"><Phone className="size-3.5 text-gold" />{s.support_phone}</span>}
+              {s?.support_email && <a href={`mailto:${s.support_email}`} className="flex items-center gap-1.5 hover:text-gold"><Mail className="size-3.5 text-gold" />{s.support_email}</a>}
+            </div>
+            <div className="flex items-center gap-5">
+              <a href={lp.lang ? `/${lp.lang}/track` : "/track"} className="flex items-center gap-1.5 hover:text-gold"><Truck className="size-3.5" />Track order</a>
+              <SocialIcons className="[&_a]:border-0 [&_a]:p-0.5" />
+            </div>
+          </div>
+        </div>
+      )}
       <header data-tone={mounted ? (s?.header_tone ?? "light") : "light"} className={`store-header z-40 border-b bg-background/90 backdrop-blur ${!mounted || s?.header_sticky !== false ? "sticky top-0" : ""}`}>
         <div className={`mx-auto flex max-w-7xl items-center gap-6 px-4 md:px-6 ${mounted && s?.header_style === "centered" ? "flex-wrap py-3 md:justify-center" : mounted && s?.header_style === "minimal" ? "py-3" : "py-4"}`}>
           <button className="md:hidden" onClick={() => setOpen(!open)} aria-label={t("nav.menu")}>{open ? <X /> : <Menu />}</button>
@@ -146,10 +162,28 @@ export function StoreLayout({ children }: { children: ReactNode }) {
               )
             ) : (
               <>
-                <Link to="/{-$lang}/shop" params={lp} className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>{t("nav.shop_all")}</Link>
-                {topCats.slice(0, 6).map((c) => (
+                <div className="group relative">
+                  <Link to="/{-$lang}/shop" params={lp} className="flex items-center gap-1 hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}><Store className="size-4" />{t("nav.shop_all")}{topCats.length > 0 && <ChevronDown className="size-3.5" />}</Link>
+                  {topCats.length > 0 && (
+                    <div className="invisible absolute left-1/2 top-full z-50 w-[min(90vw,46rem)] -translate-x-1/2 pt-4 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                      <div className="grid grid-cols-3 gap-6 rounded border bg-card p-6 text-card-foreground shadow-elegant">
+                        {topCats.slice(0, 6).map((c) => (
+                          <div key={c.id}>
+                            <Link to="/{-$lang}/shop" params={lp} search={{ category: c.slug }} className="font-display text-lg hover:text-gold">{c.name}</Link>
+                            <div className="mt-2 space-y-1">
+                              {cats.filter((x) => x.is_active && x.parent_id === c.id).slice(0, 5).map((x) => <Link key={x.id} to="/{-$lang}/shop" params={lp} search={{ category: x.slug }} className="block text-xs text-muted-foreground hover:text-gold">{x.name}</Link>)}
+                            </div>
+                          </div>
+                        ))}
+                        <Link to="/{-$lang}/shop" params={lp} className="col-span-3 flex items-center gap-2 border-t pt-4 text-xs uppercase tracking-widest text-gold">{t("nav.shop_all")} <ArrowRight className="size-3.5" /></Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {topCats.slice(0, 4).map((c) => (
                   <Link key={c.id} to="/{-$lang}/shop" params={lp} search={{ category: c.slug }} className="hover:text-gold">{c.name}</Link>
                 ))}
+                <Link to="/{-$lang}/blog" params={lp} className="flex items-center gap-1 hover:text-gold"><BookOpen className="size-4" />{t("footer.journal")}</Link>
               </>
             )}
           </nav>
@@ -179,9 +213,10 @@ export function StoreLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
         {open && (
-          <div className="space-y-3 border-t px-4 py-4 md:hidden">
+          <div className="max-h-[80vh] space-y-3 overflow-y-auto border-t px-4 py-4 md:hidden">
             {langPicker}
             {currencyPicker}
+            <SocialIcons />
             <form onSubmit={search}><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("nav.search_products")} className="h-10 w-full rounded border bg-card px-3 text-sm" /></form>
             {headerItems.length > 0 ? (
               headerItems.map((item, i) => (
@@ -192,8 +227,10 @@ export function StoreLayout({ children }: { children: ReactNode }) {
               ))
             ) : (
               <>
-                <Link to="/{-$lang}/shop" params={lp} className="block py-1" onClick={() => setOpen(false)}>{t("nav.shop_all")}</Link>
-                {topCats.map((c) => <Link key={c.id} to="/{-$lang}/shop" params={lp} search={{ category: c.slug }} className="block py-1" onClick={() => setOpen(false)}>{c.name}</Link>)}
+                <Link to="/{-$lang}/shop" params={lp} className="flex items-center gap-2 py-2" onClick={() => setOpen(false)}><Store className="size-4 text-gold" />{t("nav.shop_all")}</Link>
+                {topCats.map((c) => <Link key={c.id} to="/{-$lang}/shop" params={lp} search={{ category: c.slug }} className="block py-2 pl-6" onClick={() => setOpen(false)}>{c.name}</Link>)}
+                <Link to="/{-$lang}/blog" params={lp} className="flex items-center gap-2 py-2" onClick={() => setOpen(false)}><BookOpen className="size-4 text-gold" />{t("footer.journal")}</Link>
+                <a href={lp.lang ? `/${lp.lang}/track` : "/track"} className="flex items-center gap-2 py-2"><Truck className="size-4 text-gold" />Track order</a>
               </>
             )}
           </div>
@@ -201,7 +238,17 @@ export function StoreLayout({ children }: { children: ReactNode }) {
       </header>
       <main className="flex-1" key={`${dc?.code ?? baseCurrency}-${lang ?? DEFAULT_LANG.code}`}>{children}</main>
       <CookieConsent />
+      <WhatsAppButton />
+      <TawkChat />
       <footer data-style={mounted ? (s?.footer_style ?? "columns") : "columns"} className="store-footer mt-20 border-t bg-card">
+        {mounted && s?.newsletter_enabled && s.footer_style !== "minimal" && (
+          <div className="border-b">
+            <div className="mx-auto grid max-w-7xl items-center gap-6 px-6 py-10 md:grid-cols-2">
+              <div><p className="eyebrow text-gold">Newsletter</p><p className="mt-2 font-display text-3xl">{s.newsletter_text || "New arrivals and private offers, first."}</p></div>
+              <NewsletterForm compact />
+            </div>
+          </div>
+        )}
         {mounted && s?.footer_style === "minimal" ? (
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm">
             <p className="font-display text-xl">{s?.store_name}</p>
@@ -213,8 +260,9 @@ export function StoreLayout({ children }: { children: ReactNode }) {
         ) : (
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
           <div>
-            <p className="font-display text-2xl">{mounted ? s?.store_name : ""}</p>
+            <p className="font-display text-3xl">{mounted ? s?.store_name : ""}</p>
             <p className="mt-2 text-sm text-muted-foreground">{mounted ? s?.tagline : ""}</p>
+            <SocialIcons className="mt-5" />
           </div>
           {footerItems.length > 0 ? (
             footerItems.map((col, i) => (
@@ -238,16 +286,17 @@ export function StoreLayout({ children }: { children: ReactNode }) {
               <div className="text-sm">
                 <p className="eyebrow mb-3 text-muted-foreground">{t("footer.information")}</p>
                 <Link to="/{-$lang}/blog" params={lp} className="block py-1 hover:text-gold">{t("footer.journal")}</Link>
-                <a href={lp.lang ? `/${lp.lang}/track` : "/track"} className="block py-1 hover:text-gold">Track your order</a>
-                <a href={lp.lang ? `/${lp.lang}/compare` : "/compare"} className="block py-1 hover:text-gold">Compare products</a>
+                <a href={lp.lang ? `/${lp.lang}/track` : "/track"} className="flex items-center gap-2 py-1 hover:text-gold"><PackageSearch className="size-3.5" />Track your order</a>
+                <a href={lp.lang ? `/${lp.lang}/compare` : "/compare"} className="flex items-center gap-2 py-1 hover:text-gold"><Scale className="size-3.5" />Compare products</a>
                 {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/{-$lang}/pages/$slug" params={{ ...lp, slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
               </div>
             </>
           )}
           <div className="text-sm">
             <p className="eyebrow mb-3 text-muted-foreground">{t("footer.contact")}</p>
-            {mounted && s?.support_email && <p>{s.support_email}</p>}
-            {mounted && s?.support_phone && <p>{s.support_phone}</p>}
+            {mounted && s?.support_email && <a href={`mailto:${s.support_email}`} className="flex items-center gap-2 py-1 hover:text-gold"><Mail className="size-3.5 text-gold" />{s.support_email}</a>}
+            {mounted && s?.support_phone && <p className="flex items-center gap-2 py-1"><Phone className="size-3.5 text-gold" />{s.support_phone}</p>}
+            {mounted && s?.contact_address && <p className="flex items-start gap-2 whitespace-pre-line py-1"><MapPin className="mt-0.5 size-3.5 shrink-0 text-gold" />{s.contact_address}</p>}
           </div>
         </div>
         )}

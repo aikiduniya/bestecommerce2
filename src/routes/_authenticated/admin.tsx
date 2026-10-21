@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tansta
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail, RotateCcw, BellRing, LifeBuoy, Gift, Star, ShoppingCart,
+  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail, RotateCcw, BellRing, LifeBuoy, Gift, Star, ShoppingCart, Inbox, HelpCircle, ServerCog,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/store";
@@ -48,6 +48,7 @@ const groups = [
       { perm: "orders", to: "/admin/orders", label: "Orders", icon: ShoppingBag },
       { perm: "orders", to: "/admin/returns", label: "Returns", icon: RotateCcw },
       { perm: "customers", to: "/admin/customers", label: "Customers", icon: Users },
+      { perm: "customers", to: "/admin/inbox", label: "Inbox", icon: Inbox },
       { perm: "customers", to: "/admin/tickets", label: "Support tickets", icon: LifeBuoy },
       { perm: "orders", to: "/admin/carts", label: "Abandoned carts", icon: ShoppingCart },
       { perm: "admin", to: "/admin/shipping", label: "Shipping", icon: Truck },
@@ -65,6 +66,7 @@ const groups = [
       { perm: "content", to: "/admin/reviews", label: "Reviews & Q&A", icon: MessageSquareText },
       { perm: "content", to: "/admin/pages", label: "Pages", icon: FileText },
       { perm: "content", to: "/admin/blog", label: "Blog", icon: Newspaper },
+      { perm: "content", to: "/admin/faqs", label: "FAQs", icon: HelpCircle },
       { perm: "content", to: "/admin/translations", label: "Translations", icon: Globe },
     ],
   },
@@ -76,6 +78,7 @@ const groups = [
       { perm: "admin", to: "/admin/staff", label: "Staff & roles", icon: ShieldCheck },
       { perm: "admin", to: "/admin/activity", label: "Activity log", icon: History },
       { perm: "admin", to: "/admin/emails", label: "Emails", icon: Mail },
+      { perm: "admin", to: "/admin/smtp", label: "Email settings (SMTP)", icon: ServerCog },
       { perm: "admin", to: "/admin/settings", label: "Settings", icon: Settings },
     ],
   },

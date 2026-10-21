@@ -14,6 +14,11 @@ import { bestSellersQuery, type HomeSection } from "@/lib/sections";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Prose } from "@/components/store/Prose";
+import { HeroSlider, type Slide } from "@/components/store/HeroSlider";
+import { NewsletterForm } from "@/components/store/NewsletterForm";
+import { FaqList } from "@/components/store/FaqList";
+import { ContactForm } from "@/components/store/ContactForm";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
 
 type Cfg = any;
 
@@ -53,19 +58,45 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
   function render(sec: HomeSection) {
     const c = (sec.config ?? {}) as Cfg;
     switch (sec.type) {
-      case "hero":
+      case "hero": {
+        const slides: Slide[] = Array.isArray(c.slides) && c.slides.length
+          ? c.slides
+          : [{ eyebrow: c.eyebrow || s?.hero_eyebrow || "", title: sec.title || s?.tagline || "", description: sec.subtitle ?? "", image_url: c.image_url || s?.hero_image_url || "", image_alt: c.image_alt || s?.hero_image_alt || "", cta_label: c.cta_label, cta_link: c.cta_link, overlay: s?.hero_overlay != null ? 100 - s.hero_overlay : 55 }];
+        return <HeroSlider slides={slides} layout={c.layout ?? (Array.isArray(c.slides) && c.slides.length ? "split" : "full")} height={c.height || s?.hero_height || "tall"} autoplay={Number(c.autoplay ?? 6)} />;
+      }
+      case "about":
         return (
-          <section className="bg-hero relative overflow-hidden text-primary-foreground">
-            {(c.image_url || s?.hero_image_url) && <img src={c.image_url || s?.hero_image_url} alt={(c.image_alt as string | undefined) || s?.hero_image_alt || ""} className="hero-img absolute inset-0 size-full object-cover" />}
-            <div className="hero-pad relative mx-auto max-w-7xl px-6">
-              {(c.eyebrow || s?.hero_eyebrow) && <p className="eyebrow text-gold">{c.eyebrow || s?.hero_eyebrow}</p>}
-              <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{sec.title || s?.tagline || " "}</h1>
-              {sec.subtitle && <p className="mt-4 max-w-xl text-lg opacity-80">{sec.subtitle}</p>}
-              {c.cta_label && (
-                <Button variant="hero" size="lg" className="mt-10" asChild>
-                  <Link to={c.cta_link || "/shop"}>{c.cta_label} <ArrowRight /></Link>
-                </Button>
-              )}
+          <section className="mx-auto max-w-7xl px-6 pt-20">
+            <div className={`grid items-center gap-10 md:grid-cols-2 ${c.image_side === "right" ? "" : "md:[&>*:first-child]:order-2"}`}>
+              <div>
+                {c.eyebrow && <p className="eyebrow flex items-center gap-3 text-gold"><span className="h-px w-10 bg-gold" />{c.eyebrow}</p>}
+                {sec.title && <h2 className="mt-3 text-5xl">{sec.title}</h2>}
+                {sec.subtitle && <p className="mt-3 font-display text-xl italic text-muted-foreground">{sec.subtitle}</p>}
+                {c.body && <div className="mt-6"><Prose text={c.body} /></div>}
+                {c.cta_label && <Button variant="gold" size="lg" className="mt-8" asChild><a href={c.cta_link || "/pages/about"}>{c.cta_label} <ArrowRight /></a></Button>}
+              </div>
+              {c.image_url ? <img src={c.image_url} alt={c.image_alt || sec.title || ""} loading="lazy" className="aspect-[4/5] w-full rounded-sm border border-gold/30 object-cover shadow-elegant" /> : <div className="aspect-[4/5] rounded-sm bg-secondary" />}
+            </div>
+          </section>
+        );
+      case "contact":
+        return (
+          <section className="mx-auto max-w-7xl px-6 pt-20">
+            <div className="grid gap-10 rounded border bg-card p-6 md:grid-cols-[1fr_1.4fr] md:p-12">
+              <div>
+                <p className="eyebrow text-gold">{c.eyebrow || "Contact"}</p>
+                <h2 className="mt-2 text-5xl">{sec.title ?? "Get in touch"}</h2>
+                {sec.subtitle && <p className="mt-3 text-muted-foreground">{sec.subtitle}</p>}
+                <div className="mt-8 space-y-3 text-sm">
+                  {s?.support_email && <a href={`mailto:${s.support_email}`} className="flex items-center gap-3 hover:text-gold"><Mail className="size-4 text-gold" />{s.support_email}</a>}
+                  {s?.support_phone && <p className="flex items-center gap-3"><Phone className="size-4 text-gold" />{s.support_phone}</p>}
+                  {s?.contact_address && <p className="flex items-start gap-3 whitespace-pre-line"><MapPin className="mt-0.5 size-4 text-gold" />{s.contact_address}</p>}
+                  {s?.contact_hours && <p className="flex items-start gap-3 whitespace-pre-line"><Clock className="mt-0.5 size-4 text-gold" />{s.contact_hours}</p>}
+                </div>
+              </div>
+              {c.show_form === false ? (
+                <div className="flex items-center"><Button variant="gold" size="lg" asChild><a href="/pages/contact">{c.cta_label || "Contact us"} <ArrowRight /></a></Button></div>
+              ) : <ContactForm />}
             </div>
           </section>
         );
@@ -212,17 +243,7 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
             <div className="rounded border bg-card px-6 py-14 text-center">
               <h2 className="text-4xl">{sec.title ?? "Stay in the loop"}</h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">{sec.subtitle ?? c.note}</p>
-              <form
-                className="mx-auto mt-6 flex max-w-md gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const input = e.currentTarget.querySelector("input");
-                  if (input?.value) { toast.success("Thank you for subscribing!"); input.value = ""; }
-                }}
-              >
-                <input type="email" required placeholder="Your email address" className="h-11 flex-1 rounded border bg-background px-4 text-sm outline-none focus:border-gold" />
-                <Button type="submit">{c.cta_label || "Subscribe"}</Button>
-              </form>
+              <NewsletterForm cta={c.cta_label || "Subscribe"} />
             </div>
           </section>
         );
@@ -261,6 +282,15 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
         );
       }
       case "faq": {
+        if (c.source === "db") {
+          return (
+            <section className="mx-auto max-w-3xl px-6 pt-20">
+              <Head eyebrow="FAQ" title={sec.title ?? "Frequently asked questions"} sub={sec.subtitle} />
+              <FaqList homeOnly limit={Number(c.count) || 8} />
+              <a href="/pages/faqs" className="mt-6 inline-flex items-center gap-2 text-sm text-gold">All questions <ArrowRight className="size-4" /></a>
+            </section>
+          );
+        }
         const items: { q: string; a: string }[] = Array.isArray(c.items) ? c.items : [];
         if (!items.length) return null;
         return (
