@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { money, optionLabel, settingsQuery, zonesQuery } from "@/lib/store";
 import { useCart } from "@/lib/cart";
+import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
 import { useSessionUser } from "@/lib/auth";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,15 @@ function Checkout() {
   const cur = s?.currency;
 
   useEffect(() => { if (user?.email) setF((x) => ({ ...x, email: x.email || user.email! })); }, [user]);
+
+  const trackItems = cart.items.map((i) => ({ id: i.product_id, name: i.name, price: i.price, qty: i.qty, variant: i.options ? Object.values(i.options).join(" / ") : undefined }));
+  const began = useState(() => false)[0];
+  useEffect(() => {
+    if (!began && user && cart.items.length > 0) {
+      trackBeginCheckout(trackItems, cart.subtotal, cur);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, cart.items.length > 0]);
 
   const country = f.country.trim().toUpperCase();
   const available = zones.filter((z) => z.is_active && (z.countries.length === 0 || z.countries.includes("*") || (country && z.countries.includes(country))));
