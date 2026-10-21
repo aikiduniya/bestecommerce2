@@ -167,7 +167,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
           </div>
         )}
       </header>
-      <main className="flex-1" key={dc?.code ?? baseCurrency}>{children}</main>
+      <main className="flex-1" key={`${dc?.code ?? baseCurrency}-${lang ?? DEFAULT_LANG.code}`}>{children}</main>
       <footer className="mt-20 border-t bg-card">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
           <div>
@@ -190,18 +190,18 @@ export function StoreLayout({ children }: { children: ReactNode }) {
           ) : (
             <>
               <div className="text-sm">
-                <p className="eyebrow mb-3 text-muted-foreground">Shop</p>
+                <p className="eyebrow mb-3 text-muted-foreground">{t("footer.shop")}</p>
                 {topCats.slice(0, 5).map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1 hover:text-gold">{c.name}</Link>)}
               </div>
               <div className="text-sm">
-                <p className="eyebrow mb-3 text-muted-foreground">Information</p>
-                <Link to="/blog" className="block py-1 hover:text-gold">Journal</Link>
+                <p className="eyebrow mb-3 text-muted-foreground">{t("footer.information")}</p>
+                <Link to="/blog" className="block py-1 hover:text-gold">{t("footer.journal")}</Link>
                 {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/pages/$slug" params={{ slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
               </div>
             </>
           )}
           <div className="text-sm">
-            <p className="eyebrow mb-3 text-muted-foreground">Contact</p>
+            <p className="eyebrow mb-3 text-muted-foreground">{t("footer.contact")}</p>
             {s?.support_email && <p>{s.support_email}</p>}
             {s?.support_phone && <p>{s.support_phone}</p>}
           </div>
