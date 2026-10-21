@@ -42,3 +42,15 @@
 - [ ] Mobile responsiveness tests: language/currency switchers, homepage builder, admin dashboard, checkout
 - [ ] Regression: COD checkout, totals, inventory, coupons, permissions
 - [ ] Gap analysis vs MASTER_PROMPT
+
+## Phase 4B completion work order — status update
+- [x] DB: content_translations + email module migrations (0019, 0020)
+- [x] Translations library + admin Translations editor (/admin/translations)
+- [x] Email module: lib, send pipeline (delivery disabled until provider verified), admin Emails page (/admin/emails), order emails wired into checkout
+- [x] Language-prefixed URLs (/{-$lang}/...) for all 8 storefront routes + hreflang tags + translated-slug resolution (client + SEO server fns)
+- [x] Browser-verified: /ur/shop RTL + hreflang + translated product name; /ur/product/<translated-slug> resolves with translated title; /xx/shop → 404; typecheck+build clean
+- [ ] Email admin page browser test (templates/rules/settings/logs tabs)
+- [ ] Mobile responsiveness tests (390px): switchers, homepage builder, admin, checkout
+- [ ] COD/totals/inventory/coupons/permissions regression after route move
+- [ ] Gap analysis vs MASTER_PROMPT
+- Known issue: pre-existing hydration mismatch on announcement bar (SSR has no settings data) — cosmetic, client regenerates
