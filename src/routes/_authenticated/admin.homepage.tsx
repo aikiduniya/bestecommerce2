@@ -223,6 +223,11 @@ function EditDialog({ section, onClose, onSaved }: { section: HomeSection; onClo
   );
 }
 
+/** Single-image adapter over the multi-image ImagePicker. */
+function SingleImage({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return <ImagePicker multiple={false} value={value ? [value] : []} onChange={(arr) => onChange(arr[0] ?? "")} />;
+}
+
 function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: string, v: unknown) => void }) {
   const { data: cols = [] } = useQuery(collectionsQuery);
   const num = (k: string, label: string) => (
@@ -245,7 +250,7 @@ function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: str
           {txt("eyebrow", "Eyebrow text", "e.g. New season")}
           <div>
             <label className="text-xs font-medium">Background image</label>
-            <ImagePicker value={cfg.image_url ?? ""} onChange={(v) => set("image_url", v)} />
+            <SingleImage value={cfg.image_url ?? ""} onChange={(v) => set("image_url", v)} />
           </div>
           {txt("cta_label", "Button label", "Shop now")}
           {txt("cta_link", "Button link", "/shop")}
@@ -277,7 +282,7 @@ function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: str
         <>
           <div>
             <label className="text-xs font-medium">Background image</label>
-            <ImagePicker value={cfg.image_url ?? ""} onChange={(v) => set("image_url", v)} />
+            <SingleImage value={cfg.image_url ?? ""} onChange={(v) => set("image_url", v)} />
           </div>
           {txt("cta_label", "Button label")}
           {txt("cta_link", "Button link", "/shop")}
@@ -307,7 +312,7 @@ function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: str
         <>
           <div>
             <label className="text-xs font-medium">Image</label>
-            <ImagePicker value={cfg.image_url ?? ""} onChange={(v) => set("image_url", v)} />
+            <SingleImage value={cfg.image_url ?? ""} onChange={(v) => set("image_url", v)} />
           </div>
           {txt("link", "Link when clicked (optional)", "/shop")}
         </>
@@ -318,7 +323,7 @@ function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: str
           {txt("video_url", "Video URL", "YouTube link or .mp4 URL")}
           <div>
             <label className="text-xs font-medium">Poster image (mp4 only)</label>
-            <ImagePicker value={cfg.poster ?? ""} onChange={(v) => set("poster", v)} />
+            <SingleImage value={cfg.poster ?? ""} onChange={(v) => set("poster", v)} />
           </div>
         </>
       );
