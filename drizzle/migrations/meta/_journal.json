@@ -64,6 +64,13 @@
       "when": 1792567058819,
       "tag": "0008_coupon_restore_on_cancel",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792567117973,
+      "tag": "0009_coupon_atomic_usage_guard",
+      "breakpoints": true
     }
   ]
 }
