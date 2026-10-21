@@ -8,6 +8,7 @@ import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
 import { extraCurrencies, initDisplayCurrency, setDisplayCurrency, useDisplayCurrency } from "@/lib/currency";
 import { DEFAULT_LANG, extraLanguages, initLang, langDir, langUrl, setLang, translate, useLang, useLangParam } from "@/lib/i18n";
+import { CookieConsent } from "@/components/store/CookieConsent";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s } = useQuery(settingsQuery);
@@ -199,6 +200,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
         )}
       </header>
       <main className="flex-1" key={`${dc?.code ?? baseCurrency}-${lang ?? DEFAULT_LANG.code}`}>{children}</main>
+      <CookieConsent />
       <footer className="mt-20 border-t bg-card">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
           <div>

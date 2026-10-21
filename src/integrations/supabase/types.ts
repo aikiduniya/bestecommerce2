@@ -1281,6 +1281,38 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_alerts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          notified_at: string | null
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          notified_at?: string | null
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          notified_at?: string | null
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_settings: {
         Row: {
           accent_color: string | null
@@ -1293,6 +1325,8 @@ export type Database = {
           cod_max_order: number | null
           cod_min_order: number | null
           cod_requires_confirmation: boolean
+          cookie_consent_enabled: boolean
+          cookie_consent_text: string
           currencies: Json
           currency: string
           favicon_url: string | null
@@ -1338,6 +1372,8 @@ export type Database = {
           cod_max_order?: number | null
           cod_min_order?: number | null
           cod_requires_confirmation?: boolean
+          cookie_consent_enabled?: boolean
+          cookie_consent_text?: string
           currencies?: Json
           currency?: string
           favicon_url?: string | null
@@ -1383,6 +1419,8 @@ export type Database = {
           cod_max_order?: number | null
           cod_min_order?: number | null
           cod_requires_confirmation?: boolean
+          cookie_consent_enabled?: boolean
+          cookie_consent_text?: string
           currencies?: Json
           currency?: string
           favicon_url?: string | null
@@ -1419,6 +1457,39 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          priority: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          priority?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          priority?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       tax_rates: {
         Row: {
           applies_to_shipping: boolean
@@ -1451,6 +1522,41 @@ export type Database = {
           rate?: number
         }
         Relationships: []
+      }
+      ticket_messages: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          is_staff: boolean
+          ticket_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          is_staff?: boolean
+          ticket_id: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          is_staff?: boolean
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

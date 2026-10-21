@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MfaSettings } from "@/components/MfaSettings";
 import { AddressesTab } from "@/components/AddressesTab";
+import { SupportTab } from "@/components/SupportTab";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: "My account" }, { name: "robots", content: "noindex" }] }),
@@ -57,6 +58,7 @@ function Account() {
             <TabsTrigger value="orders">Orders ({orders.length})</TabsTrigger>
             <TabsTrigger value="wishlist">Wishlist ({wished.length})</TabsTrigger>
             <TabsTrigger value="addresses">Addresses</TabsTrigger>
+            <TabsTrigger value="support">Support</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
           <TabsContent value="orders" className="mt-6">
@@ -82,6 +84,9 @@ function Account() {
           </TabsContent>
           <TabsContent value="addresses" className="mt-6">
             <AddressesTab userId={user.id} />
+          </TabsContent>
+          <TabsContent value="support" className="mt-6">
+            <SupportTab userId={user.id} email={user.email ?? ""} />
           </TabsContent>
           <TabsContent value="security" className="mt-6">
             <MfaSettings />

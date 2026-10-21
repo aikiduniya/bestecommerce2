@@ -2,11 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Copy, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Copy, Package, Download, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   brandsQuery, categoriesQuery, collectionsQuery, productCollectionsQuery, productsQuery, settingsQuery,
-  money, optionsOf, slugify, type Product, type ProductOption,
+  money, optionsOf, slugify, downloadCsv, parseCsv, type Product, type ProductOption,
 } from "@/lib/store";
 import { PageHeader, StatusPill } from "@/components/admin/PageHeader";
 import { ImagePicker } from "@/components/admin/ImagePicker";
@@ -194,6 +194,54 @@ function ProductsPage() {
     qc.invalidateQueries({ queryKey: ["products"] });
   }
 
+  function exportCsv() {
+    downloadCsv("products.csv", [
+      ["name", "slug", "sku", "price", "sale_price", "stock", "status", "category", "brand", "description"],
+      ...products.map((p) => [
+        p.name, p.slug, p.sku, p.price, p.sale_price, p.stock, p.status,
+        cats.find((c) => c.id === p.category_id)?.slug ?? "",
+        brands.find((b) => b.id === p.brand_id)?.name ?? "",
+        (p.description ?? "").replace(/\n/g, " "),
+      ]),
+    ]);
+  }
+
+  async function importCsv(file: File) {
+    const text = await file.text();
+    const rows = parseCsv(text);
+    const header = rows.shift()?.map((h) => h.trim().toLowerCase()) ?? [];
+    const col = (name: string) => header.indexOf(name);
+    if (col("name") < 0 || col("price") < 0) { toast.error("CSV needs at least name and price columns"); return; }
+    let created = 0, updated = 0, failed = 0;
+    for (const r of rows) {
+      const get = (name: string) => (col(name) >= 0 ? r[col(name)]?.trim() ?? "" : "");
+      const name = get("name");
+      const price = Number(get("price"));
+      if (!name || !(price >= 0)) { failed++; continue; }
+      const slug = get("slug") || slugify(name);
+      const catSlug = get("category").toLowerCase();
+      const row = {
+        name, slug,
+        sku: get("sku") || null,
+        price,
+        sale_price: get("sale_price") ? Number(get("sale_price")) : null,
+        stock: get("stock") ? Math.max(0, Math.round(Number(get("stock")))) : 0,
+        status: ["active", "draft", "archived"].includes(get("status")) ? get("status") : "draft",
+        category_id: cats.find((c) => c.slug === catSlug)?.id ?? null,
+        brand_id: brands.find((b) => b.name.toLowerCase() === get("brand").toLowerCase() && get("brand"))?.id ?? null,
+        description: get("description") || null,
+      };
+      const existing = products.find((p) => p.slug === slug);
+      const { error } = existing
+        ? await supabase.from("products").update(row).eq("id", existing.id)
+        : await supabase.from("products").insert(row);
+      if (error) { failed++; continue; }
+      existing ? updated++ : created++;
+    }
+    toast.success(`Import done: ${created} created, ${updated} updated${failed ? `, ${failed} skipped` : ""}`);
+    qc.invalidateQueries({ queryKey: ["products"] });
+  }
+
   const set = (k: keyof Form, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
   const margin = form?.price && form?.cost_price ? Math.round(((Number(form.price) - Number(form.cost_price)) / Number(form.price)) * 100) : null;
   const sel = "h-9 rounded-md border bg-background px-3 text-sm";
@@ -201,6 +249,9 @@ function ProductsPage() {
   return (
     <>
       <PageHeader title="Products" subtitle={`${products.length} products · ${products.filter((p) => p.status === "active").length} live`}>
+        <Button variant="outline" onClick={exportCsv}><Download className="size-4" /> Export CSV</Button>
+        <Button variant="outline" onClick={() => document.getElementById("products-csv-input")?.click()}><Upload className="size-4" /> Import CSV</Button>
+        <input id="products-csv-input" type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void importCsv(f); e.target.value = ""; }} />
         <Button variant="gold" onClick={() => open()}><Plus /> Add product</Button>
       </PageHeader>
 

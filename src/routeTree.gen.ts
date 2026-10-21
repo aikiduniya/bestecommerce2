@@ -41,6 +41,8 @@ import { Route as AuthenticatedAdminReviewsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminShippingRouteImport } from './routes/_authenticated/admin.shipping'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
+import { Route as AuthenticatedAdminStockAlertsRouteImport } from './routes/_authenticated/admin.stock-alerts'
+import { Route as AuthenticatedAdminTicketsRouteImport } from './routes/_authenticated/admin.tickets'
 import { Route as AuthenticatedAdminTranslationsRouteImport } from './routes/_authenticated/admin.translations'
 import { Route as AuthenticatedOrderIdRouteImport } from './routes/_authenticated/order.$id'
 import { Route as ApiPublicMerchantFeedRouteImport } from './routes/api/public/merchant-feed'
@@ -228,6 +230,18 @@ const AuthenticatedAdminStaffRoute = AuthenticatedAdminStaffRouteImport.update({
   path: '/staff',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminStockAlertsRoute =
+  AuthenticatedAdminStockAlertsRouteImport.update({
+    id: '/stock-alerts',
+    path: '/stock-alerts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminTicketsRoute =
+  AuthenticatedAdminTicketsRouteImport.update({
+    id: '/tickets',
+    path: '/tickets',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminTranslationsRoute =
   AuthenticatedAdminTranslationsRouteImport.update({
     id: '/translations',
@@ -313,6 +327,8 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/admin/stock-alerts': typeof AuthenticatedAdminStockAlertsRoute
+  '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
@@ -355,6 +371,8 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/admin/stock-alerts': typeof AuthenticatedAdminStockAlertsRoute
+  '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
@@ -399,6 +417,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/_authenticated/admin/stock-alerts': typeof AuthenticatedAdminStockAlertsRoute
+  '/_authenticated/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/_authenticated/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/_authenticated/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
@@ -444,6 +464,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipping'
     | '/admin/staff'
+    | '/admin/stock-alerts'
+    | '/admin/tickets'
     | '/admin/translations'
     | '/order/$id'
     | '/api/public/merchant-feed'
@@ -486,6 +508,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipping'
     | '/admin/staff'
+    | '/admin/stock-alerts'
+    | '/admin/tickets'
     | '/admin/translations'
     | '/order/$id'
     | '/api/public/merchant-feed'
@@ -529,6 +553,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/shipping'
     | '/_authenticated/admin/staff'
+    | '/_authenticated/admin/stock-alerts'
+    | '/_authenticated/admin/tickets'
     | '/_authenticated/admin/translations'
     | '/_authenticated/order/$id'
     | '/api/public/merchant-feed'
@@ -783,6 +809,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminStaffRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/stock-alerts': {
+      id: '/_authenticated/admin/stock-alerts'
+      path: '/stock-alerts'
+      fullPath: '/admin/stock-alerts'
+      preLoaderRoute: typeof AuthenticatedAdminStockAlertsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/tickets': {
+      id: '/_authenticated/admin/tickets'
+      path: '/tickets'
+      fullPath: '/admin/tickets'
+      preLoaderRoute: typeof AuthenticatedAdminTicketsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/translations': {
       id: '/_authenticated/admin/translations'
       path: '/translations'
@@ -871,6 +911,8 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminShippingRoute: typeof AuthenticatedAdminShippingRoute
   AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
+  AuthenticatedAdminStockAlertsRoute: typeof AuthenticatedAdminStockAlertsRoute
+  AuthenticatedAdminTicketsRoute: typeof AuthenticatedAdminTicketsRoute
   AuthenticatedAdminTranslationsRoute: typeof AuthenticatedAdminTranslationsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminInvoiceIdRoute: typeof AuthenticatedAdminInvoiceIdRoute
@@ -899,6 +941,8 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminShippingRoute: AuthenticatedAdminShippingRoute,
   AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
+  AuthenticatedAdminStockAlertsRoute: AuthenticatedAdminStockAlertsRoute,
+  AuthenticatedAdminTicketsRoute: AuthenticatedAdminTicketsRoute,
   AuthenticatedAdminTranslationsRoute: AuthenticatedAdminTranslationsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminInvoiceIdRoute: AuthenticatedAdminInvoiceIdRoute,

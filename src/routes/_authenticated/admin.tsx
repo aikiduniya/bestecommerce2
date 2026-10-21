@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tansta
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail, RotateCcw,
+  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail, RotateCcw, BellRing, LifeBuoy,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/store";
@@ -39,6 +39,7 @@ const groups = [
       { perm: "catalog", to: "/admin/collections", label: "Collections", icon: Layers },
       { perm: "catalog", to: "/admin/brands", label: "Brands", icon: Tag },
       { perm: "catalog", to: "/admin/media", label: "Media library", icon: Image },
+      { perm: "catalog", to: "/admin/stock-alerts", label: "Stock alerts", icon: BellRing },
     ],
   },
   {
@@ -47,6 +48,7 @@ const groups = [
       { perm: "orders", to: "/admin/orders", label: "Orders", icon: ShoppingBag },
       { perm: "orders", to: "/admin/returns", label: "Returns", icon: RotateCcw },
       { perm: "customers", to: "/admin/customers", label: "Customers", icon: Users },
+      { perm: "customers", to: "/admin/tickets", label: "Support tickets", icon: LifeBuoy },
       { perm: "admin", to: "/admin/shipping", label: "Shipping", icon: Truck },
     ],
   },
