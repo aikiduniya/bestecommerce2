@@ -106,7 +106,7 @@ function Checkout() {
     setPlacing(false);
     if (error) { toast.error(error.message); return; }
     const res = data as { id: string; order_number: number };
-    trackPurchase(res.id, trackItems, total, cur);
+    trackPurchase(res.id, trackItems, Math.max(cart.subtotal - autoDiscount - discount, 0) + shipping + codFee, cur);
     cart.clear();
     qc.invalidateQueries();
     navigate({ to: "/order/$id", params: { id: res.id } });
