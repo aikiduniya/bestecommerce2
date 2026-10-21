@@ -398,7 +398,7 @@ function ProductsPage() {
                 </TabsContent>
                 <TabsContent value="media">
                   <p className="mb-3 text-sm text-muted-foreground">First image is the main image. Hover to reorder or remove.</p>
-                  <ImagePicker value={form.images ?? []} onChange={(v) => set("images", v)} />
+                  <ImagePicker value={form.images ?? []} onChange={(v) => { const old: string[] = form.images ?? []; const alts: string[] = form.image_alts ?? []; set("image_alts", v.map((u) => alts[old.indexOf(u)] ?? "")); set("images", v); }} />
                   {(form.images ?? []).length > 0 && (
                     <div className="mt-4 space-y-2">
                       <p className="text-sm font-medium">Image alt text <span className="font-normal text-muted-foreground">— describes each photo for search engines and screen readers</span></p>
