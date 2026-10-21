@@ -5,16 +5,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { money } from "@/lib/store";
 import { isValidLang } from "@/lib/i18n";
 import { StoreLayout } from "@/components/store/StoreLayout";
+import { ReturnRequestForm } from "@/components/store/ReturnRequestForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 type GuestOrder = {
   order_number: number;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
   status: string;
   payment_status: string;
   fulfillment_status: string;
-  items: { name: string; qty: number; price: number; options?: Record<string, string> }[];
+  items: { product_id?: string; variant_id?: string | null; name: string; qty: number; price: number; options?: Record<string, string> }[];
   subtotal: number;
   shipping_total: number;
   tax_total: number;
@@ -110,6 +113,7 @@ function TrackOrder() {
               <div className="text-right text-sm">
                 <p><span className="text-muted-foreground">Status:</span> {STATUS_LABEL[order.status] ?? order.status}</p>
                 <p><span className="text-muted-foreground">Payment:</span> {order.payment_status === "pending" ? "Pay on delivery" : order.payment_status}</p>
+                {order.tracking_number && <p><span className="text-muted-foreground">Tracking:</span> {order.tracking_url ? <a href={order.tracking_url} target="_blank" rel="noreferrer" className="text-gold underline">{order.tracking_number}</a> : order.tracking_number}</p>}
                 <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
               </div>
             </div>
@@ -129,6 +133,9 @@ function TrackOrder() {
               {Number(order.payment_fee) > 0 && <div className="flex justify-between"><span>Cash on Delivery fee</span><span>{money(order.payment_fee, order.currency)}</span></div>}
               <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(order.total, order.currency)}</span></div>
             </div>
+            {order.status === "delivered" && (
+              <ReturnRequestForm orderNumber={order.order_number} email={email} items={order.items} />
+            )}
           </div>
         )}
       </div>

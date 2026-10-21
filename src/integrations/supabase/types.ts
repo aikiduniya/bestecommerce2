@@ -44,6 +44,51 @@ export type Database = {
         }
         Relationships: []
       }
+      addresses: {
+        Row: {
+          city: string
+          country: string
+          created_at: string
+          id: string
+          is_default: boolean
+          label: string
+          line1: string
+          line2: string | null
+          phone: string | null
+          postal: string | null
+          state: string | null
+          user_id: string
+        }
+        Insert: {
+          city: string
+          country: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          line1: string
+          line2?: string | null
+          phone?: string | null
+          postal?: string | null
+          state?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          line1?: string
+          line2?: string | null
+          phone?: string | null
+          postal?: string | null
+          state?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       automatic_discounts: {
         Row: {
           created_at: string
@@ -658,6 +703,8 @@ export type Database = {
           subtotal: number
           tax_total: number
           total: number
+          tracking_number: string | null
+          tracking_url: string | null
           updated_at: string
           user_id: string | null
         }
@@ -690,6 +737,8 @@ export type Database = {
           subtotal?: number
           tax_total?: number
           total?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -722,6 +771,8 @@ export type Database = {
           subtotal?: number
           tax_total?: number
           total?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -932,6 +983,7 @@ export type Database = {
       }
       products: {
         Row: {
+          barcode: string | null
           brand_id: string | null
           category_id: string | null
           cod_allowed: boolean
@@ -946,6 +998,7 @@ export type Database = {
           name: string
           options: Json
           price: number
+          related_ids: string[]
           sale_ends_at: string | null
           sale_price: number | null
           sale_starts_at: string | null
@@ -954,12 +1007,15 @@ export type Database = {
           short_description: string | null
           sku: string | null
           slug: string
+          specifications: Json
           status: string
           stock: number
           tags: string[]
           updated_at: string
+          weight_grams: number | null
         }
         Insert: {
+          barcode?: string | null
           brand_id?: string | null
           category_id?: string | null
           cod_allowed?: boolean
@@ -974,6 +1030,7 @@ export type Database = {
           name: string
           options?: Json
           price?: number
+          related_ids?: string[]
           sale_ends_at?: string | null
           sale_price?: number | null
           sale_starts_at?: string | null
@@ -982,12 +1039,15 @@ export type Database = {
           short_description?: string | null
           sku?: string | null
           slug: string
+          specifications?: Json
           status?: string
           stock?: number
           tags?: string[]
           updated_at?: string
+          weight_grams?: number | null
         }
         Update: {
+          barcode?: string | null
           brand_id?: string | null
           category_id?: string | null
           cod_allowed?: boolean
@@ -1002,6 +1062,7 @@ export type Database = {
           name?: string
           options?: Json
           price?: number
+          related_ids?: string[]
           sale_ends_at?: string | null
           sale_price?: number | null
           sale_starts_at?: string | null
@@ -1010,10 +1071,12 @@ export type Database = {
           short_description?: string | null
           sku?: string | null
           slug?: string
+          specifications?: Json
           status?: string
           stock?: number
           tags?: string[]
           updated_at?: string
+          weight_grams?: number | null
         }
         Relationships: [
           {
@@ -1028,6 +1091,56 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      return_requests: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          email: string
+          id: string
+          items: Json
+          order_id: string
+          reason: string
+          restocked: boolean
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          items?: Json
+          order_id: string
+          reason: string
+          restocked?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          items?: Json
+          order_id?: string
+          reason?: string
+          restocked?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -1450,6 +1563,19 @@ export type Database = {
           _items: Json
           _notes?: string
           _zone_id: string
+        }
+        Returns: Json
+      }
+      process_return: {
+        Args: { _action: string; _id: string; _note: string; _restock: boolean }
+        Returns: Json
+      }
+      submit_return: {
+        Args: {
+          _email: string
+          _items: Json
+          _order_number: number
+          _reason: string
         }
         Returns: Json
       }

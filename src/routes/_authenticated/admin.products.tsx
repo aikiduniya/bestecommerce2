@@ -28,6 +28,7 @@ export const Route = createFileRoute("/_authenticated/admin/products")({
 
 type Form = { [K in keyof Omit<Product, "sale_price" | "sale_starts_at" | "sale_ends_at">]?: Product[K] | undefined } & {
   tagsText?: string | undefined;
+  specsText?: string | undefined;
   sale_price?: number | string | null | undefined;
   sale_starts_at?: string | null | undefined;
   sale_ends_at?: string | null | undefined;
@@ -92,8 +93,8 @@ function ProductsPage() {
     const cost = p ? (await supabase.from("product_costs").select("cost_price").eq("product_id", p.id).maybeSingle()).data?.cost_price ?? null : null;
     setForm(
       p
-        ? { ...p, cost_price: cost, ...(duplicate ? { id: undefined, name: `${p.name} (copy)`, slug: "", sku: null, status: "draft" } : {}), tagsText: p.tags.join(", "), sale_price: p.sale_price?.toString() ?? "", sale_starts_at: toLocalInput(p.sale_starts_at), sale_ends_at: toLocalInput(p.sale_ends_at) }
-        : { status: "draft", price: 0, stock: 0, low_stock_threshold: 5, is_featured: false, images: [], tagsText: "" },
+        ? { ...p, cost_price: cost, ...(duplicate ? { id: undefined, name: `${p.name} (copy)`, slug: "", sku: null, status: "draft" } : {}), tagsText: p.tags.join(", "), specsText: Object.entries((p.specifications ?? {}) as Record<string, string>).map(([k, v]) => `${k}: ${v}`).join("\n"), related_ids: p.related_ids ?? [], sale_price: p.sale_price?.toString() ?? "", sale_starts_at: toLocalInput(p.sale_starts_at), sale_ends_at: toLocalInput(p.sale_ends_at) }
+        : { status: "draft", price: 0, stock: 0, low_stock_threshold: 5, is_featured: false, images: [], tagsText: "", specsText: "", related_ids: [] },
     );
   }
 
@@ -126,6 +127,12 @@ function ProductsPage() {
       status: form.status ?? "draft",
       is_featured: !!form.is_featured,
       cod_allowed: form.cod_allowed ?? true,
+      barcode: form.barcode || null,
+      weight_grams: form.weight_grams ? Number(form.weight_grams) : null,
+      specifications: Object.fromEntries(
+        (form.specsText ?? "").split("\n").map((l: string) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : null; }).filter(Boolean) as [string, string][],
+      ),
+      related_ids: form.related_ids ?? [],
       seo_title: form.seo_title || null,
       seo_description: form.seo_description || null,
       options: opts.filter((o) => o.name.trim() && o.values.length),
@@ -285,6 +292,7 @@ function ProductsPage() {
                   <F label="Name *" className="sm:col-span-2"><Input required value={form.name ?? ""} onChange={(e) => set("name", e.target.value)} /></F>
                   <F label="URL slug (auto if empty)"><Input value={form.slug ?? ""} onChange={(e) => set("slug", e.target.value)} /></F>
                   <F label="SKU"><Input value={form.sku ?? ""} onChange={(e) => set("sku", e.target.value)} /></F>
+                  <F label="Barcode (GTIN/EAN)"><Input value={form.barcode ?? ""} onChange={(e) => set("barcode", e.target.value)} /></F>
                   <F label="Category">
                     <select className={`${sel} w-full`} value={form.category_id ?? ""} onChange={(e) => set("category_id", e.target.value)}>
                       <option value="">—</option>
@@ -305,6 +313,15 @@ function ProductsPage() {
                   <F label="Tags (comma separated)"><Input value={form.tagsText} onChange={(e) => set("tagsText", e.target.value)} /></F>
                   <F label="Short description" className="sm:col-span-2"><Input value={form.short_description ?? ""} onChange={(e) => set("short_description", e.target.value)} /></F>
                   <F label="Description" className="sm:col-span-2"><Textarea rows={5} value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} /></F>
+                  <F label="Specifications (one per line, e.g. Material: Steel)" className="sm:col-span-2"><Textarea rows={4} value={form.specsText ?? ""} onChange={(e) => set("specsText", e.target.value)} /></F>
+                  <F label="Related products (shown as “You may also like”)" className="sm:col-span-2">
+                    <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
+                      {products.filter((x) => x.id !== form.id).map((x) => (
+                        <button type="button" key={x.id} onClick={() => set("related_ids", (form.related_ids ?? []).includes(x.id) ? (form.related_ids ?? []).filter((r: string) => r !== x.id) : [...(form.related_ids ?? []), x.id])}
+                          className={`rounded-full border px-3 py-1 text-xs ${(form.related_ids ?? []).includes(x.id) ? "border-primary bg-primary text-primary-foreground" : ""}`}>{x.name}</button>
+                      ))}
+                    </div>
+                  </F>
                   {cols.length > 0 && (
                     <F label="Collections" className="sm:col-span-2">
                       <div className="flex flex-wrap gap-2">
@@ -333,6 +350,7 @@ function ProductsPage() {
                   </F>
                   <label className="flex items-center gap-3 text-sm sm:col-span-3"><Switch checked={form.cod_allowed ?? true} onCheckedChange={(v) => set("cod_allowed", v)} /> Available for Cash on Delivery</label>
                   <F label="Low-stock alert at"><Input type="number" min="0" value={form.low_stock_threshold ?? 5} onChange={(e) => set("low_stock_threshold", e.target.value)} /></F>
+                  <F label="Weight (grams)"><Input type="number" min="0" value={form.weight_grams ?? ""} onChange={(e) => set("weight_grams", e.target.value)} /></F>
                 </TabsContent>
                 <TabsContent value="variants">
                   <p className="mb-3 text-sm text-muted-foreground">Add options like Size, Color or Material, then generate variants to set their own price, SKU, stock and image.</p>

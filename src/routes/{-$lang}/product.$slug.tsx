@@ -109,7 +109,9 @@ function ProductPage() {
   const compare = flashSale ? reg : (variant?.compare_at_price ?? p.compare_at_price);
   const stock = hasVariants ? variant?.stock ?? 0 : p.stock;
   const needsChoice = hasVariants && !variant;
-  const related = products.filter((x) => x.status === "active" && x.id !== p.id && x.category_id === p.category_id).slice(0, 4);
+  const picked = (p.related_ids ?? []).map((id) => products.find((x) => x.id === id && x.status === "active")).filter(Boolean) as typeof products;
+  const related = (picked.length ? picked : products.filter((x) => x.status === "active" && x.id !== p.id && x.category_id === p.category_id)).slice(0, 4);
+  const specs = Object.entries((p.specifications ?? {}) as Record<string, string>);
   const valueAvailable = (name: string, value: string) =>
     activeVariants.some((v) => {
       const o = v.options as Record<string, string>;
@@ -212,6 +214,19 @@ function ProductPage() {
             </div>
             <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Truck className="size-4" /> Shipping calculated at checkout</p>
             {p.description && <div className="mt-10 whitespace-pre-line border-t pt-8 leading-relaxed text-muted-foreground">{p.description}</div>}
+            {specs.length > 0 && (
+              <div className="mt-10 border-t pt-8">
+                <h2 className="text-2xl">Specifications</h2>
+                <dl className="mt-4 divide-y rounded border text-sm">
+                  {specs.map(([k, v]) => (
+                    <div key={k} className="grid grid-cols-2 gap-4 px-4 py-2.5">
+                      <dt className="text-muted-foreground">{k}</dt>
+                      <dd>{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
           </div>
         </div>
         <ReviewsQA productId={p.id} reviewsEnabled={s?.reviews_enabled ?? true} />

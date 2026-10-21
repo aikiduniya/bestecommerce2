@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tansta
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail,
+  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail, RotateCcw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/store";
@@ -45,6 +45,7 @@ const groups = [
     label: "Sales",
     items: [
       { perm: "orders", to: "/admin/orders", label: "Orders", icon: ShoppingBag },
+      { perm: "orders", to: "/admin/returns", label: "Returns", icon: RotateCcw },
       { perm: "customers", to: "/admin/customers", label: "Customers", icon: Users },
       { perm: "admin", to: "/admin/shipping", label: "Shipping", icon: Truck },
     ],

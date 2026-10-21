@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { money, optionLabel, orderEventsQuery } from "@/lib/store";
+import { money, optionLabel, orderEventsQuery, orderReturnsQuery } from "@/lib/store";
+import { ReturnRequestForm, type ReturnLine } from "@/components/store/ReturnRequestForm";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { StatusPill } from "@/components/admin/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,12 +63,38 @@ function OrderPage() {
         </div>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 text-sm">
           <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Ship to</p><p>{o.customer_name}</p><p>{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}</p><p>{[addr.city, addr.state, addr.postal].filter(Boolean).join(", ")}</p><p>{addr.country}</p></div>
+          {o.tracking_number && (
+            <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Tracking</p><p>{o.tracking_number}</p>{o.tracking_url && <a href={o.tracking_url} target="_blank" rel="noreferrer" className="text-sm text-gold underline">Track shipment</a>}</div>
+          )}
           <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Payment</p><p>Cash on Delivery</p><p className="text-muted-foreground">{o.customer_email}</p></div>
         </div>
         <OrderTimeline orderId={o.id} />
+        <ReturnSection order={o} />
         <Link to="/account" className="mt-10 inline-block text-sm text-gold">← All orders</Link>
       </div>
     </StoreLayout>
+  );
+}
+
+function ReturnSection({ order: o }: { order: { id: string; order_number: number; status: string; customer_email: string; items: unknown } }) {
+  const { data: returns = [] } = useQuery(orderReturnsQuery(o.id));
+  if (o.status !== "delivered" && returns.length === 0) return null;
+  return (
+    <div className="mt-6 space-y-4">
+      {returns.map((r) => (
+        <div key={r.id} className="rounded border bg-card p-4 text-sm">
+          <div className="flex items-center justify-between">
+            <p className="eyebrow text-muted-foreground">Return request</p>
+            <StatusPill value={r.status} />
+          </div>
+          <p className="mt-2">{r.items.map((l) => `${l.name} × ${l.qty}`).join(", ")}</p>
+          {r.admin_note && <p className="mt-1 text-xs text-muted-foreground">Note from our team: {r.admin_note}</p>}
+        </div>
+      ))}
+      {o.status === "delivered" && !returns.some((r) => ["requested", "approved", "received"].includes(r.status)) && (
+        <ReturnRequestForm orderNumber={o.order_number} email={o.customer_email} items={o.items as ReturnLine[]} />
+      )}
+    </div>
   );
 }
 

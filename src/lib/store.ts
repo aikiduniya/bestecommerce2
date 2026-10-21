@@ -276,3 +276,59 @@ export function downloadCsv(filename: string, rows: (string | number | null | un
   a.click();
   URL.revokeObjectURL(url);
 }
+
+export type ReturnRequest = {
+  id: string;
+  order_id: string;
+  user_id: string | null;
+  email: string;
+  items: { product_id?: string; variant_id?: string | null; name: string; qty: number; price: number }[];
+  reason: string;
+  status: "requested" | "approved" | "rejected" | "received" | "refunded";
+  admin_note: string | null;
+  restocked: boolean;
+  created_at: string;
+};
+
+export const returnRequestsQuery = queryOptions({
+  queryKey: ["return_requests"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("return_requests").select("*, orders(order_number)").order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as unknown as (ReturnRequest & { orders: { order_number: number } | null })[];
+  },
+});
+
+export const orderReturnsQuery = (orderId: string) =>
+  queryOptions({
+    queryKey: ["return_requests", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("return_requests").select("*").eq("order_id", orderId).order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as ReturnRequest[];
+    },
+  });
+
+export type Address = {
+  id: string;
+  user_id: string;
+  label: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string | null;
+  postal: string | null;
+  country: string;
+  phone: string | null;
+  is_default: boolean;
+};
+
+export const myAddressesQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["addresses", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("addresses").select("*").eq("user_id", userId).order("created_at");
+      if (error) throw error;
+      return (data ?? []) as Address[];
+    },
+  });

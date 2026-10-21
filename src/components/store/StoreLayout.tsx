@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { Heart, Search, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
-import { categoriesQuery, pagesQuery, settingsQuery } from "@/lib/store";
+import { categoriesQuery, pagesQuery, productsQuery, settingsQuery } from "@/lib/store";
 import { menusQuery, navItems } from "@/lib/sections";
 import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
@@ -14,11 +14,13 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: cats = [] } = useQuery(categoriesQuery);
   const { data: pages = [] } = useQuery(pagesQuery);
   const { data: menus = [] } = useQuery(menusQuery);
+  const { data: allProducts = [] } = useQuery(productsQuery);
   const { user } = useSessionUser();
   const isStaff = useIsStaff(user?.id);
   const { count } = useCart();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const suggestions = q.trim().length >= 2 ? allProducts.filter((p) => p.status === "active" && p.name.toLowerCase().includes(q.trim().toLowerCase())).slice(0, 6) : [];
   const [open, setOpen] = useState(false);
   // Banner content depends on client-only state (settings fetch, staff check);
   // render it only after mount so SSR and first client render match.
@@ -156,6 +158,16 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             <form onSubmit={search} className="relative hidden lg:block">
               <Search className="absolute left-2.5 top-2 size-4 text-muted-foreground" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("nav.search")} className="h-8 w-44 rounded-full border bg-card pl-8 pr-3 text-sm outline-none focus:border-gold" />
+              {suggestions.length > 0 && (
+                <div className="absolute right-0 top-10 z-50 w-72 rounded border bg-card shadow-lg">
+                  {suggestions.map((p) => (
+                    <Link key={p.id} to="/{-$lang}/product/$slug" params={{ lang: lang ?? undefined, slug: p.slug }} onClick={() => setQ("")} className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted">
+                      {p.images[0] && <img src={p.images[0]} alt="" className="size-8 rounded object-cover" />}
+                      <span className="truncate">{p.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </form>
             <Link to="/account" aria-label={t("nav.wishlist")} className="hover:text-gold"><Heart className="size-5" /></Link>
             <Link to={user ? (isStaff ? "/admin" : "/account") : "/auth"} aria-label={t("nav.account")} className="hover:text-gold"><User className="size-5" /></Link>
@@ -215,7 +227,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
               <div className="text-sm">
                 <p className="eyebrow mb-3 text-muted-foreground">{t("footer.information")}</p>
                 <Link to="/{-$lang}/blog" params={lp} className="block py-1 hover:text-gold">{t("footer.journal")}</Link>
-                <Link to="/{-$lang}/track" params={lp} className="block py-1 hover:text-gold">Track your order</Link>
+                <a href={lp.lang ? `/${lp.lang}/track` : "/track"} className="block py-1 hover:text-gold">Track your order</a>
                 {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/{-$lang}/pages/$slug" params={{ ...lp, slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
               </div>
             </>
