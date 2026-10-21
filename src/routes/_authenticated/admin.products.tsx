@@ -263,7 +263,7 @@ function ProductsPage() {
                 </TableCell>
               </TableRow>
             ))}
-            {list.length === 0 && <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">No products found.</TableCell></TableRow>}
+            {list.length === 0 && <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">No products found.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </Card>
