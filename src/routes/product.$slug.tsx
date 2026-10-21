@@ -154,6 +154,7 @@ function ProductPage() {
               {money(price, s?.currency)}
               {compare && Number(compare) > price && <span className="ml-3 text-lg text-muted-foreground line-through">{money(compare, s?.currency)}</span>}
             </p>
+            {flashSale && p.sale_ends_at && new Date(p.sale_ends_at) > new Date() && <SaleCountdown endsAt={p.sale_ends_at} />}
             {p.short_description && <p className="mt-4 text-muted-foreground">{p.short_description}</p>}
 
             {opts.map((o) => (
