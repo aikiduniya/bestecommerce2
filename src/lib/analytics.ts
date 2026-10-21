@@ -1,7 +1,7 @@
 // Storefront ecommerce events for GA4 (gtag) and Meta Pixel (fbq).
 // No-ops unless the matching IDs are configured in Settings → Marketing (scripts load via Tracking.tsx).
 
-type TrackItem = { id: string; name: string; price: number; qty: number; variant?: string };
+type TrackItem = { id: string; name: string; price: number; qty: number; variant?: string | undefined };
 
 const gaItems = (items: TrackItem[]) =>
   items.map((i) => ({ item_id: i.id, item_name: i.name, price: i.price, quantity: i.qty, ...(i.variant ? { item_variant: i.variant } : {}) }));
