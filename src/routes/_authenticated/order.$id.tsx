@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { money, optionLabel, orderEventsQuery, orderReturnsQuery } from "@/lib/store";
-import { ReturnRequestForm } from "@/components/store/ReturnRequestForm";
+import { ReturnRequestForm, type ReturnLine } from "@/components/store/ReturnRequestForm";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { StatusPill } from "@/components/admin/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
