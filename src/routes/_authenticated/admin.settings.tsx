@@ -155,7 +155,7 @@ function SettingsPage() {
               {THEME_PRESETS.map((t) => {
                 const active = (s as { theme_preset?: string }).theme_preset === t.id;
                 return (
-                  <button type="button" key={t.id} onClick={() => setS({ ...s, ...t, theme_preset: t.id } as never)}
+                  <button type="button" key={t.id} onClick={() => { const { id, name: _n, description: _d, ...look } = t; setS({ ...s, ...look, theme_preset: id } as never); }}
                     className={`rounded border p-3 text-left transition-colors ${active ? "border-gold ring-1 ring-gold" : "hover:border-gold"}`}>
                     <div className="flex gap-1">{[t.primary_color, t.accent_color, t.background_color, t.surface_color].map((c) => <span key={c} className="size-6 rounded-full border" style={{ background: c }} />)}</div>
                     <p className="mt-2 text-sm font-medium">{t.name}</p>
