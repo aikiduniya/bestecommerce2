@@ -169,6 +169,13 @@
       "when": 1792580633534,
       "tag": "0023_fix_return_restock_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792580803733,
+      "tag": "0024_product_fields_and_addresses",
+      "breakpoints": true
     }
   ]
 }
