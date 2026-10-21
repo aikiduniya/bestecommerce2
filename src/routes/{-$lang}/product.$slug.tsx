@@ -2,7 +2,8 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Heart, Minus, Plus, Truck } from "lucide-react";
+import { GitCompareArrows, Heart, Minus, Plus, Truck } from "lucide-react";
+import { toggleCompare, useCompare } from "@/lib/compare";
 import { supabase } from "@/integrations/supabase/client";
 import { brandsQuery, categoriesQuery, contentTranslationsQuery, money, optionsOf, productsQuery, settingsQuery, variantsQuery } from "@/lib/store";
 import { applyTranslation, hreflangLinks, indexTranslations, isValidLang, useLang } from "@/lib/i18n";
@@ -211,6 +212,9 @@ function ProductPage() {
               </Button>
               <Button size="lg" variant="outline" className="h-12" onClick={toggleWish} aria-label="Wishlist">
                 <Heart className={inWish ? "fill-gold text-gold" : ""} />
+              </Button>
+              <Button size="lg" variant="outline" className={`h-12 ${inCompare ? "border-gold text-gold" : ""}`} onClick={() => { toggleCompare(p.id); toast.success(inCompare ? "Removed from compare" : "Added to compare"); }} aria-label="Compare">
+                <GitCompareArrows />
               </Button>
             </div>
             {!needsChoice && stock <= 0 && <div className="mt-4"><NotifyMe productId={p.id} /></div>}
