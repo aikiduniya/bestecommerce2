@@ -20,6 +20,10 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  // Banner content depends on client-only state (settings fetch, staff check);
+  // render it only after mount so SSR and first client render match.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const topCats = cats.filter((c) => c.is_active && !c.parent_id);
   const headerItems = navItems(menus.find((m) => m.handle === "header"));
   const footerItems = navItems(menus.find((m) => m.handle === "footer"));
@@ -109,10 +113,10 @@ export function StoreLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {s?.maintenance_mode && isStaff && (
+      {mounted && s?.maintenance_mode && isStaff && (
         <div className="bg-warning py-1.5 text-center text-xs font-medium text-foreground">{t("maintenance.banner")}</div>
       )}
-      {s?.announcement_enabled && s.announcement && (
+      {mounted && s?.announcement_enabled && s.announcement && (
         <div className="bg-primary py-2 text-center text-xs tracking-wide text-primary-foreground">{s.announcement}</div>
       )}
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
