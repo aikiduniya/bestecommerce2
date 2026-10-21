@@ -86,7 +86,7 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="bg-hero hidden flex-col justify-between p-12 text-primary-foreground lg:flex">
-        <Link to="/" className="font-display text-2xl">← Storefront</Link>
+        <Link to="/{-$lang}" params={{ lang: undefined }} className="font-display text-2xl">← Storefront</Link>
         <div>
           <p className="eyebrow text-gold">Your account</p>
           <h1 className="mt-4 text-6xl leading-tight">Orders, wishlist and faster checkout — all in one place.</h1>

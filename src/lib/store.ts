@@ -211,6 +211,15 @@ export const activityQuery = queryOptions({
   },
 });
 
+export const contentTranslationsQuery = queryOptions({
+  queryKey: ["content_translations"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("content_translations").select("*");
+    if (error) throw error;
+    return data;
+  },
+});
+
 export const couponsQuery = queryOptions({
   queryKey: ["coupons"],
   queryFn: async () => {

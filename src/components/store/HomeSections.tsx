@@ -8,6 +8,7 @@ import {
   type Product,
 } from "@/lib/store";
 import { getRecentlyViewed } from "@/lib/cart";
+import { useLang } from "@/lib/i18n";
 import { useFromPrice } from "@/lib/useFromPrice";
 import { bestSellersQuery, type HomeSection } from "@/lib/sections";
 import { ProductCard } from "@/components/store/ProductCard";
@@ -25,6 +26,8 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
   const { data: brands = [] } = useQuery(brandsQuery);
   const { data: zones = [] } = useQuery(zonesQuery);
   const { data: bestIds = [] } = useQuery(bestSellersQuery);
+  const lang = useLang();
+  const lp = { lang: lang ?? undefined };
   const fromPrice = useFromPrice();
   const [recent, setRecent] = useState<string[]>([]);
   useEffect(() => setRecent(getRecentlyViewed()), []);
@@ -93,7 +96,7 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
             <Head eyebrow="Browse" title={sec.title ?? "Shop by category"} sub={sec.subtitle} />
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               {list.map((x) => (
-                <Link key={x.id} to="/shop" search={{ category: x.slug }} className="group relative flex aspect-square items-end overflow-hidden rounded bg-secondary p-5">
+                <Link key={x.id} to="/{-$lang}/shop" params={lp} search={{ category: x.slug }} className="group relative flex aspect-square items-end overflow-hidden rounded bg-secondary p-5">
                   {x.image_url && <img src={x.image_url} alt="" className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105" />}
                   <span className="relative font-display text-2xl">{x.name}</span>
                 </Link>
@@ -122,7 +125,7 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
           <section className="mx-auto max-w-7xl px-6 pt-20">
             <div className="mb-10 flex items-end justify-between">
               <Head eyebrow="Collection" title={sec.title ?? col.name} sub={sec.subtitle ?? col.description} />
-              <Link to="/shop" search={{ collection: col.slug }} className="shrink-0 text-sm hover:text-gold">View all →</Link>
+              <Link to="/{-$lang}/shop" params={lp} search={{ collection: col.slug }} className="shrink-0 text-sm hover:text-gold">View all →</Link>
             </div>
             <Grid items={items} />
           </section>
@@ -145,7 +148,7 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
           <section className="mx-auto max-w-7xl px-6 pt-20">
             <div className="mb-10 flex items-end justify-between">
               <Head eyebrow="Just in" title={sec.title ?? "New arrivals"} sub={sec.subtitle} />
-              <Link to="/shop" search={{ sort: "new" }} className="shrink-0 text-sm hover:text-gold">Shop all →</Link>
+              <Link to="/{-$lang}/shop" params={lp} search={{ sort: "new" }} className="shrink-0 text-sm hover:text-gold">Shop all →</Link>
             </div>
             <Grid items={items} />
           </section>
@@ -174,7 +177,7 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
             <Head eyebrow="Brands" title={sec.title ?? "Our brands"} sub={sec.subtitle} />
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {list.map((b) => (
-                <Link key={b.id} to="/shop" search={{ brand: b.slug }} className="flex h-24 items-center justify-center rounded border bg-card p-4 hover:border-gold">
+                <Link key={b.id} to="/{-$lang}/shop" params={lp} search={{ brand: b.slug }} className="flex h-24 items-center justify-center rounded border bg-card p-4 hover:border-gold">
                   {b.logo_url ? <img src={b.logo_url} alt={b.name} className="max-h-12 object-contain" /> : <span className="font-display text-xl">{b.name}</span>}
                 </Link>
               ))}

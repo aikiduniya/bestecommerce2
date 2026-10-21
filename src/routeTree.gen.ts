@@ -9,19 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CartRouteImport } from './routes/cart'
-import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as BlogIndexRouteImport } from './routes/blog.index'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
-import { Route as PagesSlugRouteImport } from './routes/pages.$slug'
-import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
+import { Route as Char123LangChar125CartRouteImport } from './routes/{-$lang}/cart'
+import { Route as Char123LangChar125CheckoutRouteImport } from './routes/{-$lang}/checkout'
+import { Route as Char123LangChar125ShopRouteImport } from './routes/{-$lang}/shop'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin.activity'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
@@ -31,6 +27,7 @@ import { Route as AuthenticatedAdminCollectionsRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminCouponsRouteImport } from './routes/_authenticated/admin.coupons'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminDiscountsRouteImport } from './routes/_authenticated/admin.discounts'
+import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
 import { Route as AuthenticatedAdminHomepageRouteImport } from './routes/_authenticated/admin.homepage'
 import { Route as AuthenticatedAdminMediaRouteImport } from './routes/_authenticated/admin.media'
 import { Route as AuthenticatedAdminNavigationRouteImport } from './routes/_authenticated/admin.navigation'
@@ -42,15 +39,15 @@ import { Route as AuthenticatedAdminReviewsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminShippingRouteImport } from './routes/_authenticated/admin.shipping'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
+import { Route as AuthenticatedAdminTranslationsRouteImport } from './routes/_authenticated/admin.translations'
 import { Route as AuthenticatedOrderIdRouteImport } from './routes/_authenticated/order.$id'
 import { Route as ApiPublicMerchantFeedRouteImport } from './routes/api/public/merchant-feed'
+import { Route as Char123LangChar125BlogIndexRouteImport } from './routes/{-$lang}/blog.index'
+import { Route as Char123LangChar125BlogSlugRouteImport } from './routes/{-$lang}/blog.$slug'
+import { Route as Char123LangChar125PagesSlugRouteImport } from './routes/{-$lang}/pages.$slug'
+import { Route as Char123LangChar125ProductSlugRouteImport } from './routes/{-$lang}/product.$slug'
 import { Route as AuthenticatedAdminInvoiceIdRouteImport } from './routes/_authenticated/admin.invoice.$id'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -58,21 +55,6 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CartRoute = CartRouteImport.update({
-  id: '/cart',
-  path: '/cart',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShopRoute = ShopRouteImport.update({
-  id: '/shop',
-  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -90,24 +72,25 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const BlogIndexRoute = BlogIndexRouteImport.update({
-  id: '/blog/',
-  path: '/blog/',
+const Char123LangChar125IndexRoute = Char123LangChar125IndexRouteImport.update({
+  id: '/{-$lang}/',
+  path: '/{-$lang}/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/blog/$slug',
-  path: '/blog/$slug',
+const Char123LangChar125CartRoute = Char123LangChar125CartRouteImport.update({
+  id: '/{-$lang}/cart',
+  path: '/{-$lang}/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PagesSlugRoute = PagesSlugRouteImport.update({
-  id: '/pages/$slug',
-  path: '/pages/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductSlugRoute = ProductSlugRouteImport.update({
-  id: '/product/$slug',
-  path: '/product/$slug',
+const Char123LangChar125CheckoutRoute =
+  Char123LangChar125CheckoutRouteImport.update({
+    id: '/{-$lang}/checkout',
+    path: '/{-$lang}/checkout',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char123LangChar125ShopRoute = Char123LangChar125ShopRouteImport.update({
+  id: '/{-$lang}/shop',
+  path: '/{-$lang}/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -160,6 +143,12 @@ const AuthenticatedAdminDiscountsRoute =
   AuthenticatedAdminDiscountsRouteImport.update({
     id: '/discounts',
     path: '/discounts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminEmailsRoute =
+  AuthenticatedAdminEmailsRouteImport.update({
+    id: '/emails',
+    path: '/emails',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminHomepageRoute =
@@ -225,6 +214,12 @@ const AuthenticatedAdminStaffRoute = AuthenticatedAdminStaffRouteImport.update({
   path: '/staff',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminTranslationsRoute =
+  AuthenticatedAdminTranslationsRouteImport.update({
+    id: '/translations',
+    path: '/translations',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedOrderIdRoute = AuthenticatedOrderIdRouteImport.update({
   id: '/order/$id',
   path: '/order/$id',
@@ -235,6 +230,30 @@ const ApiPublicMerchantFeedRoute = ApiPublicMerchantFeedRouteImport.update({
   path: '/api/public/merchant-feed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char123LangChar125BlogIndexRoute =
+  Char123LangChar125BlogIndexRouteImport.update({
+    id: '/{-$lang}/blog/',
+    path: '/{-$lang}/blog/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char123LangChar125BlogSlugRoute =
+  Char123LangChar125BlogSlugRouteImport.update({
+    id: '/{-$lang}/blog/$slug',
+    path: '/{-$lang}/blog/$slug',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char123LangChar125PagesSlugRoute =
+  Char123LangChar125PagesSlugRouteImport.update({
+    id: '/{-$lang}/pages/$slug',
+    path: '/{-$lang}/pages/$slug',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char123LangChar125ProductSlugRoute =
+  Char123LangChar125ProductSlugRouteImport.update({
+    id: '/{-$lang}/product/$slug',
+    path: '/{-$lang}/product/$slug',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminInvoiceIdRoute =
   AuthenticatedAdminInvoiceIdRouteImport.update({
     id: '/invoice/$id',
@@ -243,18 +262,15 @@ const AuthenticatedAdminInvoiceIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
-  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/blog/$slug': typeof BlogSlugRoute
-  '/pages/$slug': typeof PagesSlugRoute
-  '/product/$slug': typeof ProductSlugRoute
-  '/blog/': typeof BlogIndexRoute
+  '/{-$lang}/cart': typeof Char123LangChar125CartRoute
+  '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
+  '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
+  '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
@@ -263,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/discounts': typeof AuthenticatedAdminDiscountsRoute
+  '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/admin/media': typeof AuthenticatedAdminMediaRoute
   '/admin/navigation': typeof AuthenticatedAdminNavigationRoute
@@ -274,23 +291,25 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
+  '/{-$lang}/blog/$slug': typeof Char123LangChar125BlogSlugRoute
+  '/{-$lang}/pages/$slug': typeof Char123LangChar125PagesSlugRoute
+  '/{-$lang}/product/$slug': typeof Char123LangChar125ProductSlugRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/{-$lang}/blog/': typeof Char123LangChar125BlogIndexRoute
   '/admin/invoice/$id': typeof AuthenticatedAdminInvoiceIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
-  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
-  '/blog/$slug': typeof BlogSlugRoute
-  '/pages/$slug': typeof PagesSlugRoute
-  '/product/$slug': typeof ProductSlugRoute
-  '/blog': typeof BlogIndexRoute
+  '/{-$lang}/cart': typeof Char123LangChar125CartRoute
+  '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
+  '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
+  '/{-$lang}': typeof Char123LangChar125IndexRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
@@ -299,6 +318,7 @@ export interface FileRoutesByTo {
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/discounts': typeof AuthenticatedAdminDiscountsRoute
+  '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/admin/media': typeof AuthenticatedAdminMediaRoute
   '/admin/navigation': typeof AuthenticatedAdminNavigationRoute
@@ -310,26 +330,27 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
+  '/{-$lang}/blog/$slug': typeof Char123LangChar125BlogSlugRoute
+  '/{-$lang}/pages/$slug': typeof Char123LangChar125PagesSlugRoute
+  '/{-$lang}/product/$slug': typeof Char123LangChar125ProductSlugRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/{-$lang}/blog': typeof Char123LangChar125BlogIndexRoute
   '/admin/invoice/$id': typeof AuthenticatedAdminInvoiceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
-  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/blog/$slug': typeof BlogSlugRoute
-  '/pages/$slug': typeof PagesSlugRoute
-  '/product/$slug': typeof ProductSlugRoute
-  '/blog/': typeof BlogIndexRoute
+  '/{-$lang}/cart': typeof Char123LangChar125CartRoute
+  '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
+  '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
+  '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/brands': typeof AuthenticatedAdminBrandsRoute
@@ -338,6 +359,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/discounts': typeof AuthenticatedAdminDiscountsRoute
+  '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/_authenticated/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/_authenticated/admin/media': typeof AuthenticatedAdminMediaRoute
   '/_authenticated/admin/navigation': typeof AuthenticatedAdminNavigationRoute
@@ -349,9 +371,14 @@ export interface FileRoutesById {
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/shipping': typeof AuthenticatedAdminShippingRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/_authenticated/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/_authenticated/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
+  '/{-$lang}/blog/$slug': typeof Char123LangChar125BlogSlugRoute
+  '/{-$lang}/pages/$slug': typeof Char123LangChar125PagesSlugRoute
+  '/{-$lang}/product/$slug': typeof Char123LangChar125ProductSlugRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/{-$lang}/blog/': typeof Char123LangChar125BlogIndexRoute
   '/_authenticated/admin/invoice/$id': typeof AuthenticatedAdminInvoiceIdRoute
 }
 export interface FileRouteTypes {
@@ -359,16 +386,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/cart'
-    | '/checkout'
-    | '/shop'
     | '/sitemap.xml'
     | '/account'
     | '/admin'
-    | '/blog/$slug'
-    | '/pages/$slug'
-    | '/product/$slug'
-    | '/blog/'
+    | '/{-$lang}/cart'
+    | '/{-$lang}/checkout'
+    | '/{-$lang}/shop'
+    | '/{-$lang}/'
     | '/admin/activity'
     | '/admin/blog'
     | '/admin/brands'
@@ -377,6 +401,7 @@ export interface FileRouteTypes {
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/discounts'
+    | '/admin/emails'
     | '/admin/homepage'
     | '/admin/media'
     | '/admin/navigation'
@@ -388,23 +413,25 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipping'
     | '/admin/staff'
+    | '/admin/translations'
     | '/order/$id'
     | '/api/public/merchant-feed'
+    | '/{-$lang}/blog/$slug'
+    | '/{-$lang}/pages/$slug'
+    | '/{-$lang}/product/$slug'
     | '/admin/'
+    | '/{-$lang}/blog/'
     | '/admin/invoice/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/cart'
-    | '/checkout'
-    | '/shop'
     | '/sitemap.xml'
     | '/account'
-    | '/blog/$slug'
-    | '/pages/$slug'
-    | '/product/$slug'
-    | '/blog'
+    | '/{-$lang}/cart'
+    | '/{-$lang}/checkout'
+    | '/{-$lang}/shop'
+    | '/{-$lang}'
     | '/admin/activity'
     | '/admin/blog'
     | '/admin/brands'
@@ -413,6 +440,7 @@ export interface FileRouteTypes {
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/discounts'
+    | '/admin/emails'
     | '/admin/homepage'
     | '/admin/media'
     | '/admin/navigation'
@@ -424,25 +452,26 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipping'
     | '/admin/staff'
+    | '/admin/translations'
     | '/order/$id'
     | '/api/public/merchant-feed'
+    | '/{-$lang}/blog/$slug'
+    | '/{-$lang}/pages/$slug'
+    | '/{-$lang}/product/$slug'
     | '/admin'
+    | '/{-$lang}/blog'
     | '/admin/invoice/$id'
   id:
     | '__root__'
-    | '/'
     | '/_authenticated'
     | '/auth'
-    | '/cart'
-    | '/checkout'
-    | '/shop'
     | '/sitemap.xml'
     | '/_authenticated/account'
     | '/_authenticated/admin'
-    | '/blog/$slug'
-    | '/pages/$slug'
-    | '/product/$slug'
-    | '/blog/'
+    | '/{-$lang}/cart'
+    | '/{-$lang}/checkout'
+    | '/{-$lang}/shop'
+    | '/{-$lang}/'
     | '/_authenticated/admin/activity'
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/brands'
@@ -451,6 +480,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/coupons'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/discounts'
+    | '/_authenticated/admin/emails'
     | '/_authenticated/admin/homepage'
     | '/_authenticated/admin/media'
     | '/_authenticated/admin/navigation'
@@ -462,36 +492,34 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/shipping'
     | '/_authenticated/admin/staff'
+    | '/_authenticated/admin/translations'
     | '/_authenticated/order/$id'
     | '/api/public/merchant-feed'
+    | '/{-$lang}/blog/$slug'
+    | '/{-$lang}/pages/$slug'
+    | '/{-$lang}/product/$slug'
     | '/_authenticated/admin/'
+    | '/{-$lang}/blog/'
     | '/_authenticated/admin/invoice/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  CartRoute: typeof CartRoute
-  CheckoutRoute: typeof CheckoutRoute
-  ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  BlogSlugRoute: typeof BlogSlugRoute
-  PagesSlugRoute: typeof PagesSlugRoute
-  ProductSlugRoute: typeof ProductSlugRoute
-  BlogIndexRoute: typeof BlogIndexRoute
+  Char123LangChar125CartRoute: typeof Char123LangChar125CartRoute
+  Char123LangChar125CheckoutRoute: typeof Char123LangChar125CheckoutRoute
+  Char123LangChar125ShopRoute: typeof Char123LangChar125ShopRoute
+  Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
   ApiPublicMerchantFeedRoute: typeof ApiPublicMerchantFeedRoute
+  Char123LangChar125BlogSlugRoute: typeof Char123LangChar125BlogSlugRoute
+  Char123LangChar125PagesSlugRoute: typeof Char123LangChar125PagesSlugRoute
+  Char123LangChar125ProductSlugRoute: typeof Char123LangChar125ProductSlugRoute
+  Char123LangChar125BlogIndexRoute: typeof Char123LangChar125BlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -504,27 +532,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cart': {
-      id: '/cart'
-      path: '/cart'
-      fullPath: '/cart'
-      preLoaderRoute: typeof CartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shop': {
-      id: '/shop'
-      path: '/shop'
-      fullPath: '/shop'
-      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -548,32 +555,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/blog/': {
-      id: '/blog/'
-      path: '/blog'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof BlogIndexRouteImport
+    '/{-$lang}/': {
+      id: '/{-$lang}/'
+      path: '/{-$lang}'
+      fullPath: '/{-$lang}/'
+      preLoaderRoute: typeof Char123LangChar125IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/blog/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
+    '/{-$lang}/cart': {
+      id: '/{-$lang}/cart'
+      path: '/{-$lang}/cart'
+      fullPath: '/{-$lang}/cart'
+      preLoaderRoute: typeof Char123LangChar125CartRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pages/$slug': {
-      id: '/pages/$slug'
-      path: '/pages/$slug'
-      fullPath: '/pages/$slug'
-      preLoaderRoute: typeof PagesSlugRouteImport
+    '/{-$lang}/checkout': {
+      id: '/{-$lang}/checkout'
+      path: '/{-$lang}/checkout'
+      fullPath: '/{-$lang}/checkout'
+      preLoaderRoute: typeof Char123LangChar125CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/product/$slug': {
-      id: '/product/$slug'
-      path: '/product/$slug'
-      fullPath: '/product/$slug'
-      preLoaderRoute: typeof ProductSlugRouteImport
+    '/{-$lang}/shop': {
+      id: '/{-$lang}/shop'
+      path: '/{-$lang}/shop'
+      fullPath: '/{-$lang}/shop'
+      preLoaderRoute: typeof Char123LangChar125ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -637,6 +644,13 @@ declare module '@tanstack/react-router' {
       path: '/discounts'
       fullPath: '/admin/discounts'
       preLoaderRoute: typeof AuthenticatedAdminDiscountsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/emails': {
+      id: '/_authenticated/admin/emails'
+      path: '/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AuthenticatedAdminEmailsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/homepage': {
@@ -716,6 +730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminStaffRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/translations': {
+      id: '/_authenticated/admin/translations'
+      path: '/translations'
+      fullPath: '/admin/translations'
+      preLoaderRoute: typeof AuthenticatedAdminTranslationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/order/$id': {
       id: '/_authenticated/order/$id'
       path: '/order/$id'
@@ -728,6 +749,34 @@ declare module '@tanstack/react-router' {
       path: '/api/public/merchant-feed'
       fullPath: '/api/public/merchant-feed'
       preLoaderRoute: typeof ApiPublicMerchantFeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{-$lang}/blog/': {
+      id: '/{-$lang}/blog/'
+      path: '/{-$lang}/blog'
+      fullPath: '/{-$lang}/blog/'
+      preLoaderRoute: typeof Char123LangChar125BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{-$lang}/blog/$slug': {
+      id: '/{-$lang}/blog/$slug'
+      path: '/{-$lang}/blog/$slug'
+      fullPath: '/{-$lang}/blog/$slug'
+      preLoaderRoute: typeof Char123LangChar125BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{-$lang}/pages/$slug': {
+      id: '/{-$lang}/pages/$slug'
+      path: '/{-$lang}/pages/$slug'
+      fullPath: '/{-$lang}/pages/$slug'
+      preLoaderRoute: typeof Char123LangChar125PagesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{-$lang}/product/$slug': {
+      id: '/{-$lang}/product/$slug'
+      path: '/{-$lang}/product/$slug'
+      fullPath: '/{-$lang}/product/$slug'
+      preLoaderRoute: typeof Char123LangChar125ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/invoice/$id': {
@@ -749,6 +798,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
   AuthenticatedAdminDiscountsRoute: typeof AuthenticatedAdminDiscountsRoute
+  AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
   AuthenticatedAdminHomepageRoute: typeof AuthenticatedAdminHomepageRoute
   AuthenticatedAdminMediaRoute: typeof AuthenticatedAdminMediaRoute
   AuthenticatedAdminNavigationRoute: typeof AuthenticatedAdminNavigationRoute
@@ -760,6 +810,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminShippingRoute: typeof AuthenticatedAdminShippingRoute
   AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
+  AuthenticatedAdminTranslationsRoute: typeof AuthenticatedAdminTranslationsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminInvoiceIdRoute: typeof AuthenticatedAdminInvoiceIdRoute
 }
@@ -773,6 +824,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCouponsRoute: AuthenticatedAdminCouponsRoute,
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
   AuthenticatedAdminDiscountsRoute: AuthenticatedAdminDiscountsRoute,
+  AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
   AuthenticatedAdminHomepageRoute: AuthenticatedAdminHomepageRoute,
   AuthenticatedAdminMediaRoute: AuthenticatedAdminMediaRoute,
   AuthenticatedAdminNavigationRoute: AuthenticatedAdminNavigationRoute,
@@ -784,6 +836,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminShippingRoute: AuthenticatedAdminShippingRoute,
   AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
+  AuthenticatedAdminTranslationsRoute: AuthenticatedAdminTranslationsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminInvoiceIdRoute: AuthenticatedAdminInvoiceIdRoute,
 }
@@ -807,18 +860,18 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  CartRoute: CartRoute,
-  CheckoutRoute: CheckoutRoute,
-  ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  BlogSlugRoute: BlogSlugRoute,
-  PagesSlugRoute: PagesSlugRoute,
-  ProductSlugRoute: ProductSlugRoute,
-  BlogIndexRoute: BlogIndexRoute,
+  Char123LangChar125CartRoute: Char123LangChar125CartRoute,
+  Char123LangChar125CheckoutRoute: Char123LangChar125CheckoutRoute,
+  Char123LangChar125ShopRoute: Char123LangChar125ShopRoute,
+  Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
   ApiPublicMerchantFeedRoute: ApiPublicMerchantFeedRoute,
+  Char123LangChar125BlogSlugRoute: Char123LangChar125BlogSlugRoute,
+  Char123LangChar125PagesSlugRoute: Char123LangChar125PagesSlugRoute,
+  Char123LangChar125ProductSlugRoute: Char123LangChar125ProductSlugRoute,
+  Char123LangChar125BlogIndexRoute: Char123LangChar125BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

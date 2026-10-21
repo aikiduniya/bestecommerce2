@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ArrowRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
@@ -7,6 +7,7 @@ import {
   type Product,
 } from "@/lib/store";
 import { getRecentlyViewed } from "@/lib/cart";
+import { hreflangLinks, isValidLang, useLang } from "@/lib/i18n";
 import { useFromPrice } from "@/lib/useFromPrice";
 import { sectionsQuery } from "@/lib/sections";
 import { StoreLayout } from "@/components/store/StoreLayout";
@@ -15,11 +16,15 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { getHomeSeo } from "@/lib/content.functions";
 
-export const Route = createFileRoute("/")({
-  loader: () => getHomeSeo().catch(() => null),
+export const Route = createFileRoute("/{-$lang}/")({
+  beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
+  loader: async ({ context }) => ({
+    seo: await getHomeSeo().catch(() => null),
+    st: await context.queryClient.ensureQueryData(settingsQuery).catch(() => null),
+  }),
   head: ({ loaderData }) => {
-    const title = loaderData?.title || "Curated essentials, delivered worldwide";
-    const description = loaderData?.description || "Shop watches, fashion, electronics, beauty and home — curated and shipped worldwide.";
+    const title = loaderData?.seo?.title || "Curated essentials, delivered worldwide";
+    const description = loaderData?.seo?.description || "Shop watches, fashion, electronics, beauty and home — curated and shipped worldwide.";
     return {
       meta: [
         { title },
@@ -28,9 +33,10 @@ export const Route = createFileRoute("/")({
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
-        ...(loaderData?.verification ? [{ name: "google-site-verification", content: loaderData.verification }] : []),
-        ...(loaderData?.image ? [{ property: "og:image", content: loaderData.image }, { name: "twitter:image", content: loaderData.image }] : []),
+        ...(loaderData?.seo?.verification ? [{ name: "google-site-verification", content: loaderData.seo.verification }] : []),
+        ...(loaderData?.seo?.image ? [{ property: "og:image", content: loaderData.seo.image }, { name: "twitter:image", content: loaderData.seo.image }] : []),
       ],
+      links: hreflangLinks(loaderData?.st, "/"),
     };
   },
   component: Index,
@@ -47,6 +53,8 @@ function Index() {
 
 /** Built-in layout shown until the admin creates sections in the homepage builder. */
 function LegacyHome() {
+  const lang = useLang();
+  const lp = { lang: lang ?? undefined };
   const { data: s } = useQuery(settingsQuery);
   const { data: products = [] } = useQuery(productsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
@@ -80,7 +88,7 @@ function LegacyHome() {
           <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{s?.tagline ?? " "}</h1>
           {s?.hero_cta && (
             <Button variant="hero" size="lg" className="mt-10" asChild>
-              <Link to="/shop">{s.hero_cta} <ArrowRight /></Link>
+              <Link to="/{-$lang}/shop" params={lp}>{s.hero_cta} <ArrowRight /></Link>
             </Button>
           )}
         </div>
@@ -100,7 +108,7 @@ function LegacyHome() {
           <h2 className="mt-2 text-5xl">Shop by category</h2>
           <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-5">
             {cats.filter((c) => c.is_active && !c.parent_id).map((c) => (
-              <Link key={c.id} to="/shop" search={{ category: c.slug }} className="group relative flex aspect-square items-end overflow-hidden rounded bg-secondary p-5">
+              <Link key={c.id} to="/{-$lang}/shop" params={lp} search={{ category: c.slug }} className="group relative flex aspect-square items-end overflow-hidden rounded bg-secondary p-5">
                 {c.image_url && <img src={c.image_url} alt="" className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105" />}
                 <span className="relative font-display text-2xl">{c.name}</span>
               </Link>
@@ -125,7 +133,7 @@ function LegacyHome() {
           <section key={c.id} className="mx-auto max-w-7xl px-6 pt-20">
             <div className="mb-10 flex items-end justify-between">
               <div><p className="eyebrow text-gold">Collection</p><h2 className="mt-2 text-5xl">{c.name}</h2>{c.description && <p className="mt-2 text-muted-foreground">{c.description}</p>}</div>
-              <Link to="/shop" search={{ collection: c.slug }} className="text-sm hover:text-gold">View all →</Link>
+              <Link to="/{-$lang}/shop" params={lp} search={{ collection: c.slug }} className="text-sm hover:text-gold">View all →</Link>
             </div>
             <Grid items={items} />
           </section>
@@ -136,7 +144,7 @@ function LegacyHome() {
         <section className="mx-auto max-w-7xl px-6 pt-20">
           <div className="mb-10 flex items-end justify-between">
             <div><p className="eyebrow text-gold">Just in</p><h2 className="mt-2 text-5xl">New arrivals</h2></div>
-            <Link to="/shop" search={{ sort: "new" }} className="text-sm hover:text-gold">Shop all →</Link>
+            <Link to="/{-$lang}/shop" params={lp} search={{ sort: "new" }} className="text-sm hover:text-gold">Shop all →</Link>
           </div>
           <Grid items={newest} />
         </section>

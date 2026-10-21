@@ -1,9 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+import { useMemo } from "react";
 import { SlidersHorizontal } from "lucide-react";
-import { brandsQuery, categoriesQuery, collectionsQuery, productCollectionsQuery, productsQuery, settingsQuery } from "@/lib/store";
+import { brandsQuery, categoriesQuery, collectionsQuery, contentTranslationsQuery, productCollectionsQuery, productsQuery, settingsQuery } from "@/lib/store";
 import { useFromPrice } from "@/lib/useFromPrice";
+import { applyTranslation, hreflangLinks, indexTranslations, isValidLang, useLang } from "@/lib/i18n";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,28 +21,37 @@ const searchSchema = z.object({
   sort: z.enum(["new", "price-asc", "price-desc", "name"]).optional(),
 });
 
-export const Route = createFileRoute("/shop")({
+export const Route = createFileRoute("/{-$lang}/shop")({
   validateSearch: searchSchema,
-  head: () => ({
+  beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
+  loader: ({ context }) => context.queryClient.ensureQueryData(settingsQuery).catch(() => null),
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Shop all products" },
       { name: "description", content: "Browse the full catalog — filter by category, brand, price and availability." },
       { property: "og:title", content: "Shop all products" },
       { property: "og:description", content: "Browse the full catalog — filter by category, brand, price and availability." },
     ],
+    links: hreflangLinks(loaderData, "/shop"),
   }),
   component: Shop,
 });
 
 function Shop() {
   const sp = Route.useSearch();
-  const navigate = useNavigate({ from: "/shop" });
+  const navigate = useNavigate({ from: "/{-$lang}/shop" });
   const { data: products = [], isLoading } = useQuery(productsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
   const { data: brands = [] } = useQuery(brandsQuery);
   const { data: cols = [] } = useQuery(collectionsQuery);
   const { data: pcs = [] } = useQuery(productCollectionsQuery);
   const { data: s } = useQuery(settingsQuery);
+  const lang = useLang();
+  const { data: trs = [] } = useQuery(contentTranslationsQuery);
+  const tIndex = useMemo(() => indexTranslations(trs), [trs]);
+  const tc = (c: (typeof cats)[number]) => applyTranslation(tIndex, "category", c, lang);
+  const tb = (b: (typeof brands)[number]) => applyTranslation(tIndex, "brand", b, lang);
+  const tcol = (c: (typeof cols)[number]) => applyTranslation(tIndex, "collection", c, lang);
   const fromPrice = useFromPrice();
 
   const set = (patch: Partial<z.infer<typeof searchSchema>>) =>
@@ -71,7 +82,7 @@ function Shop() {
     }
   });
 
-  const title = col?.name ?? cat?.name ?? brand?.name ?? (q ? `Results for “${sp.q}”` : "Shop all");
+  const title = (col && tcol(col).name) ?? (cat && tc(cat).name) ?? (brand && tb(brand).name) ?? (q ? `Results for “${sp.q}”` : "Shop all");
   const select = "h-9 w-full rounded-md border bg-card px-3 text-sm";
 
   return (
@@ -90,14 +101,14 @@ function Shop() {
               <label className="eyebrow text-muted-foreground">Category</label>
               <select className={select} value={sp.category ?? ""} onChange={(e) => set({ category: e.target.value || undefined })}>
                 <option value="">All</option>
-                {cats.filter((c) => c.is_active).map((c) => <option key={c.id} value={c.slug}>{c.parent_id ? "— " : ""}{c.name}</option>)}
+                {cats.filter((c) => c.is_active).map((c) => <option key={c.id} value={c.slug}>{c.parent_id ? "— " : ""}{tc(c).name}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
               <label className="eyebrow text-muted-foreground">Brand</label>
               <select className={select} value={sp.brand ?? ""} onChange={(e) => set({ brand: e.target.value || undefined })}>
                 <option value="">All</option>
-                {brands.filter((b) => b.is_active).map((b) => <option key={b.id} value={b.slug}>{b.name}</option>)}
+                {brands.filter((b) => b.is_active).map((b) => <option key={b.id} value={b.slug}>{tb(b).name}</option>)}
               </select>
             </div>
             {cols.some((c) => c.is_active) && (
@@ -105,7 +116,7 @@ function Shop() {
                 <label className="eyebrow text-muted-foreground">Collection</label>
                 <select className={select} value={sp.collection ?? ""} onChange={(e) => set({ collection: e.target.value || undefined })}>
                   <option value="">All</option>
-                  {cols.filter((c) => c.is_active).map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
+                  {cols.filter((c) => c.is_active).map((c) => <option key={c.id} value={c.slug}>{tcol(c).name}</option>)}
                 </select>
               </div>
             )}

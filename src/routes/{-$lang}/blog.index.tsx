@@ -1,11 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { postsQuery } from "@/lib/store";
+import { contentTranslationsQuery, postsQuery, settingsQuery } from "@/lib/store";
+import { applyTranslation, hreflangLinks, indexTranslations, isValidLang, useLang } from "@/lib/i18n";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMemo } from "react";
 
-export const Route = createFileRoute("/blog/")({
-  head: () => ({
+export const Route = createFileRoute("/{-$lang}/blog/")({
+  beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
+  loader: ({ context }) => context.queryClient.ensureQueryData(settingsQuery).catch(() => null),
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Journal — Stories, guides & news" },
       { name: "description", content: "Read our latest stories, style guides and store news." },
@@ -13,13 +17,18 @@ export const Route = createFileRoute("/blog/")({
       { property: "og:description", content: "Read our latest stories, style guides and store news." },
       { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
     ],
+    links: hreflangLinks(loaderData, "/blog"),
   }),
   component: BlogIndex,
 });
 
 function BlogIndex() {
+  const lang = useLang();
+  const lp = { lang: lang ?? undefined };
   const { data: posts = [], isLoading } = useQuery(postsQuery);
-  const live = posts.filter((p) => p.is_published);
+  const { data: trs = [] } = useQuery(contentTranslationsQuery);
+  const index = useMemo(() => indexTranslations(trs), [trs]);
+  const live = posts.filter((p) => p.is_published).map((p) => applyTranslation(index, "blog_post", p, lang));
   return (
     <StoreLayout>
       <div className="mx-auto max-w-6xl px-6 py-16">
@@ -30,7 +39,7 @@ function BlogIndex() {
         ) : (
           <div className="mt-12 grid gap-10 md:grid-cols-3">
             {live.map((p) => (
-              <Link key={p.id} to="/blog/$slug" params={{ slug: p.slug }} className="group">
+              <Link key={p.id} to="/{-$lang}/blog/$slug" params={{ ...lp, slug: p.slug }} className="group">
                 <div className="aspect-[4/3] overflow-hidden rounded bg-secondary">
                   {p.cover_image && <img src={p.cover_image} alt={p.title} className="size-full object-cover transition duration-500 group-hover:scale-105" />}
                 </div>

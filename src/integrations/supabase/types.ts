@@ -244,6 +244,33 @@ export type Database = {
         }
         Relationships: []
       }
+      content_translations: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          fields: Json
+          id: string
+          lang: string
+          updated_at: string
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          fields?: Json
+          id?: string
+          lang: string
+          updated_at?: string
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          fields?: Json
+          id?: string
+          lang?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           code: string
@@ -289,6 +316,123 @@ export type Database = {
           starts_at?: string | null
           used_count?: number
           value?: number
+        }
+        Relationships: []
+      }
+      email_logs: {
+        Row: {
+          attempts: number
+          created_at: string
+          error: string | null
+          event: string | null
+          id: number
+          last_attempt_at: string | null
+          payload: Json
+          recipient_email: string
+          status: string
+          subject: string
+          template_key: string | null
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          event?: string | null
+          id?: never
+          last_attempt_at?: string | null
+          payload?: Json
+          recipient_email: string
+          status: string
+          subject: string
+          template_key?: string | null
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          event?: string | null
+          id?: never
+          last_attempt_at?: string | null
+          payload?: Json
+          recipient_email?: string
+          status?: string
+          subject?: string
+          template_key?: string | null
+        }
+        Relationships: []
+      }
+      email_settings: {
+        Row: {
+          brand_color: string | null
+          brand_logo_url: string | null
+          delivery_enabled: boolean
+          footer_text: string | null
+          id: number
+          provider: string
+          provider_config: Json
+          reply_to: string | null
+          sender_email: string
+          sender_name: string
+          updated_at: string
+        }
+        Insert: {
+          brand_color?: string | null
+          brand_logo_url?: string | null
+          delivery_enabled?: boolean
+          footer_text?: string | null
+          id?: number
+          provider?: string
+          provider_config?: Json
+          reply_to?: string | null
+          sender_email?: string
+          sender_name?: string
+          updated_at?: string
+        }
+        Update: {
+          brand_color?: string | null
+          brand_logo_url?: string | null
+          delivery_enabled?: boolean
+          footer_text?: string | null
+          id?: number
+          provider?: string
+          provider_config?: Json
+          reply_to?: string | null
+          sender_email?: string
+          sender_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_enabled: boolean
+          key: string
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          key: string
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          key?: string
+          name?: string
+          subject?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -381,6 +525,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      notification_rules: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          is_enabled: boolean
+          recipient: string
+          template_key: string | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          is_enabled?: boolean
+          recipient?: string
+          template_key?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          is_enabled?: boolean
+          recipient?: string
+          template_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_rules_template_key_fkey"
+            columns: ["template_key"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       order_events: {
         Row: {

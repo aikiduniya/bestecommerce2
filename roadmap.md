@@ -35,3 +35,10 @@
 - [x] GA4 + Meta Pixel ecommerce events: view_item, add_to_cart, begin_checkout, purchase
 - [x] Multi-currency display: admin-managed rates, storefront switcher, orders always charged in base currency
 - [x] Languages / translations: admin-managed languages (10-language catalog, RTL support), per-language storefront text editor with English fallback, header/mobile language switcher, html lang+dir
+
+## Phase 4B completion work order (in progress)
+- [ ] Multilingual content: content_translations table (done), admin translations editor, storefront field fallback, language-prefixed URLs, hreflang tags, RTL
+- [ ] Email templates & notifications module: email_templates/email_settings/notification_rules/email_logs tables (done), admin UI (templates+preview, rules, sender/provider settings, logs+retry), send pipeline (delivery disabled until provider verified)
+- [ ] Mobile responsiveness tests: language/currency switchers, homepage builder, admin dashboard, checkout
+- [ ] Regression: COD checkout, totals, inventory, coupons, permissions
+- [ ] Gap analysis vs MASTER_PROMPT

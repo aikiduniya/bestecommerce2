@@ -57,7 +57,7 @@ function Account() {
           </TabsList>
           <TabsContent value="orders" className="mt-6">
             {orders.length === 0 ? (
-              <div className="rounded border border-dashed py-20 text-center text-muted-foreground">No orders yet. <Link to="/shop" className="text-gold">Start shopping</Link></div>
+              <div className="rounded border border-dashed py-20 text-center text-muted-foreground">No orders yet. <Link to="/{-$lang}/shop" params={{ lang: undefined }} className="text-gold">Start shopping</Link></div>
             ) : (
               <div className="divide-y rounded border bg-card">
                 {orders.map((o) => (

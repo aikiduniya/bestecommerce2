@@ -134,6 +134,20 @@
       "when": 1792573396599,
       "tag": "0018_store_languages",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792574388427,
+      "tag": "0019_content_translations",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792574427902,
+      "tag": "0020_email_module",
+      "breakpoints": true
     }
   ]
 }
