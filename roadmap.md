@@ -33,8 +33,8 @@
 - [x] Collapsible admin sidebar, global admin search (Cmd+K), notifications center, bulk actions on products
 - [ ] Email templates & notifications (needs email domain setup)
 - [x] GA4 + Meta Pixel ecommerce events: view_item, add_to_cart, begin_checkout, purchase
-- [ ] Order timeline, internal notes, invoices
-- [ ] International: multi-currency / languages
+- [x] Multi-currency display: admin-managed rates, storefront switcher, orders always charged in base currency
+- [ ] Languages / translations (own stage)
 
 ## Phase 4B — Stage 3 (done, tested)
 - [x] Flash sale prices on products + variants with optional start/end window; storefront shows sale price, struck original, Sale badge, live countdown; server charges the sale price only inside the window (expired sale billed full price in test)
@@ -42,5 +42,6 @@
 - [x] Coupons stack on top of automatic discounts (coupon applies to the already-discounted amount)
 - [ ] Email templates & notifications (needs email domain setup)
 - [x] GA4 + Meta Pixel ecommerce events: view_item, add_to_cart, begin_checkout, purchase
-- [ ] International: multi-currency / languages
+- [x] Multi-currency display: admin-managed rates, storefront switcher, orders always charged in base currency
+- [ ] Languages / translations (own stage)
 - [x] Collapsible admin sidebar, global admin search (Cmd+K), notifications center, bulk actions on products
