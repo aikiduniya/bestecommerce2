@@ -51,12 +51,14 @@ export const getPostSeo = createServerFn({ method: "GET" })
     return {
       title: p.seo_title || `${p.title} | ${s?.store_name ?? ""}`,
       description: p.seo_description || p.excerpt || "",
-      image: p.cover_image && p.cover_image.startsWith("https://") ? p.cover_image : null,
+      image: (p.og_image_url || p.cover_image)?.startsWith("https://") ? (p.og_image_url || p.cover_image) : null,
+      keywords: p.meta_keywords?.trim() || null, canonical: p.canonical_url?.trim() || null, noindex: p.robots_noindex,
+      name: p.title, author: p.author, published: p.published_at, modified: p.updated_at, store: s?.store_name ?? "",
     };
   });
 
 export const getHomeSeo = createServerFn({ method: "GET" }).handler(async () => {
-  const { data } = await publicClient().from("store_settings").select("store_name, tagline, seo_title, seo_description, google_site_verification, bing_site_verification, og_image_url").eq("id", 1).maybeSingle();
+  const { data } = await publicClient().from("store_settings").select("store_name, tagline, seo_title, seo_description, google_site_verification, bing_site_verification, og_image_url, logo_url, support_email, support_phone").eq("id", 1).maybeSingle();
   if (!data) return null;
   return {
     title: data.seo_title || `${data.store_name} — ${data.tagline ?? ""}`,
@@ -64,5 +66,7 @@ export const getHomeSeo = createServerFn({ method: "GET" }).handler(async () => 
     verification: data.google_site_verification?.trim() || null,
     bing: data.bing_site_verification?.trim() || null,
     image: data.og_image_url?.startsWith("https://") ? data.og_image_url : null,
+    store: data.store_name, logo: data.logo_url?.startsWith("https://") ? data.logo_url : null,
+    email: data.support_email, phone: data.support_phone,
   };
 });
