@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImagePicker } from "@/components/admin/ImagePicker";
+import { THEME_PRESETS, BUTTON_RADIUS } from "@/lib/theme";
 import { zonesQuery, taxRatesQuery, type TaxRate } from "@/lib/store";
 
 const DISPLAY_FONTS = ["Cormorant Garamond", "Playfair Display", "DM Serif Display", "Bodoni Moda", "Fraunces", "Italiana", "Syne", "Space Grotesk"];
@@ -147,6 +148,24 @@ function SettingsPage() {
           <TabsTrigger value="languages">Languages</TabsTrigger>
         </TabsList>
         <TabsContent value="brand">
+          <Card className="mb-6 p-6">
+            <p className="text-sm font-medium">Theme presets</p>
+            <p className="text-xs text-muted-foreground">Switch the whole look in one click. Only colors, fonts and styles change — products, pages and content stay as they are. Press Save to publish.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {THEME_PRESETS.map((t) => {
+                const active = (s as { theme_preset?: string }).theme_preset === t.id;
+                return (
+                  <button type="button" key={t.id} onClick={() => setS({ ...s, ...t, theme_preset: t.id } as never)}
+                    className={`rounded border p-3 text-left transition-colors ${active ? "border-gold ring-1 ring-gold" : "hover:border-gold"}`}>
+                    <div className="flex gap-1">{[t.primary_color, t.accent_color, t.background_color, t.surface_color].map((c) => <span key={c} className="size-6 rounded-full border" style={{ background: c }} />)}</div>
+                    <p className="mt-2 text-sm font-medium">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+            <ThemePreview s={s as never} />
+          </Card>
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
             {text("store_name", "Store name")}
             {text("tagline", "Tagline")}
@@ -164,12 +183,27 @@ function SettingsPage() {
               <Label className="text-xs text-muted-foreground">Accent color</Label>
               <Input type="color" value={s.accent_color ?? "#b08d57"} onChange={(e) => set("accent_color", e.target.value)} />
             </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Background color</Label>
+              <Input type="color" value={(s as { background_color?: string | null }).background_color ?? "#fbf9f4"} onChange={(e) => setS({ ...s, background_color: e.target.value } as never)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Card / surface color</Label>
+              <Input type="color" value={(s as { surface_color?: string | null }).surface_color ?? "#ffffff"} onChange={(e) => setS({ ...s, surface_color: e.target.value } as never)} />
+            </div>
+            <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Button style</Label>
+              <select className="h-9 w-full rounded-md border bg-background px-3 text-sm" value={(s as { button_style?: string }).button_style ?? "square"} onChange={(e) => setS({ ...s, button_style: e.target.value } as never)}>
+                <option value="square">Square</option><option value="rounded">Rounded</option><option value="pill">Pill</option></select></div>
+            <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Product card style</Label>
+              <select className="h-9 w-full rounded-md border bg-background px-3 text-sm" value={(s as { card_style?: string }).card_style ?? "minimal"} onChange={(e) => setS({ ...s, card_style: e.target.value } as never)}>
+                <option value="minimal">Minimal</option><option value="framed">Gold frame</option><option value="elevated">Elevated shadow</option></select></div>
           </Card>
         </TabsContent>
         <TabsContent value="home">
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
             {text("hero_eyebrow", "Hero small label")}
             {text("hero_cta", "Hero button text")}
+            {text("hero_image_alt" as never, "Hero image alt text (describes the photo for search engines)")}
             <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Hero background image (headline uses the tagline)</Label><ImagePicker multiple={false} value={s.hero_image_url ? [s.hero_image_url] : []} onChange={(v) => set("hero_image_url", v[0] ?? null)} /></div>
             <p className="text-xs text-muted-foreground sm:col-span-2">Featured products and homepage collections are controlled from Products (★ Featured) and Collections (Homepage switch).</p>
           </Card>
@@ -337,5 +371,28 @@ function SettingsPage() {
         </TabsContent>
       </Tabs>
     </>
+  );
+}
+
+function ThemePreview({ s }: { s: { primary_color: string | null; accent_color: string | null; background_color?: string | null; surface_color?: string | null; font_display: string; font_body: string; button_style?: string; card_style?: string; store_name: string } }) {
+  const bg = s.background_color ?? "#fbf9f4", fg = s.primary_color ?? "#1c1917", gold = s.accent_color ?? "#b08d57", card = s.surface_color ?? "#ffffff";
+  const r = BUTTON_RADIUS[s.button_style ?? "square"];
+  const cardCss = s.card_style === "framed" ? { outline: `1px solid ${gold}` } : s.card_style === "elevated" ? { boxShadow: "0 20px 40px -20px rgba(0,0,0,.35)" } : {};
+  return (
+    <div className="mt-5 overflow-hidden rounded border" aria-label="Live theme preview">
+      <p className="border-b bg-muted px-3 py-1.5 text-xs text-muted-foreground">Live preview</p>
+      <div style={{ background: bg, color: fg, fontFamily: `"${s.font_body}", sans-serif` }} className="grid gap-6 p-6 sm:grid-cols-[1.4fr_1fr]">
+        <div style={{ background: fg, color: bg }} className="rounded p-6">
+          <p style={{ color: gold, letterSpacing: ".25em" }} className="text-[10px] font-semibold uppercase">New collection</p>
+          <p style={{ fontFamily: `"${s.font_display}", serif` }} className="mt-2 text-3xl leading-tight">{s.store_name}</p>
+          <span style={{ background: gold, color: fg, borderRadius: r }} className="mt-4 inline-block px-4 py-2 text-xs font-medium">Shop now</span>
+        </div>
+        <div>
+          <div style={{ background: card, ...cardCss }} className="aspect-[4/5] rounded" />
+          <p style={{ fontFamily: `"${s.font_display}", serif` }} className="mt-2 text-lg">Product name</p>
+          <p className="text-xs">$1,250.00</p>
+        </div>
+      </div>
+    </div>
   );
 }

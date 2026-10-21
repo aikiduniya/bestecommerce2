@@ -18,7 +18,7 @@ export function ProductCard({ p, currency, fromPrice }: { p: Product; currency?:
   const struck = flashSale ? reg : p.compare_at_price;
   return (
     <Link to="/{-$lang}/product/$slug" params={{ lang: lang ?? undefined, slug: tp.slug }} className="group block">
-      <div className="relative aspect-[4/5] overflow-hidden rounded bg-secondary">
+      <div className="product-card-media relative aspect-[4/5] overflow-hidden rounded bg-secondary">
         {p.images[0] ? (
           <img src={p.images[0]} alt={(p as { image_alts?: string[] }).image_alts?.[0] || tp.name} loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
         ) : (

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { settingsQuery } from "@/lib/store";
+import { BUTTON_RADIUS } from "@/lib/theme";
 
 const HEX = /^#[0-9a-f]{6}$/i;
 const SAFE_FONT = /^[A-Za-z0-9 ]{2,40}$/;
@@ -39,6 +40,18 @@ export function StoreTheme() {
       if (s.font_display && SAFE_FONT.test(s.font_display)) root.setProperty("--font-display", `"${s.font_display}", Georgia, serif`);
       if (s.font_body && SAFE_FONT.test(s.font_body)) root.setProperty("--font-body", `"${s.font_body}", system-ui, sans-serif`);
     }
+    const x = s as typeof s & { background_color?: string | null; surface_color?: string | null; button_style?: string; card_style?: string };
+    if (x.background_color && HEX.test(x.background_color)) {
+      root.setProperty("--background", x.background_color);
+      root.setProperty("--secondary", `color-mix(in oklab, ${x.background_color} 92%, ${s.primary_color ?? "#1c1917"})`);
+      root.setProperty("--muted", `color-mix(in oklab, ${x.background_color} 94%, ${s.primary_color ?? "#1c1917"})`);
+    }
+    if (x.surface_color && HEX.test(x.surface_color)) {
+      root.setProperty("--card", x.surface_color);
+      root.setProperty("--popover", x.surface_color);
+    }
+    root.setProperty("--btn-radius", BUTTON_RADIUS[x.button_style ?? ""] ?? "calc(var(--radius) - 2px)");
+    document.documentElement.dataset["card"] = x.card_style ?? "minimal";
     if (s.favicon_url) {
       let icon = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
       if (icon) icon.href = s.favicon_url;
