@@ -117,15 +117,32 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             <p className="font-display text-2xl">{s?.store_name}</p>
             <p className="mt-2 text-sm text-muted-foreground">{s?.tagline}</p>
           </div>
-          <div className="text-sm">
-            <p className="eyebrow mb-3 text-muted-foreground">Shop</p>
-            {topCats.slice(0, 5).map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1 hover:text-gold">{c.name}</Link>)}
-          </div>
-          <div className="text-sm">
-            <p className="eyebrow mb-3 text-muted-foreground">Information</p>
-            <Link to="/blog" className="block py-1 hover:text-gold">Journal</Link>
-            {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/pages/$slug" params={{ slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
-          </div>
+          {footerItems.length > 0 ? (
+            footerItems.map((col, i) => (
+              <div key={i} className="text-sm">
+                {col.children?.length ? (
+                  <>
+                    <p className="eyebrow mb-3 text-muted-foreground">{col.label}</p>
+                    {col.children.map((ch, j) => <a key={j} href={ch.url} className="block py-1 hover:text-gold">{ch.label}</a>)}
+                  </>
+                ) : (
+                  <a href={col.url} className="block py-1 hover:text-gold">{col.label}</a>
+                )}
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="text-sm">
+                <p className="eyebrow mb-3 text-muted-foreground">Shop</p>
+                {topCats.slice(0, 5).map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1 hover:text-gold">{c.name}</Link>)}
+              </div>
+              <div className="text-sm">
+                <p className="eyebrow mb-3 text-muted-foreground">Information</p>
+                <Link to="/blog" className="block py-1 hover:text-gold">Journal</Link>
+                {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/pages/$slug" params={{ slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
+              </div>
+            </>
+          )}
           <div className="text-sm">
             <p className="eyebrow mb-3 text-muted-foreground">Contact</p>
             {s?.support_email && <p>{s.support_email}</p>}
