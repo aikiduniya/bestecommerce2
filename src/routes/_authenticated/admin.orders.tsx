@@ -36,6 +36,7 @@ function OrdersPage() {
     if (patch.status === "cancelled") qc.invalidateQueries({ queryKey: ["products"] });
     toast.success(patch.status === "cancelled" ? "Order cancelled — stock returned to inventory" : "Order updated");
     qc.invalidateQueries({ queryKey: ["orders"] });
+    qc.invalidateQueries({ queryKey: ["order_events", id] });
     setView((v) => (v && v.id === id ? { ...v, ...patch } as Order : v));
   }
 
@@ -110,7 +111,7 @@ function OrdersPage() {
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle className="font-display text-3xl">Order #{view.order_number}</DialogTitle>
-                  <Button size="sm" variant="outline" asChild><Link to="/admin/orders/$id/invoice" params={{ id: view.id }} target="_blank"><Printer className="size-4" /> Invoice</Link></Button>
+                  <Button size="sm" variant="outline" asChild><Link to="/admin/invoice/$id" params={{ id: view.id }} target="_blank"><Printer className="size-4" /> Invoice</Link></Button>
                 </div>
               </DialogHeader>
               <div className="divide-y rounded border text-sm">
