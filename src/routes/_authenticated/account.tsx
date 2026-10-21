@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { StatusPill } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MfaSettings } from "@/components/MfaSettings";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: "My account" }, { name: "robots", content: "noindex" }] }),
@@ -54,6 +55,7 @@ function Account() {
           <TabsList>
             <TabsTrigger value="orders">Orders ({orders.length})</TabsTrigger>
             <TabsTrigger value="wishlist">Wishlist ({wished.length})</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
           <TabsContent value="orders" className="mt-6">
             {orders.length === 0 ? (
@@ -75,6 +77,9 @@ function Account() {
             ) : (
               <div className="grid grid-cols-2 gap-5 md:grid-cols-4">{wished.map((p) => <ProductCard key={p.id} p={p} currency={s?.currency} />)}</div>
             )}
+          </TabsContent>
+          <TabsContent value="security" className="mt-6">
+            <MfaSettings />
           </TabsContent>
         </Tabs>
       </div>
