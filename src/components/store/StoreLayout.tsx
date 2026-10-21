@@ -10,7 +10,7 @@ import { extraCurrencies, initDisplayCurrency, setDisplayCurrency, useDisplayCur
 import { DEFAULT_LANG, extraLanguages, initLang, langDir, langUrl, setLang, translate, useLang, useLangParam } from "@/lib/i18n";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
-  const { data: s, isLoading } = useQuery(settingsQuery);
+  const { data: s } = useQuery(settingsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
   const { data: pages = [] } = useQuery(pagesQuery);
   const { data: menus = [] } = useQuery(menusQuery);
@@ -20,6 +20,10 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  // Banner content depends on client-only state (settings fetch, staff check);
+  // render it only after mount so SSR and first client render match.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const topCats = cats.filter((c) => c.is_active && !c.parent_id);
   const headerItems = navItems(menus.find((m) => m.handle === "header"));
   const footerItems = navItems(menus.find((m) => m.handle === "footer"));
@@ -109,17 +113,17 @@ export function StoreLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {s?.maintenance_mode && isStaff && (
+      {mounted && s?.maintenance_mode && isStaff && (
         <div className="bg-warning py-1.5 text-center text-xs font-medium text-foreground">{t("maintenance.banner")}</div>
       )}
-      {s?.announcement_enabled && s.announcement && (
+      {mounted && s?.announcement_enabled && s.announcement && (
         <div className="bg-primary py-2 text-center text-xs tracking-wide text-primary-foreground">{s.announcement}</div>
       )}
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 md:px-6">
           <button className="md:hidden" onClick={() => setOpen(!open)} aria-label={t("nav.menu")}>{open ? <X /> : <Menu />}</button>
           <Link to="/{-$lang}" params={lp} className="shrink-0">
-            {s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{isLoading ? "\u00a0" : s?.store_name}</span>}
+            {mounted && s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{mounted ? (s?.store_name ?? "\u00a0") : "\u00a0"}</span>}
           </Link>
           <nav className="hidden flex-1 justify-center gap-7 text-sm md:flex">
             {headerItems.length > 0 ? (
@@ -186,8 +190,8 @@ export function StoreLayout({ children }: { children: ReactNode }) {
       <footer className="mt-20 border-t bg-card">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
           <div>
-            <p className="font-display text-2xl">{s?.store_name}</p>
-            <p className="mt-2 text-sm text-muted-foreground">{s?.tagline}</p>
+            <p className="font-display text-2xl">{mounted ? s?.store_name : ""}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{mounted ? s?.tagline : ""}</p>
           </div>
           {footerItems.length > 0 ? (
             footerItems.map((col, i) => (
@@ -217,11 +221,11 @@ export function StoreLayout({ children }: { children: ReactNode }) {
           )}
           <div className="text-sm">
             <p className="eyebrow mb-3 text-muted-foreground">{t("footer.contact")}</p>
-            {s?.support_email && <p>{s.support_email}</p>}
-            {s?.support_phone && <p>{s.support_phone}</p>}
+            {mounted && s?.support_email && <p>{s.support_email}</p>}
+            {mounted && s?.support_phone && <p>{s.support_phone}</p>}
           </div>
         </div>
-        <p className="border-t py-5 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} {s?.store_name}</p>
+        <p className="border-t py-5 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} {mounted ? s?.store_name : ""}</p>
       </footer>
     </div>
   );

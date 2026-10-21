@@ -16,6 +16,7 @@ import { CartProvider } from "@/lib/cart";
 import { StoreTheme } from "@/components/store/StoreTheme";
 import { Tracking } from "@/components/store/Tracking";
 import { supabase } from "@/integrations/supabase/client";
+import { settingsQuery } from "@/lib/store";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -101,6 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(settingsQuery),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
