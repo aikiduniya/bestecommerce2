@@ -102,7 +102,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
       )}
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 md:px-6">
-          <button className="md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">{open ? <X /> : <Menu />}</button>
+          <button className="md:hidden" onClick={() => setOpen(!open)} aria-label={t("nav.menu")}>{open ? <X /> : <Menu />}</button>
           <Link to="/" className="shrink-0">
             {s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{isLoading ? "\u00a0" : s?.store_name}</span>}
           </Link>
@@ -124,7 +124,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
               )
             ) : (
               <>
-                <Link to="/shop" className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>Shop all</Link>
+                <Link to="/shop" className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>{t("nav.shop_all")}</Link>
                 {topCats.slice(0, 6).map((c) => (
                   <Link key={c.id} to="/shop" search={{ category: c.slug }} className="hover:text-gold">{c.name}</Link>
                 ))}
@@ -132,14 +132,15 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             )}
           </nav>
           <div className="ml-auto flex items-center gap-4 md:ml-0">
+            {langPicker}
             {currencyPicker}
             <form onSubmit={search} className="relative hidden lg:block">
               <Search className="absolute left-2.5 top-2 size-4 text-muted-foreground" />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-8 w-44 rounded-full border bg-card pl-8 pr-3 text-sm outline-none focus:border-gold" />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("nav.search")} className="h-8 w-44 rounded-full border bg-card pl-8 pr-3 text-sm outline-none focus:border-gold" />
             </form>
-            <Link to="/account" aria-label="Wishlist" className="hover:text-gold"><Heart className="size-5" /></Link>
-            <Link to={user ? (isStaff ? "/admin" : "/account") : "/auth"} aria-label="Account" className="hover:text-gold"><User className="size-5" /></Link>
-            <Link to="/cart" aria-label="Cart" className="relative hover:text-gold">
+            <Link to="/account" aria-label={t("nav.wishlist")} className="hover:text-gold"><Heart className="size-5" /></Link>
+            <Link to={user ? (isStaff ? "/admin" : "/account") : "/auth"} aria-label={t("nav.account")} className="hover:text-gold"><User className="size-5" /></Link>
+            <Link to="/cart" aria-label={t("nav.cart")} className="relative hover:text-gold">
               <ShoppingBag className="size-5" />
               {count > 0 && <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-accent-foreground">{count}</span>}
             </Link>
@@ -147,8 +148,9 @@ export function StoreLayout({ children }: { children: ReactNode }) {
         </div>
         {open && (
           <div className="space-y-3 border-t px-4 py-4 md:hidden">
+            {langPicker}
             {currencyPicker}
-            <form onSubmit={search}><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="h-10 w-full rounded border bg-card px-3 text-sm" /></form>
+            <form onSubmit={search}><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("nav.search_products")} className="h-10 w-full rounded border bg-card px-3 text-sm" /></form>
             {headerItems.length > 0 ? (
               headerItems.map((item, i) => (
                 <div key={i}>
@@ -158,7 +160,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
               ))
             ) : (
               <>
-                <Link to="/shop" className="block py-1" onClick={() => setOpen(false)}>Shop all</Link>
+                <Link to="/shop" className="block py-1" onClick={() => setOpen(false)}>{t("nav.shop_all")}</Link>
                 {topCats.map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1" onClick={() => setOpen(false)}>{c.name}</Link>)}
               </>
             )}
