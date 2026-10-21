@@ -44,11 +44,30 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+/** Admin-managed 301/302 redirects, checked only for paths that would otherwise 404. */
+async function findRedirect(request: Request): Promise<Response | null> {
+  try {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/+$/, "") || "/";
+    const { publicClient } = await import("./lib/public-db");
+    const { data } = await publicClient().from("redirects").select("to_path, status_code").eq("from_path", path).eq("is_active", true).maybeSingle();
+    if (!data) return null;
+    const to = /^https?:\/\//.test(data.to_path) ? data.to_path : new URL(data.to_path, url.origin).toString();
+    return new Response(null, { status: data.status_code === 302 ? 302 : 301, headers: { Location: to } });
+  } catch {
+    return null;
+  }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
+      if (response.status === 404 && request.method === "GET") {
+        const target = await findRedirect(request);
+        if (target) return target;
+      }
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
       console.error(error);

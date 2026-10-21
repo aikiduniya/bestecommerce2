@@ -197,6 +197,13 @@
       "when": 1792583092882,
       "tag": "0027_giftcards_loyalty_referrals_carts",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1792587732064,
+      "tag": "0028_seo_robots_llms_redirects",
+      "breakpoints": true
     }
   ]
 }
