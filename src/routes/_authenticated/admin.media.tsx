@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { mediaQuery, type Media } from "@/lib/store";
 import { uploadMedia } from "@/lib/media";
 import { PageHeader } from "@/components/admin/PageHeader";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -52,13 +53,15 @@ function MediaPage() {
           {data.map((m) => (
             <div key={m.id} className="group">
               <div className="relative aspect-square overflow-hidden rounded border bg-muted">
-                <img src={m.url} alt={m.filename ?? ""} className="size-full object-cover" loading="lazy" />
+                <img src={m.url} alt={m.alt_text ?? m.filename ?? ""} className="size-full object-cover" loading="lazy" />
                 <div className="absolute inset-0 hidden items-center justify-center gap-2 bg-primary/50 group-hover:flex">
                   <Button size="icon" variant="secondary" onClick={() => { navigator.clipboard.writeText(m.url); toast.success("Link copied"); }} aria-label="Copy link"><Copy /></Button>
                   <Button size="icon" variant="destructive" onClick={() => remove(m)} aria-label="Delete"><Trash2 /></Button>
                 </div>
               </div>
               <p className="mt-1 truncate text-xs text-muted-foreground">{m.filename}</p>
+              <Input key={m.alt_text ?? ""} aria-label="Alt text" className="mt-1 h-7 text-xs" placeholder={suggestAlt(m.filename)} defaultValue={m.alt_text ?? ""}
+                onBlur={async (e) => { const v = e.target.value.trim() || null; if (v === m.alt_text) return; const { error } = await supabase.from("media").update({ alt_text: v }).eq("id", m.id); if (error) toast.error(error.message); else { toast.success("Alt text saved"); qc.invalidateQueries({ queryKey: ["media"] }); } }} />
             </div>
           ))}
           {data.length === 0 && <p className="col-span-full py-16 text-center text-sm text-muted-foreground">No images yet. Upload your first image.</p>}
@@ -66,4 +69,9 @@ function MediaPage() {
       </Card>
     </>
   );
+}
+
+function suggestAlt(filename: string | null) {
+  const base = (filename ?? "").replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").replace(/\d{6,}/g, "").trim();
+  return base ? base.charAt(0).toUpperCase() + base.slice(1) : "Describe this image";
 }
