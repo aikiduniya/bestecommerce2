@@ -14,7 +14,7 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Prose } from "@/components/store/Prose";
 
-type Cfg = Record<string, any>;
+type Cfg = any;
 
 export function HomeSections({ sections }: { sections: HomeSection[] }) {
   const { data: s } = useQuery(settingsQuery);

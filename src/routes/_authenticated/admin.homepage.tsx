@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export const Route = createFileRoute("/_authenticated/admin/homepage")({ component: HomepageBuilder });
 
-type Cfg = Record<string, any>;
+type Cfg = any;
 
 const DEFAULT_SECTIONS: { type: string; title?: string }[] = [
   { type: "hero" },

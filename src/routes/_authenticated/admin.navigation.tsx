@@ -28,7 +28,7 @@ function NavigationAdmin() {
   );
 }
 
-function MenuEditor({ menuId, handle, title, hint, items: initial }: { menuId?: string; handle: string; title: string; hint: string; items: NavItem[] }) {
+function MenuEditor({ menuId, handle, title, hint, items: initial }: { menuId: string | undefined; handle: string; title: string; hint: string; items: NavItem[] }) {
   const [items, setItems] = useState<NavItem[]>(initial);
   const [dirty, setDirty] = useState(false);
   const qc = useQueryClient();
