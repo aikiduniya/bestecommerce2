@@ -71,6 +71,13 @@
       "when": 1792567117973,
       "tag": "0009_coupon_atomic_usage_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792567136805,
+      "tag": "0010_homepage_sections_and_menus",
+      "breakpoints": true
     }
   ]
 }
