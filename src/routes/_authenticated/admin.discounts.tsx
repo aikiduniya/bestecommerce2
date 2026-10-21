@@ -38,10 +38,10 @@ function DiscountsPage() {
     },
   });
   const [f, setF] = useState(empty);
-  const [editing, setEditing] = useState<(Partial<Discount> & typeof empty) | null>(null);
+  const [editing, setEditing] = useState<DiscForm | null>(null);
   const refresh = () => qc.invalidateQueries({ queryKey: ["auto-discounts"] });
 
-  function validate(form: typeof empty): string | null {
+  function validate(form: DiscForm): string | null {
     const value = Number(form.value || 0);
     if (!form.name.trim()) return "Name is required";
     if (form.kind === "percent" && (value <= 0 || value > 100)) return "Percent must be between 1 and 100";
@@ -51,7 +51,7 @@ function DiscountsPage() {
     return null;
   }
 
-  const payload = (form: typeof empty) => ({
+  const payload = (form: DiscForm) => ({
     name: form.name.trim(),
     kind: form.kind,
     value: Number(form.value || 0),
@@ -76,9 +76,9 @@ function DiscountsPage() {
   async function saveEdit(e: React.FormEvent) {
     e.preventDefault();
     if (!editing?.id) return;
-    const err = validate(editing as typeof empty);
+    const err = validate(editing);
     if (err) { toast.error(err); return; }
-    const { error } = await supabase.from("automatic_discounts").update(payload(editing as typeof empty)).eq("id", editing.id);
+    const { error } = await supabase.from("automatic_discounts").update(payload(editing)).eq("id", editing.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Discount updated");
     setEditing(null);
@@ -112,7 +112,7 @@ function DiscountsPage() {
     return "Live";
   };
 
-  const scopePicker = (form: typeof empty, set: (p: Partial<typeof empty>) => void) => (
+  const scopePicker = (form: DiscForm, set: (p: Partial<DiscForm>) => void) => (
     <>
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Applies to</Label>
@@ -137,7 +137,7 @@ function DiscountsPage() {
     </>
   );
 
-  const fields = (form: typeof empty, set: (p: Partial<typeof empty>) => void) => (
+  const fields = (form: DiscForm, set: (p: Partial<DiscForm>) => void) => (
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Name *</Label>
@@ -174,7 +174,7 @@ function DiscountsPage() {
 
   return (
     <>
-      <PageHeader title="Automatic discounts" description="Discounts that apply at checkout without a code. Only one applies per order — the highest priority, then the largest." />
+      <PageHeader title="Automatic discounts" subtitle="Discounts that apply at checkout without a code. Only one applies per order — the highest priority, then the largest." />
       <Card className="p-5">
         <form onSubmit={create} className="space-y-4">
           {fields(f, (p) => setF({ ...f, ...p }))}
@@ -206,7 +206,7 @@ function DiscountsPage() {
           <DialogHeader><DialogTitle>Edit discount</DialogTitle></DialogHeader>
           {editing && (
             <form onSubmit={saveEdit} className="space-y-4">
-              {fields(editing as typeof empty, (p) => setEditing({ ...editing, ...p }))}
+              {fields(editing, (p) => setEditing({ ...editing, ...p }))}
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
                 <Button type="submit" variant="gold">Save</Button>
