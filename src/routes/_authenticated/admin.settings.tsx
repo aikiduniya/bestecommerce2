@@ -55,10 +55,10 @@ function SettingsPage() {
     set("languages", raw as never);
   };
   const setTranslation = (lang: string, key: string, value: string) => {
-    const next: Translations = { ...translations, [lang]: { ...(translations[lang] ?? {}) } };
-    if (value.trim()) next[lang][key] = value;
-    else delete next[lang][key];
-    set("translations", next as never);
+    const table: Record<string, string> = { ...(translations[lang] ?? {}) };
+    if (value.trim()) table[key] = value;
+    else delete table[key];
+    set("translations", { ...translations, [lang]: table } as never);
   };
 
   async function save() {
