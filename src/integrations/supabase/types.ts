@@ -250,6 +250,42 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_sections: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          is_enabled: boolean
+          sort_order: number
+          subtitle: string | null
+          title: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       media: {
         Row: {
           created_at: string
@@ -280,6 +316,27 @@ export type Database = {
           path?: string
           size_bytes?: number | null
           url?: string
+        }
+        Relationships: []
+      }
+      navigation_menus: {
+        Row: {
+          handle: string
+          id: string
+          items: Json
+          updated_at: string
+        }
+        Insert: {
+          handle: string
+          id?: string
+          items?: Json
+          updated_at?: string
+        }
+        Update: {
+          handle?: string
+          id?: string
+          items?: Json
+          updated_at?: string
         }
         Relationships: []
       }
@@ -976,6 +1033,12 @@ export type Database = {
           _staff_role_id: string
         }
         Returns: string
+      }
+      best_seller_ids: {
+        Args: { _limit?: number }
+        Returns: {
+          product_id: string
+        }[]
       }
       check_coupon: {
         Args: { _code: string; _subtotal: number }

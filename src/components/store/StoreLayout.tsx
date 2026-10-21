@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
-import { Heart, Search, ShoppingBag, User, Menu, X } from "lucide-react";
+import { Heart, Search, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
 import { categoriesQuery, pagesQuery, settingsQuery } from "@/lib/store";
+import { menusQuery, navItems } from "@/lib/sections";
 import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
 
@@ -10,6 +11,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s, isLoading } = useQuery(settingsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
   const { data: pages = [] } = useQuery(pagesQuery);
+  const { data: menus = [] } = useQuery(menusQuery);
   const { user } = useSessionUser();
   const isStaff = useIsStaff(user?.id);
   const { count } = useCart();
@@ -17,6 +19,8 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const topCats = cats.filter((c) => c.is_active && !c.parent_id);
+  const headerItems = navItems(menus.find((m) => m.handle === "header"));
+  const footerItems = navItems(menus.find((m) => m.handle === "footer"));
 
   if (s?.maintenance_mode && !isStaff) {
     return (
@@ -50,10 +54,29 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             {s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{isLoading ? "\u00a0" : s?.store_name}</span>}
           </Link>
           <nav className="hidden flex-1 justify-center gap-7 text-sm md:flex">
-            <Link to="/shop" className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>Shop all</Link>
-            {topCats.slice(0, 6).map((c) => (
-              <Link key={c.id} to="/shop" search={{ category: c.slug }} className="hover:text-gold">{c.name}</Link>
-            ))}
+            {headerItems.length > 0 ? (
+              headerItems.map((item, i) =>
+                item.children?.length ? (
+                  <div key={i} className="group relative">
+                    <a href={item.url} className="flex items-center gap-1 hover:text-gold">{item.label}<ChevronDown className="size-3.5" /></a>
+                    <div className="invisible absolute left-1/2 top-full z-50 min-w-44 -translate-x-1/2 rounded border bg-card p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
+                      {item.children.map((ch, j) => (
+                        <a key={j} href={ch.url} className="block rounded px-3 py-2 hover:bg-secondary hover:text-gold">{ch.label}</a>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <a key={i} href={item.url} className="hover:text-gold">{item.label}</a>
+                ),
+              )
+            ) : (
+              <>
+                <Link to="/shop" className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>Shop all</Link>
+                {topCats.slice(0, 6).map((c) => (
+                  <Link key={c.id} to="/shop" search={{ category: c.slug }} className="hover:text-gold">{c.name}</Link>
+                ))}
+              </>
+            )}
           </nav>
           <div className="ml-auto flex items-center gap-4 md:ml-0">
             <form onSubmit={search} className="relative hidden lg:block">
@@ -71,8 +94,19 @@ export function StoreLayout({ children }: { children: ReactNode }) {
         {open && (
           <div className="space-y-3 border-t px-4 py-4 md:hidden">
             <form onSubmit={search}><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="h-10 w-full rounded border bg-card px-3 text-sm" /></form>
-            <Link to="/shop" className="block py-1" onClick={() => setOpen(false)}>Shop all</Link>
-            {topCats.map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1" onClick={() => setOpen(false)}>{c.name}</Link>)}
+            {headerItems.length > 0 ? (
+              headerItems.map((item, i) => (
+                <div key={i}>
+                  <a href={item.url} className="block py-1" onClick={() => setOpen(false)}>{item.label}</a>
+                  {item.children?.map((ch, j) => <a key={j} href={ch.url} className="block py-1 pl-4 text-muted-foreground" onClick={() => setOpen(false)}>{ch.label}</a>)}
+                </div>
+              ))
+            ) : (
+              <>
+                <Link to="/shop" className="block py-1" onClick={() => setOpen(false)}>Shop all</Link>
+                {topCats.map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1" onClick={() => setOpen(false)}>{c.name}</Link>)}
+              </>
+            )}
           </div>
         )}
       </header>
@@ -83,15 +117,32 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             <p className="font-display text-2xl">{s?.store_name}</p>
             <p className="mt-2 text-sm text-muted-foreground">{s?.tagline}</p>
           </div>
-          <div className="text-sm">
-            <p className="eyebrow mb-3 text-muted-foreground">Shop</p>
-            {topCats.slice(0, 5).map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1 hover:text-gold">{c.name}</Link>)}
-          </div>
-          <div className="text-sm">
-            <p className="eyebrow mb-3 text-muted-foreground">Information</p>
-            <Link to="/blog" className="block py-1 hover:text-gold">Journal</Link>
-            {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/pages/$slug" params={{ slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
-          </div>
+          {footerItems.length > 0 ? (
+            footerItems.map((col, i) => (
+              <div key={i} className="text-sm">
+                {col.children?.length ? (
+                  <>
+                    <p className="eyebrow mb-3 text-muted-foreground">{col.label}</p>
+                    {col.children.map((ch, j) => <a key={j} href={ch.url} className="block py-1 hover:text-gold">{ch.label}</a>)}
+                  </>
+                ) : (
+                  <a href={col.url} className="block py-1 hover:text-gold">{col.label}</a>
+                )}
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="text-sm">
+                <p className="eyebrow mb-3 text-muted-foreground">Shop</p>
+                {topCats.slice(0, 5).map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1 hover:text-gold">{c.name}</Link>)}
+              </div>
+              <div className="text-sm">
+                <p className="eyebrow mb-3 text-muted-foreground">Information</p>
+                <Link to="/blog" className="block py-1 hover:text-gold">Journal</Link>
+                {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/pages/$slug" params={{ slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
+              </div>
+            </>
+          )}
           <div className="text-sm">
             <p className="eyebrow mb-3 text-muted-foreground">Contact</p>
             {s?.support_email && <p>{s.support_email}</p>}

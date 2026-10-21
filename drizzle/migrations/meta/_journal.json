@@ -57,6 +57,34 @@
       "when": 1792527042495,
       "tag": "0007_phase4a_marketing_reviews_cms",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792567058819,
+      "tag": "0008_coupon_restore_on_cancel",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792567117973,
+      "tag": "0009_coupon_atomic_usage_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792567136805,
+      "tag": "0010_homepage_sections_and_menus",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792567214971,
+      "tag": "0011_best_seller_ids_function",
+      "breakpoints": true
     }
   ]
 }
