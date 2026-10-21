@@ -47,6 +47,20 @@ function Checkout() {
   const shipping = coupon?.free_shipping ? 0 : baseShipping;
   const discount = coupon ? Math.min(coupon.discount, cart.subtotal) : 0;
 
+  const { data: autoDisc } = useQuery({
+    queryKey: ["auto-discount-preview", cart.subtotal, cart.items.map((i) => `${i.product_id}:${i.qty}`).join(",")],
+    enabled: !!user && cart.items.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("check_automatic_discount", {
+        _items: cart.items.map((i) => ({ product_id: i.product_id, price: i.price, qty: i.qty })),
+        _subtotal: cart.subtotal,
+      });
+      if (error) return null;
+      return data as { name: string; discount: number } | null;
+    },
+  });
+  const autoDiscount = autoDisc ? Math.min(Number(autoDisc.discount), cart.subtotal) : 0;
+
   async function applyCoupon() {
     if (!codeInput.trim()) return;
     const { data, error } = await supabase.rpc("check_coupon", { _code: codeInput, _subtotal: cart.subtotal });
@@ -172,10 +186,11 @@ function Checkout() {
           </div>
           <div className="mt-4 space-y-2 border-t pt-4 text-sm">
             <div className="flex justify-between"><span>Subtotal</span><span>{money(cart.subtotal, cur)}</span></div>
+            {autoDiscount > 0 && <div className="flex justify-between text-success"><span>Discount{autoDisc?.name ? ` (${autoDisc.name})` : ""}</span><span>−{money(autoDiscount, cur)}</span></div>}
             <div className="flex justify-between"><span>Shipping</span><span>{zone ? money(shipping, cur) : "—"}</span></div>
             {coupon && <div className="flex justify-between text-success"><span>Coupon {coupon.code} <button type="button" className="ml-1 text-xs underline" onClick={() => setCoupon(null)}>remove</button></span><span>{coupon.free_shipping ? "Free shipping" : `−${money(discount, cur)}`}</span></div>}
             {codFee > 0 && <div className="flex justify-between"><span>Cash on Delivery fee</span><span>{money(codFee, cur)}</span></div>}
-            <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(cart.subtotal - discount + shipping + codFee, cur)}</span></div>
+            <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(cart.subtotal - autoDiscount - discount + shipping + codFee, cur)}</span></div>
             {codIssue && <p className="text-xs text-destructive">{codIssue}</p>}
           </div>
           <Button type="submit" size="lg" className="mt-6 w-full" disabled={placing || !s?.cod_enabled || !zone || !!codIssue}>

@@ -44,6 +44,48 @@ export type Database = {
         }
         Relationships: []
       }
+      automatic_discounts: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          name: string
+          priority: number
+          scope: string
+          starts_at: string | null
+          target_id: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind: string
+          name: string
+          priority?: number
+          scope?: string
+          starts_at?: string | null
+          target_id?: string | null
+          value: number
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name?: string
+          priority?: number
+          scope?: string
+          starts_at?: string | null
+          target_id?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string | null
@@ -409,6 +451,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          auto_discount_name: string | null
+          auto_discount_total: number
           cod_collected_at: string | null
           cod_confirmed_at: string | null
           coupon_code: string | null
@@ -437,6 +481,8 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          auto_discount_name?: string | null
+          auto_discount_total?: number
           cod_collected_at?: string | null
           cod_confirmed_at?: string | null
           coupon_code?: string | null
@@ -465,6 +511,8 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          auto_discount_name?: string | null
+          auto_discount_total?: number
           cod_collected_at?: string | null
           cod_confirmed_at?: string | null
           coupon_code?: string | null
@@ -654,6 +702,7 @@ export type Database = {
           options: Json
           price: number | null
           product_id: string
+          sale_price: number | null
           sku: string | null
           sort_order: number
           stock: number
@@ -667,6 +716,7 @@ export type Database = {
           options?: Json
           price?: number | null
           product_id: string
+          sale_price?: number | null
           sku?: string | null
           sort_order?: number
           stock?: number
@@ -680,6 +730,7 @@ export type Database = {
           options?: Json
           price?: number | null
           product_id?: string
+          sale_price?: number | null
           sku?: string | null
           sort_order?: number
           stock?: number
@@ -710,6 +761,9 @@ export type Database = {
           name: string
           options: Json
           price: number
+          sale_ends_at: string | null
+          sale_price: number | null
+          sale_starts_at: string | null
           seo_description: string | null
           seo_title: string | null
           short_description: string | null
@@ -735,6 +789,9 @@ export type Database = {
           name: string
           options?: Json
           price?: number
+          sale_ends_at?: string | null
+          sale_price?: number | null
+          sale_starts_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
           short_description?: string | null
@@ -760,6 +817,9 @@ export type Database = {
           name?: string
           options?: Json
           price?: number
+          sale_ends_at?: string | null
+          sale_price?: number | null
+          sale_starts_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
           short_description?: string | null
@@ -1101,11 +1161,19 @@ export type Database = {
         }
         Returns: string
       }
+      automatic_discount: {
+        Args: { _items: Json; _subtotal: number }
+        Returns: Json
+      }
       best_seller_ids: {
         Args: { _limit?: number }
         Returns: {
           product_id: string
         }[]
+      }
+      check_automatic_discount: {
+        Args: { _items: Json; _subtotal: number }
+        Returns: Json
       }
       check_coupon: {
         Args: { _code: string; _subtotal: number }
@@ -1114,6 +1182,17 @@ export type Database = {
       coupon_discount: {
         Args: { _code: string; _ship: number; _subtotal: number; _uid: string }
         Returns: Json
+      }
+      effective_price: {
+        Args: {
+          _ends: string
+          _price: number
+          _sale_price: number
+          _starts: string
+          _v_price?: number
+          _v_sale_price?: number
+        }
+        Returns: number
       }
       has_permission: {
         Args: { _perm: string; _user_id: string }

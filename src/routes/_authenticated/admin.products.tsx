@@ -25,7 +25,12 @@ export const Route = createFileRoute("/_authenticated/admin/products")({
   component: ProductsPage,
 });
 
-type Form = { [K in keyof Product]?: Product[K] | undefined } & { tagsText?: string | undefined };
+type Form = { [K in keyof Omit<Product, "sale_price" | "sale_starts_at" | "sale_ends_at">]?: Product[K] | undefined } & {
+  tagsText?: string | undefined;
+  sale_price?: number | string | null | undefined;
+  sale_starts_at?: string | null | undefined;
+  sale_ends_at?: string | null | undefined;
+};
 
 function ProductsPage() {
   const qc = useQueryClient();
@@ -61,13 +66,13 @@ function ProductsPage() {
       const { data } = await supabase.from("product_variants").select("*").eq("product_id", p.id).order("sort_order");
       setVariants((data ?? []).map((v) => ({
         id: duplicate ? undefined : v.id, options: v.options as Record<string, string>, sku: duplicate ? "" : v.sku ?? "",
-        price: v.price?.toString() ?? "", compare_at_price: v.compare_at_price?.toString() ?? "", stock: v.stock, image_url: v.image_url ?? "", is_active: v.is_active,
+        price: v.price?.toString() ?? "", compare_at_price: v.compare_at_price?.toString() ?? "", sale_price: v.sale_price?.toString() ?? "", stock: v.stock, image_url: v.image_url ?? "", is_active: v.is_active,
       })));
     }
     const cost = p ? (await supabase.from("product_costs").select("cost_price").eq("product_id", p.id).maybeSingle()).data?.cost_price ?? null : null;
     setForm(
       p
-        ? { ...p, cost_price: cost, ...(duplicate ? { id: undefined, name: `${p.name} (copy)`, slug: "", sku: null, status: "draft" } : {}), tagsText: p.tags.join(", ") }
+        ? { ...p, cost_price: cost, ...(duplicate ? { id: undefined, name: `${p.name} (copy)`, slug: "", sku: null, status: "draft" } : {}), tagsText: p.tags.join(", "), sale_price: p.sale_price?.toString() ?? "", sale_starts_at: toLocalInput(p.sale_starts_at), sale_ends_at: toLocalInput(p.sale_ends_at) }
         : { status: "draft", price: 0, stock: 0, low_stock_threshold: 5, is_featured: false, images: [], tagsText: "" },
     );
   }
@@ -91,6 +96,9 @@ function ProductsPage() {
       brand_id: form.brand_id || null,
       price: Number(form.price ?? 0),
       compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
+      sale_price: form.sale_price ? Number(form.sale_price) : null,
+      sale_starts_at: form.sale_starts_at ? new Date(form.sale_starts_at).toISOString() : null,
+      sale_ends_at: form.sale_ends_at ? new Date(form.sale_ends_at).toISOString() : null,
       stock: variants.length ? activeVariants.reduce((s, v) => s + v.stock, 0) : Math.max(0, Number(form.stock ?? 0)),
       low_stock_threshold: Number(form.low_stock_threshold ?? 5),
       images: form.images ?? [],
@@ -127,7 +135,7 @@ function ProductsPage() {
       for (const [i, v] of variants.entries()) {
         const row = {
           product_id: id!, options: v.options, sku: v.sku || null, price: v.price ? Number(v.price) : null,
-          compare_at_price: v.compare_at_price ? Number(v.compare_at_price) : null, stock: v.stock, image_url: v.image_url || null,
+          compare_at_price: v.compare_at_price ? Number(v.compare_at_price) : null, sale_price: v.sale_price ? Number(v.sale_price) : null, stock: v.stock, image_url: v.image_url || null,
           is_active: v.is_active, sort_order: i,
         };
         const { error } = v.id ? await supabase.from("product_variants").update(row).eq("id", v.id) : await supabase.from("product_variants").insert(row);
@@ -277,6 +285,9 @@ function ProductsPage() {
                   <F label="Price *"><Input type="number" step="0.01" min="0" required value={form.price ?? ""} onChange={(e) => set("price", e.target.value)} /></F>
                   <F label="Compare-at price"><Input type="number" step="0.01" min="0" value={form.compare_at_price ?? ""} onChange={(e) => set("compare_at_price", e.target.value)} /></F>
                   <F label={`Cost price${margin !== null ? ` · ${margin}% margin` : ""}`}><Input type="number" step="0.01" min="0" value={form.cost_price ?? ""} onChange={(e) => set("cost_price", e.target.value)} /></F>
+                  <F label="Sale price (flash sale)"><Input type="number" step="0.01" min="0" value={form.sale_price ?? ""} onChange={(e) => set("sale_price", e.target.value)} /></F>
+                  <F label="Sale starts (optional)"><Input type="datetime-local" value={form.sale_starts_at ?? ""} onChange={(e) => set("sale_starts_at", e.target.value)} /></F>
+                  <F label="Sale ends (optional)"><Input type="datetime-local" value={form.sale_ends_at ?? ""} onChange={(e) => set("sale_ends_at", e.target.value)} /></F>
                   <F label={variants.length ? "Stock (sum of variants)" : "Stock"}>
                     <Input type="number" min="0" disabled={variants.length > 0} value={variants.length ? variants.filter((v) => v.is_active).reduce((s, v) => s + v.stock, 0) : form.stock ?? 0} onChange={(e) => set("stock", e.target.value)} />
                   </F>
@@ -302,6 +313,13 @@ function ProductsPage() {
       </Dialog>
     </>
   );
+}
+
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function F({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {

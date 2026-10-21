@@ -6,6 +6,7 @@ import { Heart, Minus, Plus, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { brandsQuery, categoriesQuery, money, optionsOf, productsQuery, settingsQuery, variantsQuery } from "@/lib/store";
 import { pushRecentlyViewed, useCart } from "@/lib/cart";
+import { effectivePrice, regularPrice, saleActive } from "@/lib/sale";
 import { useSessionUser } from "@/lib/auth";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
@@ -89,8 +90,10 @@ function ProductPage() {
   }
 
   const images = [...(variant?.image_url ? [variant.image_url] : []), ...p.images].filter((v, i, a) => a.indexOf(v) === i);
-  const price = Number(variant?.price ?? p.price);
-  const compare = variant?.compare_at_price ?? p.compare_at_price;
+  const price = effectivePrice(p, variant);
+  const reg = regularPrice(p, variant);
+  const flashSale = saleActive(p) && (p.sale_price !== null || variant?.sale_price != null) && price < reg;
+  const compare = flashSale ? reg : (variant?.compare_at_price ?? p.compare_at_price);
   const stock = hasVariants ? variant?.stock ?? 0 : p.stock;
   const needsChoice = hasVariants && !variant;
   const related = products.filter((x) => x.status === "active" && x.id !== p.id && x.category_id === p.category_id).slice(0, 4);
@@ -151,6 +154,7 @@ function ProductPage() {
               {money(price, s?.currency)}
               {compare && Number(compare) > price && <span className="ml-3 text-lg text-muted-foreground line-through">{money(compare, s?.currency)}</span>}
             </p>
+            {flashSale && p.sale_ends_at && new Date(p.sale_ends_at) > new Date() && <SaleCountdown endsAt={p.sale_ends_at} />}
             {p.short_description && <p className="mt-4 text-muted-foreground">{p.short_description}</p>}
 
             {opts.map((o) => (
@@ -205,5 +209,26 @@ function ProductPage() {
         )}
       </div>
     </StoreLayout>
+  );
+}
+
+function SaleCountdown({ endsAt }: { endsAt: string }) {
+  const [left, setLeft] = useState(() => new Date(endsAt).getTime() - Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setLeft(new Date(endsAt).getTime() - Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [endsAt]);
+  if (left <= 0) return null;
+  const d = Math.floor(left / 86400000);
+  const h = Math.floor((left % 86400000) / 3600000);
+  const m = Math.floor((left % 3600000) / 60000);
+  const sec = Math.floor((left % 60000) / 1000);
+  return (
+    <div className="mt-4 inline-flex items-center gap-3 rounded border border-gold/40 bg-gold/10 px-4 py-2">
+      <span className="eyebrow text-gold">Sale ends in</span>
+      <span className="font-display text-lg tabular-nums">
+        {d > 0 && `${d}d `}{String(h).padStart(2, "0")}:{String(m).padStart(2, "0")}:{String(sec).padStart(2, "0")}
+      </span>
+    </div>
   );
 }

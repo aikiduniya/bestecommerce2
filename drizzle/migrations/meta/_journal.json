@@ -92,6 +92,34 @@
       "when": 1792568576740,
       "tag": "0012_order_timeline_and_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792569277666,
+      "tag": "0013_flash_sales_and_auto_discounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792569293334,
+      "tag": "0014_fix_auto_discount_collections",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792569318448,
+      "tag": "0015_auto_discount_preview_rpc",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792569643438,
+      "tag": "0016_effective_price_scalar_args",
+      "breakpoints": true
     }
   ]
 }
