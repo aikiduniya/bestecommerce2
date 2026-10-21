@@ -118,6 +118,13 @@ function Checkout() {
     setPlacing(false);
     if (error) { toast.error(error.message); return; }
     const res = data as { id: string; order_number: number };
+    if (user && saveAddr) {
+      void supabase.from("addresses").insert({
+        user_id: user.id, label: addresses.length ? `Address ${addresses.length + 1}` : "Home",
+        line1: f.line1, line2: f.line2 || null, city: f.city, state: f.state || null, postal: f.postal || null,
+        country, phone: f.phone || null, is_default: addresses.length === 0,
+      }).then(() => qc.invalidateQueries({ queryKey: ["addresses", user.id] }));
+    }
     trackPurchase(res.id, trackItems, grandTotal, cur);
     // Queue order emails (logged only until live delivery is enabled by the owner).
     const emailVars = {
@@ -170,6 +177,22 @@ function Checkout() {
           </section>
           <section className="grid gap-4 sm:grid-cols-2">
             <h2 className="text-2xl sm:col-span-2">Shipping address</h2>
+            {user && addresses.length > 0 && (
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs text-muted-foreground">Use a saved address</Label>
+                <select
+                  className="w-full rounded border bg-background px-3 py-2 text-sm"
+                  defaultValue=""
+                  onChange={(e) => {
+                    const a = addresses.find((x) => x.id === e.target.value);
+                    if (a) setF((x) => ({ ...x, line1: a.line1, line2: a.line2 ?? "", city: a.city, state: a.state ?? "", postal: a.postal ?? "", country: a.country, phone: x.phone || a.phone || "" }));
+                  }}
+                >
+                  <option value="">Choose…</option>
+                  {addresses.map((a) => <option key={a.id} value={a.id}>{a.label} — {a.line1}, {a.city}</option>)}
+                </select>
+              </div>
+            )}
             <div className="sm:col-span-2">{field("line1", "Address", { required: true })}</div>
             <div className="sm:col-span-2">{field("line2", "Apartment, suite (optional)")}</div>
             {field("city", "City", { required: true })}
@@ -204,6 +227,12 @@ function Checkout() {
             <Label className="text-xs text-muted-foreground">Order notes</Label>
             <Textarea value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} />
           </div>
+          {user && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={saveAddr} onChange={(e) => setSaveAddr(e.target.checked)} className="size-4 accent-[hsl(var(--gold))]" />
+              Save this address to my account
+            </label>
+          )}
         </div>
         <aside className="h-fit rounded border bg-card p-6 md:sticky md:top-24">
           <h2 className="text-2xl">Summary</h2>
