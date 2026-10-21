@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { brandsQuery, categoriesQuery, money, optionsOf, productsQuery, settingsQuery, variantsQuery } from "@/lib/store";
 import { pushRecentlyViewed, useCart } from "@/lib/cart";
 import { effectivePrice, regularPrice, saleActive } from "@/lib/sale";
+import { trackAddToCart, trackViewItem } from "@/lib/analytics";
 import { useSessionUser } from "@/lib/auth";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
@@ -74,8 +75,9 @@ function ProductPage() {
     if (p) {
       pushRecentlyViewed(p.id);
       document.title = p.seo_title || `${p.name} | ${s?.store_name ?? ""}`;
+      trackViewItem({ id: p.id, name: p.name, price: effectivePrice(p, null) }, s?.currency);
     }
-  }, [p, s?.store_name]);
+  }, [p, s?.store_name, s?.currency]);
 
   if (isLoading) return <StoreLayout><div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-2"><Skeleton className="aspect-square" /><Skeleton className="h-64" /></div></StoreLayout>;
   if (!p) {
@@ -111,6 +113,7 @@ function ProductPage() {
       product_id: p.id, variant_id: variant?.id ?? null, qty, name: p.name, slug: p.slug, price,
       image: images[0] ?? null, options: (variant?.options as Record<string, string>) ?? undefined,
     });
+    trackAddToCart({ id: p.id, name: p.name, price, qty, variant: variant ? Object.values(variant.options as Record<string, string>).join(" / ") : undefined }, s?.currency);
     toast.success("Added to cart", { action: { label: "View cart", onClick: () => (window.location.href = "/cart") } });
   }
 
