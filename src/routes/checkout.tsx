@@ -208,6 +208,11 @@ function Checkout() {
           <Button type="submit" size="lg" className="mt-6 w-full" disabled={placing || !s?.cod_enabled || !zone || !!codIssue}>
             {placing ? "Placing order…" : "Place order"}
           </Button>
+          {dc && dc.code !== cur && (
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              Prices are shown in {dc.code} for reference — your order is charged in {cur}.
+            </p>
+          )}
           <p className="mt-3 text-center text-xs text-muted-foreground">Prices and stock are verified when you place the order.</p>
         </aside>
       </form>
