@@ -98,9 +98,37 @@ function Checkout() {
   useEffect(() => { if (coupon) setCoupon(null); }, [cart.subtotal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const codFee = Number(s?.cod_fee ?? 0);
-  const merchandise = Math.max(cart.subtotal - autoDiscount - discount, 0);
+  const pointsToRedeem = s?.loyalty_enabled && user ? Math.min(Math.max(parseInt(pointsInput) || 0, 0), pointsBalance) : 0;
+  const pointsValue = Math.round(pointsToRedeem * Number(s?.loyalty_redeem_value ?? 0) * 100) / 100;
+  const merchandise = Math.max(cart.subtotal - autoDiscount - discount - pointsValue, 0);
   const taxInfo = taxPreview(s, taxRates, country, merchandise, shipping, codFee);
-  const grandTotal = merchandise + shipping + codFee + (taxInfo.inclusive ? 0 : taxInfo.tax);
+  const preGiftTotal = merchandise + shipping + codFee + (taxInfo.inclusive ? 0 : taxInfo.tax);
+  const giftApplied = gift ? Math.min(gift.balance, preGiftTotal) : 0;
+  const grandTotal = preGiftTotal - giftApplied;
+
+  async function applyGiftCard() {
+    if (!giftInput.trim()) return;
+    const { data, error } = await supabase.rpc("check_gift_card", { _code: giftInput });
+    if (error) { setGift(null); toast.error(error.message); return; }
+    const g = data as { code: string; balance: number };
+    setGift({ code: g.code, balance: Number(g.balance) });
+    toast.success(`Gift card ${g.code} applied`);
+  }
+
+  // Capture the cart for abandoned-cart recovery (signed-in customers only).
+  const snapRef = useRef("");
+  useEffect(() => {
+    if (!user?.email || cart.items.length === 0) return;
+    const key = JSON.stringify(cart.items.map((i) => [i.product_id, i.qty]));
+    if (snapRef.current === key) return;
+    snapRef.current = key;
+    void supabase.from("cart_snapshots").upsert({
+      user_id: user.id, email: user.email,
+      items: cart.items.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
+      subtotal: cart.subtotal, updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" }).then(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, cart.items, cart.subtotal]);
   const codIssue = !s ? null
     : s.cod_countries.length && country && !s.cod_countries.includes(country) ? `Cash on Delivery is not available in ${country}.`
     : zone && s.cod_excluded_zones.includes(zone.id) ? `Cash on Delivery is not available with ${zone.name}.`
@@ -119,6 +147,8 @@ function Checkout() {
       _zone_id: zone.id,
       _notes: f.notes,
       ...(coupon ? { _coupon: coupon.code } : {}),
+      ...(gift ? { _gift_card: gift.code } : {}),
+      ...(pointsToRedeem > 0 ? { _points: pointsToRedeem } : {}),
     });
     setPlacing(false);
     if (error) { toast.error(error.message); return; }
