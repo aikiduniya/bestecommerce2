@@ -10,7 +10,7 @@ import { extraCurrencies, initDisplayCurrency, setDisplayCurrency, useDisplayCur
 import { DEFAULT_LANG, extraLanguages, initLang, langDir, langUrl, setLang, translate, useLang, useLangParam } from "@/lib/i18n";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
-  const { data: s, isLoading } = useQuery(settingsQuery);
+  const { data: s } = useQuery(settingsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
   const { data: pages = [] } = useQuery(pagesQuery);
   const { data: menus = [] } = useQuery(menusQuery);
@@ -123,7 +123,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 md:px-6">
           <button className="md:hidden" onClick={() => setOpen(!open)} aria-label={t("nav.menu")}>{open ? <X /> : <Menu />}</button>
           <Link to="/{-$lang}" params={lp} className="shrink-0">
-            {s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{isLoading ? "\u00a0" : s?.store_name}</span>}
+            {mounted && s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{mounted ? (s?.store_name ?? "\u00a0") : "\u00a0"}</span>}
           </Link>
           <nav className="hidden flex-1 justify-center gap-7 text-sm md:flex">
             {headerItems.length > 0 ? (
