@@ -188,7 +188,7 @@ function EditDialog({ section, onClose, onSaved }: { section: HomeSection; onClo
   const [title, setTitle] = useState(section.title ?? "");
   const [subtitle, setSubtitle] = useState(section.subtitle ?? "");
   const [cfg, setCfg] = useState<Cfg>((section.config ?? {}) as Cfg);
-  const set = (k: string, v: unknown) => setCfg((c) => ({ ...c, [k]: v }));
+  const set = (k: string, v: unknown) => setCfg((c: Cfg) => ({ ...c, [k]: v }));
 
   const save = useMutation({
     mutationFn: async () => {
