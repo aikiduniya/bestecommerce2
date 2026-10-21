@@ -34,4 +34,4 @@
 - [ ] Email templates & notifications (needs email domain setup)
 - [x] GA4 + Meta Pixel ecommerce events: view_item, add_to_cart, begin_checkout, purchase
 - [x] Multi-currency display: admin-managed rates, storefront switcher, orders always charged in base currency
-- [ ] Languages / translations (own stage)
+- [x] Languages / translations: admin-managed languages (10-language catalog, RTL support), per-language storefront text editor with English fallback, header/mobile language switcher, html lang+dir
