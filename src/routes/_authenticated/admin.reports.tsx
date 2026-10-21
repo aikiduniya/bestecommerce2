@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Download } from "lucide-react";
-import { money, ordersQuery, settingsQuery, couponsQuery, productsQuery, downloadCsv, type Order } from "@/lib/store";
+import { money, ordersQuery, settingsQuery, couponsQuery, productsQuery, categoriesQuery, productCostsQuery, downloadCsv, type Order } from "@/lib/store";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/admin/reports")({
 });
 
 const DAY = 24 * 60 * 60 * 1000;
-const TABS = ["Sales", "Cash on Delivery", "Coupons", "Inventory"] as const;
+const TABS = ["Sales", "Cash on Delivery", "Coupons", "Inventory", "Categories", "Profitability"] as const;
 const RANGES = [7, 14, 30, 90];
 
 function inRange(o: Order, days: number, offset = 0) {
@@ -28,6 +28,8 @@ function ReportsPage() {
   const { data: s } = useQuery(settingsQuery);
   const { data: coupons = [] } = useQuery(couponsQuery);
   const { data: products = [] } = useQuery(productsQuery);
+  const { data: categories = [] } = useQuery(categoriesQuery);
+  const { data: costs = [] } = useQuery(productCostsQuery);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Sales");
   const [days, setDays] = useState(30);
   const cur = s?.currency ?? "USD";
@@ -58,6 +60,50 @@ function ReportsPage() {
     }
   }
   const topProducts = [...prod.values()].sort((a, b) => b.revenue - a.revenue);
+
+  // ---- Categories ----
+  const catOf = new Map(products.map((p) => [p.id, p.category_id]));
+  const catName = (id: string | null) => categories.find((c) => c.id === id)?.name ?? "Uncategorized";
+  const catMap = new Map<string, { name: string; qty: number; revenue: number }>();
+  for (const o of period) {
+    for (const l of o.items as { product_id?: string; name: string; qty: number; price: number }[]) {
+      const cid = (l.product_id && catOf.get(l.product_id)) || null;
+      const name = catName(cid);
+      const e = catMap.get(name) ?? { name, qty: 0, revenue: 0 };
+      e.qty += l.qty;
+      e.revenue += l.qty * l.price;
+      catMap.set(name, e);
+    }
+  }
+  const catRows = [...catMap.values()].sort((a, b) => b.revenue - a.revenue);
+  function exportCategories() {
+    downloadCsv(`sales-by-category-${days}-days.csv`, [
+      ["Category", "Units sold", "Revenue"],
+      ...catRows.map((r) => [r.name, r.qty, r.revenue.toFixed(2)]),
+    ]);
+  }
+
+  // ---- Profitability ----
+  const costOf = new Map(costs.map((c) => [c.product_id, Number(c.cost_price ?? 0)]));
+  const profitMap = new Map<string, { name: string; qty: number; revenue: number; cost: number }>();
+  for (const o of period) {
+    for (const l of o.items as { product_id?: string; name: string; qty: number; price: number }[]) {
+      const e = profitMap.get(l.name) ?? { name: l.name, qty: 0, revenue: 0, cost: 0 };
+      e.qty += l.qty;
+      e.revenue += l.qty * l.price;
+      e.cost += l.qty * (l.product_id ? costOf.get(l.product_id) ?? 0 : 0);
+      profitMap.set(l.name, e);
+    }
+  }
+  const profitRows = [...profitMap.values()].map((r) => ({ ...r, profit: r.revenue - r.cost, margin: r.revenue > 0 ? Math.round(((r.revenue - r.cost) / r.revenue) * 100) : 0 })).sort((a, b) => b.profit - a.profit);
+  const totalProfit = profitRows.reduce((t, r) => t + r.profit, 0);
+  const totalCost = profitRows.reduce((t, r) => t + r.cost, 0);
+  function exportProfit() {
+    downloadCsv(`profitability-${days}-days.csv`, [
+      ["Product", "Units sold", "Revenue", "Cost", "Profit", "Margin %"],
+      ...profitRows.map((r) => [r.name, r.qty, r.revenue.toFixed(2), r.cost.toFixed(2), r.profit.toFixed(2), r.margin]),
+    ]);
+  }
 
   function exportOrders() {
     downloadCsv(`orders-last-${days}-days.csv`, [
@@ -111,6 +157,13 @@ function ReportsPage() {
         {tab === "Sales" && <Button variant="outline" onClick={exportOrders}><Download className="size-4" /> Export orders CSV</Button>}
         {tab === "Coupons" && <Button variant="outline" onClick={exportCoupons}><Download className="size-4" /> Export CSV</Button>}
         {tab === "Inventory" && <Button variant="outline" onClick={exportInventory}><Download className="size-4" /> Export CSV</Button>}
+        {tab === "Categories" && <Button variant="outline" onClick={exportCategories}><Download className="size-4" /> Export CSV</Button>}
+        {tab === "Profitability" && <Button variant="outline" onClick={exportProfit}><Download className="size-4" /> Export CSV</Button>}
+        {(tab === "Categories" || tab === "Profitability") && (
+          <select aria-label="Date range" className="h-9 rounded-md border bg-card px-3 text-sm" value={days} onChange={(e) => setDays(Number(e.target.value))}>
+            {RANGES.map((r) => <option key={r} value={r}>Last {r} days</option>)}
+          </select>
+        )}
       </PageHeader>
 
       <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg border bg-card p-1">
@@ -198,6 +251,56 @@ function ReportsPage() {
             </TableBody>
           </Table>
         </Card>
+      )}
+
+      {tab === "Categories" && (
+        <Card className="p-4">
+          <p className="eyebrow mb-2 px-2 pt-2 text-muted-foreground">Sales by category · last {days} days</p>
+          <Table>
+            <TableHeader><TableRow><TableHead>Category</TableHead><TableHead>Units sold</TableHead><TableHead>Revenue</TableHead><TableHead>Share</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {catRows.map((r) => (
+                <TableRow key={r.name}>
+                  <TableCell className="font-medium">{r.name}</TableCell>
+                  <TableCell>{r.qty}</TableCell>
+                  <TableCell>{money(r.revenue, cur)}</TableCell>
+                  <TableCell>{revenue > 0 ? `${Math.round((r.revenue / revenue) * 100)}%` : "—"}</TableCell>
+                </TableRow>
+              ))}
+              {catRows.length === 0 && <TableRow><TableCell colSpan={4} className="py-10 text-center text-muted-foreground">No sales in this period.</TableCell></TableRow>}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      {tab === "Profitability" && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card className="p-6"><p className="eyebrow text-muted-foreground">Revenue</p><p className="mt-2 font-display text-4xl">{money(revenue, cur)}</p></Card>
+            <Card className="p-6"><p className="eyebrow text-muted-foreground">Cost of goods</p><p className="mt-2 font-display text-4xl">{money(totalCost, cur)}</p></Card>
+            <Card className="p-6"><p className="eyebrow text-muted-foreground">Gross profit</p><p className="mt-2 font-display text-4xl">{money(totalProfit, cur)}</p><p className="mt-1 text-xs text-muted-foreground">{revenue > 0 ? `${Math.round((totalProfit / revenue) * 100)}% margin` : "—"}</p></Card>
+          </div>
+          <Card className="mt-6 p-4">
+            <p className="eyebrow mb-2 px-2 pt-2 text-muted-foreground">Profit per product · last {days} days</p>
+            <Table>
+              <TableHeader><TableRow><TableHead>Product</TableHead><TableHead>Units</TableHead><TableHead>Revenue</TableHead><TableHead>Cost</TableHead><TableHead>Profit</TableHead><TableHead>Margin</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {profitRows.map((r) => (
+                  <TableRow key={r.name}>
+                    <TableCell className="font-medium">{r.name}</TableCell>
+                    <TableCell>{r.qty}</TableCell>
+                    <TableCell>{money(r.revenue, cur)}</TableCell>
+                    <TableCell>{money(r.cost, cur)}</TableCell>
+                    <TableCell className={r.profit < 0 ? "text-destructive" : ""}>{money(r.profit, cur)}</TableCell>
+                    <TableCell>{r.margin}%</TableCell>
+                  </TableRow>
+                ))}
+                {profitRows.length === 0 && <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">No sales in this period.</TableCell></TableRow>}
+              </TableBody>
+            </Table>
+            <p className="px-2 pb-2 pt-3 text-xs text-muted-foreground">Costs come from the staff-only cost price on each product. Products without a cost price count as zero cost.</p>
+          </Card>
+        </>
       )}
 
       {tab === "Inventory" && (

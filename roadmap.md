@@ -23,5 +23,5 @@
 - Stage 1 (guest checkout, tax, 2FA): DONE + tested
 - Stage 2 (returns/RMA): DONE + tested
 - Stage 3 (product fields barcode/specs/weight/related, address book, checkout address picker): DONE + tested 2026-10-21
-- Stage 4 next: order tracking numbers + packing slip, save-for-later cart, search improvements
-- Stage 4 (tracking numbers, packing slip, save-for-later, search autocomplete): implemented; browser test pending
+- Stage 4 (tracking numbers, packing slip, save-for-later, search autocomplete): DONE + browser-tested 2026-10-21
+- Stage 5 (reports: sales-by-category + profitability tabs with CSV; cookie consent banner + settings; back-in-stock alerts + admin list; product CSV import/export; customers CSV export; support tickets customer+admin with replies): DONE + browser-tested 2026-10-21. Fix during testing: stock_alerts upsert→insert (anon has INSERT only).

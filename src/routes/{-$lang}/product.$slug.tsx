@@ -12,6 +12,7 @@ import { trackAddToCart, trackViewItem } from "@/lib/analytics";
 import { useSessionUser } from "@/lib/auth";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
+import { NotifyMe } from "@/components/store/NotifyMe";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProductSeo } from "@/lib/seo.functions";
@@ -212,6 +213,7 @@ function ProductPage() {
                 <Heart className={inWish ? "fill-gold text-gold" : ""} />
               </Button>
             </div>
+            {!needsChoice && stock <= 0 && <div className="mt-4"><NotifyMe productId={p.id} /></div>}
             <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Truck className="size-4" /> Shipping calculated at checkout</p>
             {p.description && <div className="mt-10 whitespace-pre-line border-t pt-8 leading-relaxed text-muted-foreground">{p.description}</div>}
             {specs.length > 0 && (

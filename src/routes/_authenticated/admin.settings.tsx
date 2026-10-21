@@ -182,6 +182,8 @@ function SettingsPage() {
             {text("announcement", "Announcement bar text")}
             {toggle("announcement_enabled", "Show announcement bar", "Displayed at the top of every page")}
             {toggle("maintenance_mode", "Maintenance mode", "Hides the storefront from visitors")}
+            {toggle("cookie_consent_enabled", "Cookie consent banner", "Asks visitors to accept or decline cookies")}
+            {text("cookie_consent_text", "Cookie consent text")}
             <div className="space-y-2 sm:col-span-2">
               <Label className="text-xs text-muted-foreground">Extra display currencies (visitors can switch; rates are per 1 {s.currency || "USD"})</Label>
               {currencyList.map((c, i) => (

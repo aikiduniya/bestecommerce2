@@ -277,6 +277,32 @@ export function downloadCsv(filename: string, rows: (string | number | null | un
   URL.revokeObjectURL(url);
 }
 
+export function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    if (inQuotes) {
+      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') inQuotes = false;
+      else field += ch;
+    } else if (ch === '"') inQuotes = true;
+    else if (ch === ",") { row.push(field); field = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(field);
+      field = "";
+      if (row.some((c) => c.trim() !== "")) rows.push(row);
+      row = [];
+    } else field += ch;
+  }
+  row.push(field);
+  if (row.some((c) => c.trim() !== "")) rows.push(row);
+  return rows;
+}
+
 export type ReturnRequest = {
   id: string;
   order_id: string;
@@ -330,5 +356,57 @@ export const myAddressesQuery = (userId: string) =>
       const { data, error } = await supabase.from("addresses").select("*").eq("user_id", userId).order("created_at");
       if (error) throw error;
       return (data ?? []) as Address[];
+    },
+  });
+
+export type StockAlert = Database["public"]["Tables"]["stock_alerts"]["Row"];
+export type SupportTicket = Database["public"]["Tables"]["support_tickets"]["Row"];
+export type TicketMessage = Database["public"]["Tables"]["ticket_messages"]["Row"];
+export type ProductCost = Database["public"]["Tables"]["product_costs"]["Row"];
+
+export const stockAlertsQuery = queryOptions({
+  queryKey: ["stock_alerts"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("stock_alerts").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const productCostsQuery = queryOptions({
+  queryKey: ["product_costs"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("product_costs").select("*");
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const ticketsQuery = queryOptions({
+  queryKey: ["support_tickets"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("support_tickets").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const myTicketsQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["support_tickets", "mine", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("support_tickets").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const ticketMessagesQuery = (ticketId: string) =>
+  queryOptions({
+    queryKey: ["ticket_messages", ticketId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("ticket_messages").select("*").eq("ticket_id", ticketId).order("created_at");
+      if (error) throw error;
+      return data;
     },
   });
