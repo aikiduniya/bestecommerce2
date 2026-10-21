@@ -28,6 +28,7 @@ export const Route = createFileRoute("/_authenticated/admin/products")({
 
 type Form = { [K in keyof Omit<Product, "sale_price" | "sale_starts_at" | "sale_ends_at">]?: Product[K] | undefined } & {
   tagsText?: string | undefined;
+  specsText?: string | undefined;
   sale_price?: number | string | null | undefined;
   sale_starts_at?: string | null | undefined;
   sale_ends_at?: string | null | undefined;
