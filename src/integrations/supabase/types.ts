@@ -340,6 +340,73 @@ export type Database = {
         }
         Relationships: []
       }
+      order_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: number
+          kind: string
+          message: string
+          order_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: never
+          kind?: string
+          message: string
+          order_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: never
+          kind?: string
+          message?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_notes: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: number
+          order_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: never
+          order_id: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: never
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_notes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           cod_collected_at: string | null
