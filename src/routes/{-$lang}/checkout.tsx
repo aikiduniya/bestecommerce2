@@ -283,11 +283,23 @@ function Checkout() {
             <Input placeholder="Coupon code" value={codeInput} onChange={(e) => setCodeInput(e.target.value.toUpperCase())} />
             <Button type="button" variant="outline" onClick={applyCoupon}>Apply</Button>
           </div>
+          <div className="mt-2 flex gap-2">
+            <Input placeholder="Gift card code" value={giftInput} onChange={(e) => setGiftInput(e.target.value.toUpperCase())} />
+            <Button type="button" variant="outline" onClick={applyGiftCard}>Apply</Button>
+          </div>
+          {s?.loyalty_enabled && user && pointsBalance > 0 && (
+            <div className="mt-2 flex items-center gap-2">
+              <Input type="number" min={0} max={pointsBalance} placeholder={`Points (you have ${pointsBalance})`} value={pointsInput} onChange={(e) => setPointsInput(e.target.value)} />
+              <Button type="button" variant="outline" onClick={() => setPointsInput(String(pointsBalance))}>Use all</Button>
+            </div>
+          )}
           <div className="mt-4 space-y-2 border-t pt-4 text-sm">
             <div className="flex justify-between"><span>Subtotal</span><span>{money(cart.subtotal, cur)}</span></div>
             {autoDiscount > 0 && <div className="flex justify-between text-success"><span>Discount{autoDisc?.name ? ` (${autoDisc.name})` : ""}</span><span>−{money(autoDiscount, cur)}</span></div>}
             <div className="flex justify-between"><span>Shipping</span><span>{zone ? money(shipping, cur) : "—"}</span></div>
             {coupon && <div className="flex justify-between text-success"><span>Coupon {coupon.code} <button type="button" className="ml-1 text-xs underline" onClick={() => setCoupon(null)}>remove</button></span><span>{coupon.free_shipping ? "Free shipping" : `−${money(discount, cur)}`}</span></div>}
+            {pointsToRedeem > 0 && <div className="flex justify-between text-success"><span>Points ({pointsToRedeem})</span><span>−{money(pointsValue, cur)}</span></div>}
+            {gift && <div className="flex justify-between text-success"><span>Gift card {gift.code} <button type="button" className="ml-1 text-xs underline" onClick={() => setGift(null)}>remove</button></span><span>−{money(giftApplied, cur)}</span></div>}
             {codFee > 0 && <div className="flex justify-between"><span>Cash on Delivery fee</span><span>{money(codFee, cur)}</span></div>}
             {taxInfo.tax > 0 && !taxInfo.inclusive && <div className="flex justify-between"><span>{s?.tax_label ?? "Tax"}{taxInfo.name ? ` (${taxInfo.name})` : ""}</span><span>{money(taxInfo.tax, cur)}</span></div>}
             <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(grandTotal, cur)}</span></div>
