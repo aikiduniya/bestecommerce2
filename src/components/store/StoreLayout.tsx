@@ -190,8 +190,8 @@ export function StoreLayout({ children }: { children: ReactNode }) {
       <footer className="mt-20 border-t bg-card">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
           <div>
-            <p className="font-display text-2xl">{s?.store_name}</p>
-            <p className="mt-2 text-sm text-muted-foreground">{s?.tagline}</p>
+            <p className="font-display text-2xl">{mounted ? s?.store_name : ""}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{mounted ? s?.tagline : ""}</p>
           </div>
           {footerItems.length > 0 ? (
             footerItems.map((col, i) => (
@@ -221,11 +221,11 @@ export function StoreLayout({ children }: { children: ReactNode }) {
           )}
           <div className="text-sm">
             <p className="eyebrow mb-3 text-muted-foreground">{t("footer.contact")}</p>
-            {s?.support_email && <p>{s.support_email}</p>}
-            {s?.support_phone && <p>{s.support_phone}</p>}
+            {mounted && s?.support_email && <p>{s.support_email}</p>}
+            {mounted && s?.support_phone && <p>{s.support_phone}</p>}
           </div>
         </div>
-        <p className="border-t py-5 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} {s?.store_name}</p>
+        <p className="border-t py-5 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} {mounted ? s?.store_name : ""}</p>
       </footer>
     </div>
   );
