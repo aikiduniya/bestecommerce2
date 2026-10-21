@@ -44,7 +44,8 @@ function InvoicePage() {
           <div>
             {s?.logo_url && <img src={s.logo_url} alt={s.store_name} className="mb-2 h-10 object-contain" />}
             <p className="font-display text-3xl">{s?.store_name ?? "Store"}</p>
-            {s?.contact_email && <p className="text-sm text-muted-foreground">{s.contact_email}</p>}
+            {s?.support_email && <p className="text-sm text-muted-foreground">{s.support_email}</p>}
+            {s?.support_phone && <p className="text-sm text-muted-foreground">{s.support_phone}</p>}
           </div>
           <div className="text-right">
             <p className="font-display text-2xl">INVOICE</p>
