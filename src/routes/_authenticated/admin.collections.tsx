@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { collectionsQuery, productCollectionsQuery, slugify, type Collection } from "@/lib/store";
 import { PageHeader } from "@/components/admin/PageHeader";
+import { SeoDialog } from "@/components/admin/SeoDialog";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -64,6 +65,7 @@ function CollectionsPage() {
               <Input type="number" className="w-20" defaultValue={c.sort_order} title="Sort order" onBlur={(e) => update(c.id, { sort_order: Number(e.target.value) })} />
               <label className="flex items-center gap-2 text-xs text-muted-foreground"><Switch checked={c.show_on_home} onCheckedChange={(v) => update(c.id, { show_on_home: v })} /> Homepage</label>
               <label className="flex items-center gap-2 text-xs text-muted-foreground"><Switch checked={c.is_active} onCheckedChange={(v) => update(c.id, { is_active: v })} /> Visible</label>
+              <SeoDialog table="collections" row={c} />
               <Button size="icon" variant="ghost" onClick={() => remove(c)} aria-label="Delete"><Trash2 /></Button>
             </div>
           ))}
