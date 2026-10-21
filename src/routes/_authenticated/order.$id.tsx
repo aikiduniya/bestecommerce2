@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { money, optionLabel } from "@/lib/store";
+import { money, optionLabel, orderEventsQuery } from "@/lib/store";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { StatusPill } from "@/components/admin/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,8 +62,28 @@ function OrderPage() {
           <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Ship to</p><p>{o.customer_name}</p><p>{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}</p><p>{[addr.city, addr.state, addr.postal].filter(Boolean).join(", ")}</p><p>{addr.country}</p></div>
           <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Payment</p><p>Cash on Delivery</p><p className="text-muted-foreground">{o.customer_email}</p></div>
         </div>
+        <OrderTimeline orderId={o.id} />
         <Link to="/account" className="mt-10 inline-block text-sm text-gold">← All orders</Link>
       </div>
     </StoreLayout>
+  );
+}
+
+function OrderTimeline({ orderId }: { orderId: string }) {
+  const { data: events = [] } = useQuery(orderEventsQuery(orderId));
+  if (events.length === 0) return null;
+  return (
+    <div className="mt-6 rounded border bg-card p-4">
+      <p className="eyebrow mb-3 text-muted-foreground">Order updates</p>
+      <ol className="space-y-3 border-l pl-4 text-sm">
+        {[...events].reverse().map((e) => (
+          <li key={e.id} className="relative">
+            <span className="absolute -left-[21px] top-1.5 size-2 rounded-full bg-gold" />
+            <p>{e.message}</p>
+            <p className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }

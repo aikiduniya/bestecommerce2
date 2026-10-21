@@ -170,3 +170,59 @@ export const postsQuery = queryOptions({
     return data;
   },
 });
+
+export type OrderEvent = Database["public"]["Tables"]["order_events"]["Row"];
+export type OrderNote = Database["public"]["Tables"]["order_notes"]["Row"];
+export type ActivityEntry = Database["public"]["Tables"]["activity_log"]["Row"];
+
+export const orderEventsQuery = (orderId: string) =>
+  queryOptions({
+    queryKey: ["order_events", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("order_events").select("*").eq("order_id", orderId).order("created_at");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const orderNotesQuery = (orderId: string) =>
+  queryOptions({
+    queryKey: ["order_notes", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("order_notes").select("*").eq("order_id", orderId).order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const activityQuery = queryOptions({
+  queryKey: ["activity"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("activity_log").select("*").order("created_at", { ascending: false }).limit(12);
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const couponsQuery = queryOptions({
+  queryKey: ["coupons"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+});
+
+export function downloadCsv(filename: string, rows: (string | number | null | undefined)[][]) {
+  const esc = (v: string | number | null | undefined) => {
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const csv = rows.map((r) => r.map(esc).join(",")).join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
