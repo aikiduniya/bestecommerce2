@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { SeoDialog, type SeoRow } from "@/components/admin/SeoDialog";
+import { ImagePicker } from "@/components/admin/ImagePicker";
 
-type Row = { id: string; name: string; slug: string; is_active: boolean };
+type Row = SeoRow & { is_active: boolean; logo_url?: string | null };
 
 export function SimpleTaxonomy({ table, rows, noun }: { table: "categories" | "brands"; rows: Row[]; noun: string }) {
   const qc = useQueryClient();
@@ -45,7 +47,8 @@ export function SimpleTaxonomy({ table, rows, noun }: { table: "categories" | "b
       </form>
       <div className="divide-y">
         {rows.map((r) => (
-          <div key={r.id} className="flex items-center gap-4 py-3">
+          <div key={r.id} className="flex flex-wrap items-center gap-4 py-3">
+            {table === "brands" && <ImagePicker multiple={false} value={r.logo_url ? [r.logo_url] : []} onChange={(v) => update(r.id, { logo_url: v[0] ?? null })} />}
             <Input
               defaultValue={r.name}
               className="max-w-xs"
@@ -55,6 +58,7 @@ export function SimpleTaxonomy({ table, rows, noun }: { table: "categories" | "b
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
               <Switch checked={r.is_active} onCheckedChange={(v) => update(r.id, { is_active: v })} /> Visible
             </label>
+            <SeoDialog table={table} row={r} imageLabel={table === "brands" ? "Logo alt text" : "Image alt text"} />
             <Button size="icon" variant="ghost" onClick={() => remove(r)} aria-label="Delete"><Trash2 /></Button>
           </div>
         ))}

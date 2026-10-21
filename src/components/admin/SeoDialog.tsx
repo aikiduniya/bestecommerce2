@@ -61,7 +61,7 @@ export function SeoDialog({ table, row, imageLabel = "Image alt text" }: { table
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader><DialogTitle>SEO · {row.name}</DialogTitle></DialogHeader>
         <div className="rounded-md border bg-muted/40 p-3 text-sm">
-          <p className="truncate text-[#1a0dab] dark:text-primary" style={{ color: "var(--primary)" }}>{title}</p>
+          <p className="truncate font-medium text-primary">{title}</p>
           <p className="truncate text-xs text-success">/shop?{table === "categories" ? "category" : table === "brands" ? "brand" : "collection"}={row.slug}</p>
           <p className="line-clamp-2 text-xs text-muted-foreground">{desc || "Add a description so search engines show something useful."}</p>
         </div>
