@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { contentTranslationsQuery, postsQuery, settingsQuery } from "@/lib/store";
 import { applyTranslation, hreflangLinks, indexTranslations, isValidLang, useLang } from "@/lib/i18n";
 import { getPostSeo } from "@/lib/content.functions";
+import { SITE, breadcrumb, extraMeta, jsonLd } from "@/lib/seo-head";
+
 import { useMemo } from "react";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Prose } from "@/components/store/Prose";
@@ -23,9 +25,17 @@ export const Route = createFileRoute("/{-$lang}/blog/$slug")({
         { property: "og:title", content: title }, { property: "og:description", content: description },
         { property: "og:type", content: "article" }, { name: "twitter:card", content: "summary_large_image" },
         ...(loaderData?.seo?.image ? [{ property: "og:image", content: loaderData.seo.image }, { name: "twitter:image", content: loaderData.seo.image }] : []),
-        ...(loaderData?.seo ? [] : [{ name: "robots", content: "noindex" }]),
+        ...(loaderData?.seo ? extraMeta(loaderData.seo) : [{ name: "robots", content: "noindex" }]),
       ],
-      links: hreflangLinks(loaderData?.st, `/blog/${params.slug}`),
+      links: [{ rel: "canonical", href: loaderData?.seo?.canonical || `${SITE}${params.lang ? `/${params.lang}` : ""}/blog/${params.slug}` }, ...hreflangLinks(loaderData?.st, `/blog/${params.slug}`)],
+      scripts: loaderData?.seo ? [
+        jsonLd({ "@context": "https://schema.org", "@type": "Article", headline: loaderData.seo.name, description,
+          ...(loaderData.seo.image ? { image: [loaderData.seo.image] } : {}),
+          ...(loaderData.seo.published ? { datePublished: loaderData.seo.published } : {}), ...(loaderData.seo.modified ? { dateModified: loaderData.seo.modified } : {}),
+          ...(loaderData.seo.author ? { author: { "@type": "Person", name: loaderData.seo.author } } : {}),
+          publisher: { "@type": "Organization", name: loaderData.seo.store }, mainEntityOfPage: `${SITE}/blog/${params.slug}` }),
+        jsonLd(breadcrumb([{ name: "Home", url: `${SITE}/` }, { name: "Blog", url: `${SITE}/blog` }, { name: loaderData.seo.name, url: `${SITE}/blog/${params.slug}` }])),
+      ] : [],
     };
   },
   component: BlogPost,
@@ -51,7 +61,7 @@ function BlogPost() {
             <Link to="/{-$lang}/blog" params={lp} className="eyebrow text-gold">← Journal</Link>
             <h1 className="mt-4 text-6xl leading-tight">{p.title}</h1>
             <p className="mt-4 text-sm text-muted-foreground">{p.published_at ? new Date(p.published_at).toLocaleDateString() : ""}{p.author ? ` · ${p.author}` : ""}</p>
-            {p.cover_image && <img src={p.cover_image} alt={p.title} className="my-10 aspect-[16/9] w-full rounded object-cover" />}
+            {p.cover_image && <img src={p.cover_image} alt={(p as { cover_alt?: string | null }).cover_alt || p.title} className="my-10 aspect-[16/9] w-full rounded object-cover" />}
             <Prose text={p.body} />
             {p.tags.length > 0 && <p className="mt-10 flex flex-wrap gap-2">{p.tags.map((t) => <span key={t} className="rounded-full border px-3 py-1 text-xs">{t}</span>)}</p>}
           </>

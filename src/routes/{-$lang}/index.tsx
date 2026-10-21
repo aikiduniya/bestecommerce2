@@ -15,6 +15,8 @@ import { HomeSections } from "@/components/store/HomeSections";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { getHomeSeo } from "@/lib/content.functions";
+import { SITE, breadcrumb, extraMeta, jsonLd } from "@/lib/seo-head";
+
 
 export const Route = createFileRoute("/{-$lang}/")({
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
@@ -37,7 +39,14 @@ export const Route = createFileRoute("/{-$lang}/")({
         ...(loaderData?.seo?.bing ? [{ name: "msvalidate.01", content: loaderData.seo.bing }] : []),
         ...(loaderData?.seo?.image ? [{ property: "og:image", content: loaderData.seo.image }, { name: "twitter:image", content: loaderData.seo.image }] : []),
       ],
-      links: hreflangLinks(loaderData?.st, "/"),
+      links: [{ rel: "canonical", href: `${SITE}/` }, ...hreflangLinks(loaderData?.st, "/")],
+      scripts: loaderData?.seo ? [
+        jsonLd({ "@context": "https://schema.org", "@type": "Organization", name: loaderData.seo.store, url: SITE,
+          ...(loaderData.seo.logo ? { logo: loaderData.seo.logo } : {}),
+          ...(loaderData.seo.email || loaderData.seo.phone ? { contactPoint: { "@type": "ContactPoint", contactType: "customer service", ...(loaderData.seo.email ? { email: loaderData.seo.email } : {}), ...(loaderData.seo.phone ? { telephone: loaderData.seo.phone } : {}) } } : {}) }),
+        jsonLd({ "@context": "https://schema.org", "@type": "WebSite", name: loaderData.seo.store, url: SITE,
+          potentialAction: { "@type": "SearchAction", target: `${SITE}/shop?q={search_term_string}`, "query-input": "required name=search_term_string" } }),
+      ] : [],
     };
   },
   component: Index,
@@ -83,7 +92,7 @@ function LegacyHome() {
   return (
     <>
       <section className="bg-hero relative overflow-hidden text-primary-foreground">
-        {s?.hero_image_url && <img src={s.hero_image_url} alt="" className="absolute inset-0 size-full object-cover opacity-45" />}
+        {s?.hero_image_url && <img src={s.hero_image_url} alt={(s as { hero_image_alt?: string | null }).hero_image_alt ?? ""} className="absolute inset-0 size-full object-cover opacity-45" />}
         <div className="relative mx-auto max-w-7xl px-6 py-28 md:py-44">
           {s?.hero_eyebrow && <p className="eyebrow text-gold">{s.hero_eyebrow}</p>}
           <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{s?.tagline ?? " "}</h1>

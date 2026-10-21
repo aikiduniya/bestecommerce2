@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { contentTranslationsQuery, pagesQuery, settingsQuery } from "@/lib/store";
 import { applyTranslation, hreflangLinks, indexTranslations, isValidLang, useLang } from "@/lib/i18n";
 import { getPageSeo } from "@/lib/content.functions";
+import { SITE, breadcrumb, extraMeta, jsonLd } from "@/lib/seo-head";
+
 import { useMemo } from "react";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Prose } from "@/components/store/Prose";
@@ -22,9 +24,11 @@ export const Route = createFileRoute("/{-$lang}/pages/$slug")({
         { title }, { name: "description", content: description },
         { property: "og:title", content: title }, { property: "og:description", content: description },
         { property: "og:type", content: "article" }, { name: "twitter:card", content: "summary" },
-        ...(loaderData?.seo ? [] : [{ name: "robots", content: "noindex" }]),
+        ...(loaderData?.seo ? extraMeta(loaderData.seo) : [{ name: "robots", content: "noindex" }]),
+        ...(loaderData?.seo?.image ? [{ property: "og:image", content: loaderData.seo.image }, { name: "twitter:image", content: loaderData.seo.image }] : []),
       ],
-      links: hreflangLinks(loaderData?.st, `/pages/${params.slug}`),
+      links: [{ rel: "canonical", href: loaderData?.seo?.canonical || `${SITE}${params.lang ? `/${params.lang}` : ""}/pages/${params.slug}` }, ...hreflangLinks(loaderData?.st, `/pages/${params.slug}`)],
+      scripts: loaderData?.seo ? [jsonLd(breadcrumb([{ name: "Home", url: `${SITE}/` }, { name: loaderData.seo.name, url: `${SITE}/pages/${params.slug}` }]))] : [],
     };
   },
   component: CmsPage,
