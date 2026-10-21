@@ -92,8 +92,8 @@ function LegacyHome() {
   return (
     <>
       <section className="bg-hero relative overflow-hidden text-primary-foreground">
-        {s?.hero_image_url && <img src={s.hero_image_url} alt={(s as { hero_image_alt?: string | null }).hero_image_alt ?? ""} className="absolute inset-0 size-full object-cover opacity-45" />}
-        <div className="relative mx-auto max-w-7xl px-6 py-28 md:py-44">
+        {s?.hero_image_url && <img src={s.hero_image_url} alt={(s as { hero_image_alt?: string | null }).hero_image_alt ?? ""} className="hero-img absolute inset-0 size-full object-cover" />}
+        <div className="hero-pad relative mx-auto max-w-7xl px-6">
           {s?.hero_eyebrow && <p className="eyebrow text-gold">{s.hero_eyebrow}</p>}
           <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{s?.tagline ?? " "}</h1>
           {s?.hero_cta && (

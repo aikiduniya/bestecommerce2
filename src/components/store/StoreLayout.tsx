@@ -115,20 +115,20 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="store-root flex min-h-screen flex-col">
       {mounted && s?.maintenance_mode && isStaff && (
         <div className="bg-warning py-1.5 text-center text-xs font-medium text-foreground">{t("maintenance.banner")}</div>
       )}
       {mounted && s?.announcement_enabled && s.announcement && (
-        <div className="bg-primary py-2 text-center text-xs tracking-wide text-primary-foreground">{s.announcement}</div>
+        <div className={`py-2 text-center text-xs tracking-wide ${s.announcement_style === "gold" ? "bg-gold text-accent-foreground" : s.announcement_style === "outline" ? "border-b border-gold/40 bg-background text-foreground" : "bg-primary text-primary-foreground"}`}>{s.announcement}</div>
       )}
-      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 md:px-6">
+      <header data-tone={mounted ? (s?.header_tone ?? "light") : "light"} className={`store-header z-40 border-b bg-background/90 backdrop-blur ${!mounted || s?.header_sticky !== false ? "sticky top-0" : ""}`}>
+        <div className={`mx-auto flex max-w-7xl items-center gap-6 px-4 md:px-6 ${mounted && s?.header_style === "centered" ? "flex-wrap py-3 md:justify-center" : mounted && s?.header_style === "minimal" ? "py-3" : "py-4"}`}>
           <button className="md:hidden" onClick={() => setOpen(!open)} aria-label={t("nav.menu")}>{open ? <X /> : <Menu />}</button>
           <Link to="/{-$lang}" params={lp} className="shrink-0">
             {mounted && s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{mounted ? (s?.store_name ?? "\u00a0") : "\u00a0"}</span>}
           </Link>
-          <nav className="hidden flex-1 justify-center gap-7 text-sm md:flex">
+          <nav className={`store-nav hidden gap-7 text-sm md:flex ${mounted && s?.header_style === "centered" ? "order-last w-full justify-center border-t pt-3" : mounted && s?.header_style === "minimal" ? "flex-1 justify-start" : "flex-1 justify-center"}`}>
             {headerItems.length > 0 ? (
               headerItems.map((item, i) =>
                 item.children?.length ? (
@@ -201,7 +201,16 @@ export function StoreLayout({ children }: { children: ReactNode }) {
       </header>
       <main className="flex-1" key={`${dc?.code ?? baseCurrency}-${lang ?? DEFAULT_LANG.code}`}>{children}</main>
       <CookieConsent />
-      <footer className="mt-20 border-t bg-card">
+      <footer data-style={mounted ? (s?.footer_style ?? "columns") : "columns"} className="store-footer mt-20 border-t bg-card">
+        {mounted && s?.footer_style === "minimal" ? (
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm">
+            <p className="font-display text-xl">{s?.store_name}</p>
+            <div className="flex flex-wrap gap-5 text-muted-foreground">
+              {(footerItems.length ? footerItems.flatMap((c) => (c.children?.length ? c.children : [c])) : []).slice(0, 8).map((it, i) => <a key={i} href={it.url} className="hover:text-gold">{it.label}</a>)}
+              {footerItems.length === 0 && <><Link to="/{-$lang}/shop" params={lp} className="hover:text-gold">{t("nav.shop_all")}</Link><Link to="/{-$lang}/blog" params={lp} className="hover:text-gold">{t("footer.journal")}</Link></>}
+            </div>
+          </div>
+        ) : (
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
           <div>
             <p className="font-display text-2xl">{mounted ? s?.store_name : ""}</p>
@@ -241,7 +250,8 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             {mounted && s?.support_phone && <p>{s.support_phone}</p>}
           </div>
         </div>
-        <p className="border-t py-5 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} {mounted ? s?.store_name : ""}</p>
+        )}
+        <p className="border-t py-5 text-center text-xs text-muted-foreground">{mounted && s?.footer_text ? s.footer_text : <>© {new Date().getFullYear()} {mounted ? s?.store_name : ""}</>}</p>
       </footer>
     </div>
   );

@@ -56,8 +56,8 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
       case "hero":
         return (
           <section className="bg-hero relative overflow-hidden text-primary-foreground">
-            {(c.image_url || s?.hero_image_url) && <img src={c.image_url || s?.hero_image_url} alt="" className="absolute inset-0 size-full object-cover opacity-45" />}
-            <div className="relative mx-auto max-w-7xl px-6 py-28 md:py-44">
+            {(c.image_url || s?.hero_image_url) && <img src={c.image_url || s?.hero_image_url} alt="" className="hero-img absolute inset-0 size-full object-cover" />}
+            <div className="hero-pad relative mx-auto max-w-7xl px-6">
               {(c.eyebrow || s?.hero_eyebrow) && <p className="eyebrow text-gold">{c.eyebrow || s?.hero_eyebrow}</p>}
               <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{sec.title || s?.tagline || " "}</h1>
               {sec.subtitle && <p className="mt-4 max-w-xl text-lg opacity-80">{sec.subtitle}</p>}

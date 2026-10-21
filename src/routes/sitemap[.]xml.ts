@@ -16,9 +16,9 @@ export const Route = createFileRoute("/sitemap.xml")({
           sb.from("products").select("slug, updated_at").eq("status", "active").eq("robots_noindex", false),
           sb.from("pages").select("slug, updated_at").eq("is_published", true).eq("robots_noindex", false),
           sb.from("blog_posts").select("slug, updated_at").eq("is_published", true).eq("robots_noindex", false),
-          sb.from("categories").select("slug").eq("is_active", true),
-          sb.from("brands").select("slug").eq("is_active", true),
-          sb.from("collections").select("slug").eq("is_active", true),
+          sb.from("categories").select("slug").eq("is_active", true).eq("robots_noindex", false),
+          sb.from("brands").select("slug").eq("is_active", true).eq("robots_noindex", false),
+          sb.from("collections").select("slug").eq("is_active", true).eq("robots_noindex", false),
         ]);
         const failed = [pr, pg, bp, cat, br, col].find((r) => r.error);
         if (failed?.error) return new Response("Sitemap unavailable", { status: 503 });
