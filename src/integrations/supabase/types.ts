@@ -199,27 +199,48 @@ export type Database = {
       }
       brands: {
         Row: {
+          canonical_url: string | null
           created_at: string
           id: string
+          image_alt: string | null
           is_active: boolean
           logo_url: string | null
+          meta_description: string | null
+          meta_keywords: string | null
+          meta_title: string | null
           name: string
+          og_image_url: string | null
+          robots_noindex: boolean
           slug: string
         }
         Insert: {
+          canonical_url?: string | null
           created_at?: string
           id?: string
+          image_alt?: string | null
           is_active?: boolean
           logo_url?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           name: string
+          og_image_url?: string | null
+          robots_noindex?: boolean
           slug: string
         }
         Update: {
+          canonical_url?: string | null
           created_at?: string
           id?: string
+          image_alt?: string | null
           is_active?: boolean
           logo_url?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           name?: string
+          og_image_url?: string | null
+          robots_noindex?: boolean
           slug?: string
         }
         Relationships: []
@@ -256,35 +277,56 @@ export type Database = {
       }
       categories: {
         Row: {
+          canonical_url: string | null
           created_at: string
           description: string | null
           id: string
+          image_alt: string | null
           image_url: string | null
           is_active: boolean
+          meta_description: string | null
+          meta_keywords: string | null
+          meta_title: string | null
           name: string
+          og_image_url: string | null
           parent_id: string | null
+          robots_noindex: boolean
           slug: string
           sort_order: number
         }
         Insert: {
+          canonical_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          image_alt?: string | null
           image_url?: string | null
           is_active?: boolean
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           name: string
+          og_image_url?: string | null
           parent_id?: string | null
+          robots_noindex?: boolean
           slug: string
           sort_order?: number
         }
         Update: {
+          canonical_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          image_alt?: string | null
           image_url?: string | null
           is_active?: boolean
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           name?: string
+          og_image_url?: string | null
           parent_id?: string | null
+          robots_noindex?: boolean
           slug?: string
           sort_order?: number
         }
@@ -300,34 +342,55 @@ export type Database = {
       }
       collections: {
         Row: {
+          canonical_url: string | null
           created_at: string
           description: string | null
           id: string
+          image_alt: string | null
           image_url: string | null
           is_active: boolean
+          meta_description: string | null
+          meta_keywords: string | null
+          meta_title: string | null
           name: string
+          og_image_url: string | null
+          robots_noindex: boolean
           show_on_home: boolean
           slug: string
           sort_order: number
         }
         Insert: {
+          canonical_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          image_alt?: string | null
           image_url?: string | null
           is_active?: boolean
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           name: string
+          og_image_url?: string | null
+          robots_noindex?: boolean
           show_on_home?: boolean
           slug: string
           sort_order?: number
         }
         Update: {
+          canonical_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          image_alt?: string | null
           image_url?: string | null
           is_active?: boolean
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           name?: string
+          og_image_url?: string | null
+          robots_noindex?: boolean
           show_on_home?: boolean
           slug?: string
           sort_order?: number
@@ -1546,6 +1609,7 @@ export type Database = {
           accent_color: string | null
           announcement: string | null
           announcement_enabled: boolean
+          announcement_style: string
           background_color: string | null
           bing_site_verification: string | null
           button_style: string
@@ -1557,6 +1621,7 @@ export type Database = {
           cod_max_order: number | null
           cod_min_order: number | null
           cod_requires_confirmation: boolean
+          container_width: string
           cookie_consent_enabled: boolean
           cookie_consent_text: string
           currencies: Json
@@ -1564,13 +1629,20 @@ export type Database = {
           favicon_url: string | null
           font_body: string
           font_display: string
+          footer_style: string
+          footer_text: string | null
           ga4_id: string | null
           google_site_verification: string | null
           gtm_id: string | null
+          header_sticky: boolean
+          header_style: string
+          header_tone: string
           hero_cta: string | null
           hero_eyebrow: string | null
+          hero_height: string
           hero_image_alt: string | null
           hero_image_url: string | null
+          hero_overlay: number
           id: number
           languages: Json
           llms_txt: string | null
@@ -1582,13 +1654,17 @@ export type Database = {
           maintenance_mode: boolean
           merchant_center_id: string | null
           meta_pixel_id: string | null
+          nav_style: string
           og_image_url: string | null
+          page_seo: Json
           primary_color: string | null
+          product_grid_cols: number
           referral_enabled: boolean
           referral_reward_points: number
           reviews_enabled: boolean
           reviews_require_approval: boolean
           robots_txt: string | null
+          section_spacing: string
           seo_description: string | null
           seo_title: string | null
           store_name: string
@@ -1608,6 +1684,7 @@ export type Database = {
           accent_color?: string | null
           announcement?: string | null
           announcement_enabled?: boolean
+          announcement_style?: string
           background_color?: string | null
           bing_site_verification?: string | null
           button_style?: string
@@ -1619,6 +1696,7 @@ export type Database = {
           cod_max_order?: number | null
           cod_min_order?: number | null
           cod_requires_confirmation?: boolean
+          container_width?: string
           cookie_consent_enabled?: boolean
           cookie_consent_text?: string
           currencies?: Json
@@ -1626,13 +1704,20 @@ export type Database = {
           favicon_url?: string | null
           font_body?: string
           font_display?: string
+          footer_style?: string
+          footer_text?: string | null
           ga4_id?: string | null
           google_site_verification?: string | null
           gtm_id?: string | null
+          header_sticky?: boolean
+          header_style?: string
+          header_tone?: string
           hero_cta?: string | null
           hero_eyebrow?: string | null
+          hero_height?: string
           hero_image_alt?: string | null
           hero_image_url?: string | null
+          hero_overlay?: number
           id?: number
           languages?: Json
           llms_txt?: string | null
@@ -1644,13 +1729,17 @@ export type Database = {
           maintenance_mode?: boolean
           merchant_center_id?: string | null
           meta_pixel_id?: string | null
+          nav_style?: string
           og_image_url?: string | null
+          page_seo?: Json
           primary_color?: string | null
+          product_grid_cols?: number
           referral_enabled?: boolean
           referral_reward_points?: number
           reviews_enabled?: boolean
           reviews_require_approval?: boolean
           robots_txt?: string | null
+          section_spacing?: string
           seo_description?: string | null
           seo_title?: string | null
           store_name?: string
@@ -1670,6 +1759,7 @@ export type Database = {
           accent_color?: string | null
           announcement?: string | null
           announcement_enabled?: boolean
+          announcement_style?: string
           background_color?: string | null
           bing_site_verification?: string | null
           button_style?: string
@@ -1681,6 +1771,7 @@ export type Database = {
           cod_max_order?: number | null
           cod_min_order?: number | null
           cod_requires_confirmation?: boolean
+          container_width?: string
           cookie_consent_enabled?: boolean
           cookie_consent_text?: string
           currencies?: Json
@@ -1688,13 +1779,20 @@ export type Database = {
           favicon_url?: string | null
           font_body?: string
           font_display?: string
+          footer_style?: string
+          footer_text?: string | null
           ga4_id?: string | null
           google_site_verification?: string | null
           gtm_id?: string | null
+          header_sticky?: boolean
+          header_style?: string
+          header_tone?: string
           hero_cta?: string | null
           hero_eyebrow?: string | null
+          hero_height?: string
           hero_image_alt?: string | null
           hero_image_url?: string | null
+          hero_overlay?: number
           id?: number
           languages?: Json
           llms_txt?: string | null
@@ -1706,13 +1804,17 @@ export type Database = {
           maintenance_mode?: boolean
           merchant_center_id?: string | null
           meta_pixel_id?: string | null
+          nav_style?: string
           og_image_url?: string | null
+          page_seo?: Json
           primary_color?: string | null
+          product_grid_cols?: number
           referral_enabled?: boolean
           referral_reward_points?: number
           reviews_enabled?: boolean
           reviews_require_approval?: boolean
           robots_txt?: string | null
+          section_spacing?: string
           seo_description?: string | null
           seo_title?: string | null
           store_name?: string
