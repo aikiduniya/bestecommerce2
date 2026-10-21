@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Loader2, Package, Search, ShoppingBag, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { money, settingsQuery } from "@/lib/store";
+import { settingsQuery } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -110,10 +110,14 @@ function Notifications({ isAdmin, perms }: { isAdmin: boolean; perms: string[] }
     refetchInterval: 60_000,
     queryFn: async () => {
       const count = async (q: PromiseLike<{ count: number | null }>) => (await q).count ?? 0;
+      const lowStockCount = async () => {
+        const { data } = await supabase.from("products").select("stock, low_stock_threshold").eq("status", "active").gt("stock", 0);
+        return (data ?? []).filter((p) => p.stock <= p.low_stock_threshold).length;
+      };
       const [reviews, questions, lowStock, unconfirmedCod] = await Promise.all([
         can("content") ? count(supabase.from("reviews").select("id", { count: "exact", head: true }).eq("status", "pending")) : 0,
         can("content") ? count(supabase.from("product_questions").select("id", { count: "exact", head: true }).eq("status", "pending")) : 0,
-        can("catalog") ? count(supabase.from("products").select("id", { count: "exact", head: true }).eq("status", "active").gt("stock", 0).filter("stock", "lte", "low_stock_threshold")) : 0,
+        can("catalog") ? lowStockCount() : 0,
         can("orders") ? count(supabase.from("orders").select("id", { count: "exact", head: true }).eq("payment_method", "cod").is("cod_confirmed_at", null).neq("status", "cancelled")) : 0,
       ]);
       const items = [
@@ -142,7 +146,6 @@ function Notifications({ isAdmin, perms }: { isAdmin: boolean; perms: string[] }
         {items.map((n) => (
           <a key={n.label} href={n.to} className="block rounded-md px-3 py-2 text-sm hover:bg-muted">{n.label}</a>
         ))}
-        {s && <p className="px-2 pt-2 text-[10px] text-muted-foreground">Refreshes every minute · {money(0, s.currency).replace(/[\d.,\s]/g, "")} store</p>}
       </PopoverContent>
     </Popover>
   );
