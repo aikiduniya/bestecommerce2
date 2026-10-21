@@ -137,7 +137,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
           </div>
         )}
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="flex-1" key={dc?.code ?? baseCurrency}>{children}</main>
       <footer className="mt-20 border-t bg-card">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
           <div>
