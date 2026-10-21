@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 
 type GuestOrder = {
   order_number: number;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
   status: string;
   payment_status: string;
   fulfillment_status: string;
