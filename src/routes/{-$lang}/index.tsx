@@ -34,6 +34,7 @@ export const Route = createFileRoute("/{-$lang}/")({
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
         ...(loaderData?.seo?.verification ? [{ name: "google-site-verification", content: loaderData.seo.verification }] : []),
+        ...(loaderData?.seo?.bing ? [{ name: "msvalidate.01", content: loaderData.seo.bing }] : []),
         ...(loaderData?.seo?.image ? [{ property: "og:image", content: loaderData.seo.image }, { name: "twitter:image", content: loaderData.seo.image }] : []),
       ],
       links: hreflangLinks(loaderData?.st, "/"),

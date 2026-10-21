@@ -53,12 +53,13 @@ export const getPostSeo = createServerFn({ method: "GET" })
   });
 
 export const getHomeSeo = createServerFn({ method: "GET" }).handler(async () => {
-  const { data } = await publicClient().from("store_settings").select("store_name, tagline, seo_title, seo_description, google_site_verification, og_image_url").eq("id", 1).maybeSingle();
+  const { data } = await publicClient().from("store_settings").select("store_name, tagline, seo_title, seo_description, google_site_verification, bing_site_verification, og_image_url").eq("id", 1).maybeSingle();
   if (!data) return null;
   return {
     title: data.seo_title || `${data.store_name} — ${data.tagline ?? ""}`,
     description: data.seo_description || data.tagline || "",
     verification: data.google_site_verification?.trim() || null,
+    bing: data.bing_site_verification?.trim() || null,
     image: data.og_image_url?.startsWith("https://") ? data.og_image_url : null,
   };
 });
