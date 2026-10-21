@@ -111,6 +111,7 @@ function TrackOrder() {
               <div className="text-right text-sm">
                 <p><span className="text-muted-foreground">Status:</span> {STATUS_LABEL[order.status] ?? order.status}</p>
                 <p><span className="text-muted-foreground">Payment:</span> {order.payment_status === "pending" ? "Pay on delivery" : order.payment_status}</p>
+                {order.tracking_number && <p><span className="text-muted-foreground">Tracking:</span> {order.tracking_url ? <a href={order.tracking_url} target="_blank" rel="noreferrer" className="text-gold underline">{order.tracking_number}</a> : order.tracking_number}</p>}
                 <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
               </div>
             </div>

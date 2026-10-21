@@ -63,6 +63,9 @@ function OrderPage() {
         </div>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 text-sm">
           <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Ship to</p><p>{o.customer_name}</p><p>{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}</p><p>{[addr.city, addr.state, addr.postal].filter(Boolean).join(", ")}</p><p>{addr.country}</p></div>
+          {o.tracking_number && (
+            <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Tracking</p><p>{o.tracking_number}</p>{o.tracking_url && <a href={o.tracking_url} target="_blank" rel="noreferrer" className="text-sm text-gold underline">Track shipment</a>}</div>
+          )}
           <div className="rounded border bg-card p-4"><p className="eyebrow mb-2 text-muted-foreground">Payment</p><p>Cash on Delivery</p><p className="text-muted-foreground">{o.customer_email}</p></div>
         </div>
         <OrderTimeline orderId={o.id} />
