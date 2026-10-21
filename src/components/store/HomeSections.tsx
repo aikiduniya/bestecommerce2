@@ -9,8 +9,7 @@ import {
 } from "@/lib/store";
 import { getRecentlyViewed } from "@/lib/cart";
 import { useFromPrice } from "@/lib/useFromPrice";
-import { bestSellersQuery } from "@/lib/content.functions";
-import type { HomeSection } from "@/lib/sections";
+import { bestSellersQuery, type HomeSection } from "@/lib/sections";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Prose } from "@/components/store/Prose";

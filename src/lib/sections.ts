@@ -16,6 +16,15 @@ export const sectionsQuery = queryOptions({
   },
 });
 
+export const bestSellersQuery = queryOptions({
+  queryKey: ["best_sellers"],
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("best_seller_ids", { _limit: 8 });
+    if (error) throw error;
+    return (data ?? []).map((r) => r.product_id);
+  },
+});
+
 export const menusQuery = queryOptions({
   queryKey: ["navigation_menus"],
   queryFn: async () => {
