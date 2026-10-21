@@ -276,3 +276,35 @@ export function downloadCsv(filename: string, rows: (string | number | null | un
   a.click();
   URL.revokeObjectURL(url);
 }
+
+export type ReturnRequest = {
+  id: string;
+  order_id: string;
+  user_id: string | null;
+  email: string;
+  items: { product_id?: string; variant_id?: string | null; name: string; qty: number; price: number }[];
+  reason: string;
+  status: "requested" | "approved" | "rejected" | "received" | "refunded";
+  admin_note: string | null;
+  restocked: boolean;
+  created_at: string;
+};
+
+export const returnRequestsQuery = queryOptions({
+  queryKey: ["return_requests"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("return_requests").select("*, orders(order_number)").order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as unknown as (ReturnRequest & { orders: { order_number: number } | null })[];
+  },
+});
+
+export const orderReturnsQuery = (orderId: string) =>
+  queryOptions({
+    queryKey: ["return_requests", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("return_requests").select("*").eq("order_id", orderId).order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as ReturnRequest[];
+    },
+  });
