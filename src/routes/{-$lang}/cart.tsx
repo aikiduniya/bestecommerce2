@@ -11,6 +11,7 @@ export const Route = createFileRoute("/{-$lang}/cart")({
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, follow" },
       { title: "Your cart" },
       { name: "description", content: "Review the items in your shopping cart." },
       { property: "og:title", content: "Your cart" },
