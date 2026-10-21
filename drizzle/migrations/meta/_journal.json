@@ -190,6 +190,13 @@
       "when": 1792581927726,
       "tag": "0026_stage5_alerts_tickets_consent",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1792583092882,
+      "tag": "0027_giftcards_loyalty_referrals_carts",
+      "breakpoints": true
     }
   ]
 }
