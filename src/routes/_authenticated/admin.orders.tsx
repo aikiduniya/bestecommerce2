@@ -36,6 +36,7 @@ function OrdersPage() {
     if (patch.status === "cancelled") qc.invalidateQueries({ queryKey: ["products"] });
     toast.success(patch.status === "cancelled" ? "Order cancelled — stock returned to inventory" : "Order updated");
     qc.invalidateQueries({ queryKey: ["orders"] });
+    qc.invalidateQueries({ queryKey: ["order_events", id] });
     setView((v) => (v && v.id === id ? { ...v, ...patch } as Order : v));
   }
 
