@@ -13,9 +13,9 @@ export function NotifyMe({ productId }: { productId: string }) {
     const e = email.trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { toast.error("Enter a valid email address"); return; }
     setBusy(true);
-    const { error } = await supabase.from("stock_alerts").upsert({ product_id: productId, email: e }, { onConflict: "product_id,email" });
+    const { error } = await supabase.from("stock_alerts").insert({ product_id: productId, email: e });
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (error && error.code !== "23505") { toast.error(error.message); return; }
     setDone(true);
     toast.success("We'll email you when it's back in stock");
   }
