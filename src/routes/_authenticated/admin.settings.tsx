@@ -80,7 +80,7 @@ function SettingsPage() {
     rest.languages = langList;
     if (rest.cod_min_order !== null && rest.cod_max_order !== null && Number(rest.cod_min_order) > Number(rest.cod_max_order)) { setSaving(false); toast.error("COD minimum cannot be above the maximum"); return; }
     for (const [k, re, label] of [["ga4_id", /^G-[A-Z0-9]{4,20}$/i, "GA4 ID should look like G-XXXXXXX"], ["gtm_id", /^GTM-[A-Z0-9]{4,12}$/i, "GTM ID should look like GTM-XXXXXX"], ["meta_pixel_id", /^\d{6,20}$/, "Meta Pixel ID should be numbers only"]] as const) {
-      const v = (rest[k] ?? "").trim();
+      const v = String(rest[k] ?? "").trim();
       if (v && !re.test(v)) { setSaving(false); toast.error(label); return; }
       rest[k] = v || null;
     }
@@ -225,7 +225,7 @@ function SettingsPage() {
               {langList.map((l, i) => (
                 <div key={i} className="flex flex-wrap items-center gap-2">
                   <select className="h-9 rounded-md border bg-background px-3 text-sm" value={l.code}
-                    onChange={(e) => updateLang(i, { code: e.target.value, label: LANG_CATALOG[e.target.value].label, dir: LANG_CATALOG[e.target.value].dir })}>
+                    onChange={(e) => { const meta = LANG_CATALOG[e.target.value] ?? { label: e.target.value, dir: "ltr" as const }; updateLang(i, { code: e.target.value, label: meta.label, dir: meta.dir }); }}>
                     {Object.entries(LANG_CATALOG).map(([code, meta]) => <option key={code} value={code}>{meta.label} ({code})</option>)}
                   </select>
                   <Input className="w-40" placeholder="Label shown to visitors" value={l.label}
@@ -237,8 +237,9 @@ function SettingsPage() {
               <Button type="button" variant="outline" size="sm"
                 onClick={() => {
                   const unused = Object.keys(LANG_CATALOG).find((c) => !langList.some((l) => l.code === c));
-                  if (!unused) { toast.error("All available languages are already added"); return; }
-                  updateLang(-1, { code: unused, label: LANG_CATALOG[unused].label, dir: LANG_CATALOG[unused].dir });
+                  const meta = unused ? LANG_CATALOG[unused] : undefined;
+                  if (!unused || !meta) { toast.error("All available languages are already added"); return; }
+                  updateLang(-1, { code: unused, label: meta.label, dir: meta.dir });
                 }}>Add language</Button>
             </div>
             <div className="space-y-3">
