@@ -54,10 +54,29 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             {s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{isLoading ? "\u00a0" : s?.store_name}</span>}
           </Link>
           <nav className="hidden flex-1 justify-center gap-7 text-sm md:flex">
-            <Link to="/shop" className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>Shop all</Link>
-            {topCats.slice(0, 6).map((c) => (
-              <Link key={c.id} to="/shop" search={{ category: c.slug }} className="hover:text-gold">{c.name}</Link>
-            ))}
+            {headerItems.length > 0 ? (
+              headerItems.map((item, i) =>
+                item.children?.length ? (
+                  <div key={i} className="group relative">
+                    <a href={item.url} className="flex items-center gap-1 hover:text-gold">{item.label}<ChevronDown className="size-3.5" /></a>
+                    <div className="invisible absolute left-1/2 top-full z-50 min-w-44 -translate-x-1/2 rounded border bg-card p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
+                      {item.children.map((ch, j) => (
+                        <a key={j} href={ch.url} className="block rounded px-3 py-2 hover:bg-secondary hover:text-gold">{ch.label}</a>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <a key={i} href={item.url} className="hover:text-gold">{item.label}</a>
+                ),
+              )
+            ) : (
+              <>
+                <Link to="/shop" className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>Shop all</Link>
+                {topCats.slice(0, 6).map((c) => (
+                  <Link key={c.id} to="/shop" search={{ category: c.slug }} className="hover:text-gold">{c.name}</Link>
+                ))}
+              </>
+            )}
           </nav>
           <div className="ml-auto flex items-center gap-4 md:ml-0">
             <form onSubmit={search} className="relative hidden lg:block">
