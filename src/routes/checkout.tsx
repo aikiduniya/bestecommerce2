@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { money, optionLabel, settingsQuery, zonesQuery } from "@/lib/store";
 import { useCart } from "@/lib/cart";
+import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
 import { useSessionUser } from "@/lib/auth";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,16 @@ function Checkout() {
   const cur = s?.currency;
 
   useEffect(() => { if (user?.email) setF((x) => ({ ...x, email: x.email || user.email! })); }, [user]);
+
+  const trackItems = cart.items.map((i) => ({ id: i.product_id, name: i.name, price: i.price, qty: i.qty, variant: i.options ? Object.values(i.options).join(" / ") : undefined }));
+  const beganRef = useRef(false);
+  useEffect(() => {
+    if (!beganRef.current && user && cart.items.length > 0) {
+      beganRef.current = true;
+      trackBeginCheckout(trackItems, cart.subtotal, cur);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, cart.items.length > 0]);
 
   const country = f.country.trim().toUpperCase();
   const available = zones.filter((z) => z.is_active && (z.countries.length === 0 || z.countries.includes("*") || (country && z.countries.includes(country))));
@@ -95,6 +106,7 @@ function Checkout() {
     setPlacing(false);
     if (error) { toast.error(error.message); return; }
     const res = data as { id: string; order_number: number };
+    trackPurchase(res.id, trackItems, Math.max(cart.subtotal - autoDiscount - discount, 0) + shipping + codFee, cur);
     cart.clear();
     qc.invalidateQueries();
     navigate({ to: "/order/$id", params: { id: res.id } });

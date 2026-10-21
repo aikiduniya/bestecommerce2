@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   component: ProductsPage,
@@ -49,6 +50,25 @@ function ProductsPage() {
   const [variants, setVariants] = useState<VariantDraft[]>([]);
   const [colSel, setColSel] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [selIds, setSelIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const toggleSel = (id: string, on: boolean) => setSelIds((s) => { const n = new Set(s); on ? n.add(id) : n.delete(id); return n; });
+
+  async function bulk(action: "active" | "draft" | "archived" | "delete") {
+    const ids = [...selIds];
+    if (!ids.length) return;
+    if (action === "delete" && !confirm(`Delete ${ids.length} product${ids.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
+    setBulkBusy(true);
+    const { error } = action === "delete"
+      ? await supabase.from("products").delete().in("id", ids)
+      : await supabase.from("products").update({ status: action }).in("id", ids);
+    setBulkBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(action === "delete" ? `Deleted ${ids.length} products` : `Updated ${ids.length} products`);
+    setSelIds(new Set());
+    qc.invalidateQueries({ queryKey: ["products"] });
+  }
 
   const list = useMemo(() => products.filter((p) => {
     const s = q.toLowerCase();
@@ -194,13 +214,33 @@ function ProductsPage() {
             <option value="all">All stock</option><option value="low">Low stock</option><option value="out">Out of stock</option>
           </select>
         </div>
+        {selIds.size > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-md border border-gold/40 bg-gold/5 px-3 py-2">
+            <span className="text-sm font-medium">{selIds.size} selected</span>
+            <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => bulk("active")}>Set active</Button>
+            <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => bulk("draft")}>Set draft</Button>
+            <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => bulk("archived")}>Archive</Button>
+            <Button size="sm" variant="destructive" disabled={bulkBusy} onClick={() => bulk("delete")}>Delete</Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelIds(new Set())}>Clear</Button>
+          </div>
+        )}
         <Table>
           <TableHeader>
-            <TableRow><TableHead>Product</TableHead><TableHead>Category</TableHead><TableHead>Price</TableHead><TableHead>Stock</TableHead><TableHead>Status</TableHead><TableHead /></TableRow>
+            <TableRow>
+              <TableHead className="w-8">
+                <Checkbox
+                  checked={list.length > 0 && list.every((p) => selIds.has(p.id))}
+                  onCheckedChange={(on) => setSelIds(on ? new Set(list.map((p) => p.id)) : new Set())}
+                  aria-label="Select all"
+                />
+              </TableHead>
+              <TableHead>Product</TableHead><TableHead>Category</TableHead><TableHead>Price</TableHead><TableHead>Stock</TableHead><TableHead>Status</TableHead><TableHead />
+            </TableRow>
           </TableHeader>
           <TableBody>
             {list.map((p) => (
-              <TableRow key={p.id}>
+              <TableRow key={p.id} data-state={selIds.has(p.id) ? "selected" : undefined}>
+                <TableCell><Checkbox checked={selIds.has(p.id)} onCheckedChange={(on) => toggleSel(p.id, !!on)} aria-label={`Select ${p.name}`} /></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="flex size-11 items-center justify-center overflow-hidden rounded bg-muted">
@@ -223,7 +263,7 @@ function ProductsPage() {
                 </TableCell>
               </TableRow>
             ))}
-            {list.length === 0 && <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">No products found.</TableCell></TableRow>}
+            {list.length === 0 && <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">No products found.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </Card>
