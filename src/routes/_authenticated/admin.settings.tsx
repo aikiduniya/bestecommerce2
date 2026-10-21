@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, type Settings } from "@/lib/store";
 import { extraCurrencies, type DisplayCurrency } from "@/lib/currency";
+import { LANG_CATALOG, UI_STRINGS, extraLanguages, type StoreLanguage, type Translations } from "@/lib/i18n";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,6 +41,24 @@ function SettingsPage() {
     else if (c) raw[i] = c;
     else raw.splice(i, 1);
     set("currencies", raw as never);
+  };
+
+  // Languages: enabled list + per-language UI text translations.
+  const langList: StoreLanguage[] = Array.isArray(s.languages) ? (s.languages as StoreLanguage[]) : [];
+  const translations: Translations = (s.translations && typeof s.translations === "object" ? s.translations : {}) as Translations;
+  const [transLang, setTransLang] = useState<string>("");
+  const updateLang = (i: number, l: StoreLanguage | null) => {
+    const raw = langList.slice();
+    if (i === -1 && l) raw.push(l);
+    else if (l) raw[i] = l;
+    else raw.splice(i, 1);
+    set("languages", raw as never);
+  };
+  const setTranslation = (lang: string, key: string, value: string) => {
+    const next: Translations = { ...translations, [lang]: { ...(translations[lang] ?? {}) } };
+    if (value.trim()) next[lang][key] = value;
+    else delete next[lang][key];
+    set("translations", next as never);
   };
 
   async function save() {
