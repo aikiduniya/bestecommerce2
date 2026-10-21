@@ -47,6 +47,20 @@ function Checkout() {
   const shipping = coupon?.free_shipping ? 0 : baseShipping;
   const discount = coupon ? Math.min(coupon.discount, cart.subtotal) : 0;
 
+  const { data: autoDisc } = useQuery({
+    queryKey: ["auto-discount-preview", cart.subtotal, cart.items.map((i) => `${i.product_id}:${i.qty}`).join(",")],
+    enabled: !!user && cart.items.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("check_automatic_discount", {
+        _items: cart.items.map((i) => ({ product_id: i.product_id, price: i.price, qty: i.qty })),
+        _subtotal: cart.subtotal,
+      });
+      if (error) return null;
+      return data as { name: string; discount: number } | null;
+    },
+  });
+  const autoDiscount = autoDisc ? Math.min(Number(autoDisc.discount), cart.subtotal) : 0;
+
   async function applyCoupon() {
     if (!codeInput.trim()) return;
     const { data, error } = await supabase.rpc("check_coupon", { _code: codeInput, _subtotal: cart.subtotal });
