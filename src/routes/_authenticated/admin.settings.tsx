@@ -119,10 +119,25 @@ function SettingsPage() {
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
             {text("support_email", "Support email", "email")}
             {text("support_phone", "Support phone")}
-            {text("currency", "Currency code (e.g. USD, EUR, PKR)")}
+            {text("currency", "Store currency code (e.g. USD, EUR, PKR) — orders are charged in this currency")}
             {text("announcement", "Announcement bar text")}
             {toggle("announcement_enabled", "Show announcement bar", "Displayed at the top of every page")}
             {toggle("maintenance_mode", "Maintenance mode", "Hides the storefront from visitors")}
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">Extra display currencies (visitors can switch; rates are per 1 {s.currency || "USD"})</Label>
+              {extraCurrencies(s.currencies).map((c, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input className="w-24 uppercase" maxLength={3} placeholder="PKR" value={c.code}
+                    onChange={(e) => updateCurrency(i, { ...c, code: e.target.value.toUpperCase() })} />
+                  <Input type="number" min="0" step="0.0001" placeholder="Rate" value={c.rate || ""}
+                    onChange={(e) => updateCurrency(i, { ...c, rate: Number(e.target.value) })} />
+                  <span className="text-xs text-muted-foreground">1 {s.currency || "USD"} = {c.rate || "?"} {c.code}</span>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => updateCurrency(i, null)}>Remove</Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => updateCurrency(-1, { code: "", rate: 0 } as DisplayCurrency)}>Add currency</Button>
+              <p className="text-xs text-muted-foreground">Display only — checkout and orders always use the store currency. Update rates yourself; they do not refresh automatically.</p>
+            </div>
           </Card>
         </TabsContent>
         <TabsContent value="payments">
