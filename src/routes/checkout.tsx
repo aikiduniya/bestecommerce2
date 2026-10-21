@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { money, optionLabel, settingsQuery, zonesQuery } from "@/lib/store";
 import { useCart } from "@/lib/cart";
 import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
+import { useDisplayCurrency } from "@/lib/currency";
 import { useSessionUser } from "@/lib/auth";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ function Checkout() {
   const [codeInput, setCodeInput] = useState("");
   const [coupon, setCoupon] = useState<{ code: string; discount: number; free_shipping: boolean } | null>(null);
   const cur = s?.currency;
+  const dc = useDisplayCurrency();
 
   useEffect(() => { if (user?.email) setF((x) => ({ ...x, email: x.email || user.email! })); }, [user]);
 
