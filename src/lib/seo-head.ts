@@ -2,7 +2,7 @@ export const SITE = "https://bestecommerce2.lovable.app";
 
 type Meta = Record<string, string>;
 /** Extra robots/keywords meta shared by content routes. */
-export function extraMeta(seo: { keywords?: string | null; noindex?: boolean } | null | undefined): Meta[] {
+export function extraMeta(seo: { keywords?: string | null | undefined; noindex?: boolean | undefined } | null | undefined): Meta[] {
   const out: Meta[] = [];
   if (seo?.keywords) out.push({ name: "keywords", content: seo.keywords });
   if (seo?.noindex) out.push({ name: "robots", content: "noindex, follow" });
@@ -22,9 +22,9 @@ export function pageSeoOf(settings: unknown, key: string): PageSeo {
   return (all && typeof all === "object" && all[key]) || {};
 }
 
-type Taxo = { name: string; description?: string | null; meta_title?: string | null; meta_description?: string | null; meta_keywords?: string | null; canonical_url?: string | null; og_image_url?: string | null; robots_noindex?: boolean; image_url?: string | null; logo_url?: string | null };
+type Taxo = { name: string; description?: string | null; meta_title?: string | null; meta_description?: string | null; meta_keywords?: string | null; canonical_url?: string | null; og_image_url?: string | null; robots_noindex?: boolean | undefined; image_url?: string | null; logo_url?: string | null };
 /** Head tags for a page, with optional overrides from a category/brand/collection. */
-export function buildHead(o: { title: string; description: string; path: string; keywords?: string | null; image?: string | null; noindex?: boolean; canonical?: string | null; type?: string }) {
+export function buildHead(o: { title: string; description: string; path: string; keywords?: string | null | undefined; image?: string | null | undefined; noindex?: boolean | undefined; canonical?: string | null | undefined; type?: string }) {
   const meta: Meta[] = [
     { title: o.title },
     { name: "description", content: o.description },

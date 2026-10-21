@@ -29,7 +29,7 @@ const FIELDS = ["meta_title", "meta_description", "meta_keywords", "canonical_ur
 export function SeoDialog({ table, row, imageLabel = "Image alt text" }: { table: "categories" | "brands" | "collections"; row: SeoRow; imageLabel?: string }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [f, setF] = useState<Record<string, string>>({});
+  const [f, setF] = useState<Partial<Record<(typeof FIELDS)[number], string>>>({});
   const [noindex, setNoindex] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -49,7 +49,7 @@ export function SeoDialog({ table, row, imageLabel = "Image alt text" }: { table
     void qc.invalidateQueries({ queryKey: [table] });
     setOpen(false);
   }
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
+  const set = (k: (typeof FIELDS)[number]) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   const title = f.meta_title || row.name;
   const desc = f.meta_description || "";
 

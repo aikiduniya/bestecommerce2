@@ -28,7 +28,7 @@ export function SimpleTaxonomy({ table, rows, noun }: { table: "categories" | "b
     refresh();
   }
   async function update(id: string, patch: Partial<Row>) {
-    const { error } = await supabase.from(table).update(patch).eq("id", id);
+    const { error } = await supabase.from(table).update(patch as never).eq("id", id);
     if (error) { toast.error(error.message); return; }
     refresh();
   }

@@ -133,11 +133,11 @@ function SettingsPage() {
 
   const pick = (k: string, label: string, opts: [string, string][]) => (
     <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">{label}</Label>
-      <select aria-label={label} className="h-9 w-full rounded-md border bg-background px-3 text-sm" value={String((s as Record<string, unknown>)[k] ?? opts[0][0])} onChange={(e) => setS({ ...s, [k]: /^\d+$/.test(e.target.value) ? Number(e.target.value) : e.target.value } as never)}>
+      <select aria-label={label} className="h-9 w-full rounded-md border bg-background px-3 text-sm" value={String((s as Record<string, unknown>)[k] ?? opts[0]?.[0] ?? "")} onChange={(e) => setS({ ...s, [k]: /^\d+$/.test(e.target.value) ? Number(e.target.value) : e.target.value } as never)}>
         {opts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select></div>
   );
-  const pageSeo = (s.page_seo && typeof s.page_seo === "object" ? s.page_seo : {}) as Record<string, Record<string, string | boolean>>;
+  const pageSeo = (s.page_seo && typeof s.page_seo === "object" ? s.page_seo : {}) as Record<string, { title?: string; keywords?: string; description?: string; og_image?: string; noindex?: boolean }>;
   const setPageSeo = (page: string, k: string, v: string | boolean) => setS({ ...s, page_seo: { ...pageSeo, [page]: { ...(pageSeo[page] ?? {}), [k]: v } } } as never);
 
   return (
