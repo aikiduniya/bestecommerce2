@@ -94,8 +94,19 @@ export function StoreLayout({ children }: { children: ReactNode }) {
         {open && (
           <div className="space-y-3 border-t px-4 py-4 md:hidden">
             <form onSubmit={search}><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="h-10 w-full rounded border bg-card px-3 text-sm" /></form>
-            <Link to="/shop" className="block py-1" onClick={() => setOpen(false)}>Shop all</Link>
-            {topCats.map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1" onClick={() => setOpen(false)}>{c.name}</Link>)}
+            {headerItems.length > 0 ? (
+              headerItems.map((item, i) => (
+                <div key={i}>
+                  <a href={item.url} className="block py-1" onClick={() => setOpen(false)}>{item.label}</a>
+                  {item.children?.map((ch, j) => <a key={j} href={ch.url} className="block py-1 pl-4 text-muted-foreground" onClick={() => setOpen(false)}>{ch.label}</a>)}
+                </div>
+              ))
+            ) : (
+              <>
+                <Link to="/shop" className="block py-1" onClick={() => setOpen(false)}>Shop all</Link>
+                {topCats.map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1" onClick={() => setOpen(false)}>{c.name}</Link>)}
+              </>
+            )}
           </div>
         )}
       </header>
