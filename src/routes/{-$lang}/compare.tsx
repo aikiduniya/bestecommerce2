@@ -11,6 +11,7 @@ export const Route = createFileRoute("/{-$lang}/compare")({
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, follow" },
       { title: "Compare products" },
       { name: "description", content: "Compare products side by side." },
       { property: "og:title", content: "Compare products" },

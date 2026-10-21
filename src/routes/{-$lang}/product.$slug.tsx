@@ -17,6 +17,8 @@ import { NotifyMe } from "@/components/store/NotifyMe";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProductSeo } from "@/lib/seo.functions";
+import { SITE, breadcrumb, extraMeta, jsonLd } from "@/lib/seo-head";
+
 import { ReviewsQA } from "@/components/store/ReviewsQA";
 
 export const Route = createFileRoute("/{-$lang}/product/$slug")({
@@ -28,7 +30,8 @@ export const Route = createFileRoute("/{-$lang}/product/$slug")({
   head: ({ loaderData, params }) => {
     const title = loaderData?.seo?.title ?? "Product details";
     const description = loaderData?.seo?.description ?? "Product details, options, pricing and availability.";
-    const url = `https://bestecommerce2.lovable.app${params.lang ? `/${params.lang}` : ""}/product/${params.slug}`;
+    const sd = loaderData?.seo;
+    const url = `${SITE}${params.lang ? `/${params.lang}` : ""}/product/${params.slug}`;
     return {
       meta: [
         { title },
@@ -38,11 +41,20 @@ export const Route = createFileRoute("/{-$lang}/product/$slug")({
         { property: "og:type", content: "product" },
         { property: "og:url", content: url },
         { name: "twitter:card", content: "summary_large_image" },
+        ...extraMeta(sd),
         ...(loaderData?.seo?.image
           ? [{ property: "og:image", content: loaderData.seo.image }, { name: "twitter:image", content: loaderData.seo.image }]
           : []),
       ],
-      links: [{ rel: "canonical", href: url }, ...hreflangLinks(loaderData?.st, `/product/${params.slug}`)],
+      links: [{ rel: "canonical", href: sd?.canonical || url }, ...hreflangLinks(loaderData?.st, `/product/${params.slug}`)],
+      scripts: sd ? [
+        jsonLd({ "@context": "https://schema.org", "@type": "Product", name: sd.name, description, url,
+          ...(sd.images.length ? { image: sd.images } : {}), ...(sd.sku ? { sku: sd.sku } : {}),
+          ...(sd.brand ? { brand: { "@type": "Brand", name: sd.brand } } : {}), ...(sd.category ? { category: sd.category } : {}),
+          offers: { "@type": "Offer", url, price: sd.price.toFixed(2), priceCurrency: sd.currency,
+            availability: sd.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", itemCondition: "https://schema.org/NewCondition" } }),
+        jsonLd(breadcrumb([{ name: "Home", url: `${SITE}/` }, { name: "Shop", url: `${SITE}/shop` }, { name: sd.name, url }])),
+      ] : [],
     };
   },
   component: ProductPage,
@@ -155,7 +167,7 @@ function ProductPage() {
         <div className="grid gap-12 md:grid-cols-2">
           <div>
             <div className="aspect-square overflow-hidden rounded bg-secondary">
-              {images[img] ? <img src={images[img]} alt={p.name} className="size-full object-cover" /> : <div className="flex size-full items-center justify-center font-display text-8xl text-muted-foreground/30">{p.name[0]}</div>}
+              {images[img] ? <img src={images[img]} alt={(p as { image_alts?: string[] }).image_alts?.[img] || p.name} className="size-full object-cover" /> : <div className="flex size-full items-center justify-center font-display text-8xl text-muted-foreground/30">{p.name[0]}</div>}
             </div>
             {images.length > 1 && (
               <div className="mt-3 grid grid-cols-5 gap-3">

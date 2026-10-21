@@ -135,12 +135,17 @@ export type Database = {
         Row: {
           author: string | null
           body: string
+          canonical_url: string | null
+          cover_alt: string | null
           cover_image: string | null
           created_at: string
           excerpt: string | null
           id: string
           is_published: boolean
+          meta_keywords: string | null
+          og_image_url: string | null
           published_at: string | null
+          robots_noindex: boolean
           seo_description: string | null
           seo_title: string | null
           slug: string
@@ -151,12 +156,17 @@ export type Database = {
         Insert: {
           author?: string | null
           body?: string
+          canonical_url?: string | null
+          cover_alt?: string | null
           cover_image?: string | null
           created_at?: string
           excerpt?: string | null
           id?: string
           is_published?: boolean
+          meta_keywords?: string | null
+          og_image_url?: string | null
           published_at?: string | null
+          robots_noindex?: boolean
           seo_description?: string | null
           seo_title?: string | null
           slug: string
@@ -167,12 +177,17 @@ export type Database = {
         Update: {
           author?: string | null
           body?: string
+          canonical_url?: string | null
+          cover_alt?: string | null
           cover_image?: string | null
           created_at?: string
           excerpt?: string | null
           id?: string
           is_published?: boolean
+          meta_keywords?: string | null
+          og_image_url?: string | null
           published_at?: string | null
+          robots_noindex?: boolean
           seo_description?: string | null
           seo_title?: string | null
           slug?: string
@@ -615,6 +630,7 @@ export type Database = {
       }
       media: {
         Row: {
+          alt_text: string | null
           created_at: string
           created_by: string | null
           filename: string | null
@@ -625,6 +641,7 @@ export type Database = {
           url: string
         }
         Insert: {
+          alt_text?: string | null
           created_at?: string
           created_by?: string | null
           filename?: string | null
@@ -635,6 +652,7 @@ export type Database = {
           url: string
         }
         Update: {
+          alt_text?: string | null
           created_at?: string
           created_by?: string | null
           filename?: string | null
@@ -897,9 +915,13 @@ export type Database = {
       pages: {
         Row: {
           body: string
+          canonical_url: string | null
           created_at: string
           id: string
           is_published: boolean
+          meta_keywords: string | null
+          og_image_url: string | null
+          robots_noindex: boolean
           seo_description: string | null
           seo_title: string | null
           show_in_footer: boolean
@@ -910,9 +932,13 @@ export type Database = {
         }
         Insert: {
           body?: string
+          canonical_url?: string | null
           created_at?: string
           id?: string
           is_published?: boolean
+          meta_keywords?: string | null
+          og_image_url?: string | null
+          robots_noindex?: boolean
           seo_description?: string | null
           seo_title?: string | null
           show_in_footer?: boolean
@@ -923,9 +949,13 @@ export type Database = {
         }
         Update: {
           body?: string
+          canonical_url?: string | null
           created_at?: string
           id?: string
           is_published?: boolean
+          meta_keywords?: string | null
+          og_image_url?: string | null
+          robots_noindex?: boolean
           seo_description?: string | null
           seo_title?: string | null
           show_in_footer?: boolean
@@ -1093,6 +1123,7 @@ export type Database = {
         Row: {
           barcode: string | null
           brand_id: string | null
+          canonical_url: string | null
           category_id: string | null
           cod_allowed: boolean
           compare_at_price: number | null
@@ -1100,13 +1131,17 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          image_alts: string[]
           images: string[]
           is_featured: boolean
           low_stock_threshold: number
+          meta_keywords: string | null
           name: string
+          og_image_url: string | null
           options: Json
           price: number
           related_ids: string[]
+          robots_noindex: boolean
           sale_ends_at: string | null
           sale_price: number | null
           sale_starts_at: string | null
@@ -1125,6 +1160,7 @@ export type Database = {
         Insert: {
           barcode?: string | null
           brand_id?: string | null
+          canonical_url?: string | null
           category_id?: string | null
           cod_allowed?: boolean
           compare_at_price?: number | null
@@ -1132,13 +1168,17 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_alts?: string[]
           images?: string[]
           is_featured?: boolean
           low_stock_threshold?: number
+          meta_keywords?: string | null
           name: string
+          og_image_url?: string | null
           options?: Json
           price?: number
           related_ids?: string[]
+          robots_noindex?: boolean
           sale_ends_at?: string | null
           sale_price?: number | null
           sale_starts_at?: string | null
@@ -1157,6 +1197,7 @@ export type Database = {
         Update: {
           barcode?: string | null
           brand_id?: string | null
+          canonical_url?: string | null
           category_id?: string | null
           cod_allowed?: boolean
           compare_at_price?: number | null
@@ -1164,13 +1205,17 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_alts?: string[]
           images?: string[]
           is_featured?: boolean
           low_stock_threshold?: number
+          meta_keywords?: string | null
           name?: string
+          og_image_url?: string | null
           options?: Json
           price?: number
           related_ids?: string[]
+          robots_noindex?: boolean
           sale_ends_at?: string | null
           sale_price?: number | null
           sale_starts_at?: string | null
@@ -1501,7 +1546,10 @@ export type Database = {
           accent_color: string | null
           announcement: string | null
           announcement_enabled: boolean
+          background_color: string | null
           bing_site_verification: string | null
+          button_style: string
+          card_style: string
           cod_countries: string[]
           cod_enabled: boolean
           cod_excluded_zones: string[]
@@ -1521,6 +1569,7 @@ export type Database = {
           gtm_id: string | null
           hero_cta: string | null
           hero_eyebrow: string | null
+          hero_image_alt: string | null
           hero_image_url: string | null
           id: number
           languages: Json
@@ -1546,10 +1595,12 @@ export type Database = {
           stripe_enabled: boolean
           support_email: string | null
           support_phone: string | null
+          surface_color: string | null
           tagline: string | null
           tax_enabled: boolean
           tax_inclusive: boolean
           tax_label: string
+          theme_preset: string
           translations: Json
           updated_at: string
         }
@@ -1557,7 +1608,10 @@ export type Database = {
           accent_color?: string | null
           announcement?: string | null
           announcement_enabled?: boolean
+          background_color?: string | null
           bing_site_verification?: string | null
+          button_style?: string
+          card_style?: string
           cod_countries?: string[]
           cod_enabled?: boolean
           cod_excluded_zones?: string[]
@@ -1577,6 +1631,7 @@ export type Database = {
           gtm_id?: string | null
           hero_cta?: string | null
           hero_eyebrow?: string | null
+          hero_image_alt?: string | null
           hero_image_url?: string | null
           id?: number
           languages?: Json
@@ -1602,10 +1657,12 @@ export type Database = {
           stripe_enabled?: boolean
           support_email?: string | null
           support_phone?: string | null
+          surface_color?: string | null
           tagline?: string | null
           tax_enabled?: boolean
           tax_inclusive?: boolean
           tax_label?: string
+          theme_preset?: string
           translations?: Json
           updated_at?: string
         }
@@ -1613,7 +1670,10 @@ export type Database = {
           accent_color?: string | null
           announcement?: string | null
           announcement_enabled?: boolean
+          background_color?: string | null
           bing_site_verification?: string | null
+          button_style?: string
+          card_style?: string
           cod_countries?: string[]
           cod_enabled?: boolean
           cod_excluded_zones?: string[]
@@ -1633,6 +1693,7 @@ export type Database = {
           gtm_id?: string | null
           hero_cta?: string | null
           hero_eyebrow?: string | null
+          hero_image_alt?: string | null
           hero_image_url?: string | null
           id?: number
           languages?: Json
@@ -1658,10 +1719,12 @@ export type Database = {
           stripe_enabled?: boolean
           support_email?: string | null
           support_phone?: string | null
+          surface_color?: string | null
           tagline?: string | null
           tax_enabled?: boolean
           tax_inclusive?: boolean
           tax_label?: string
+          theme_preset?: string
           translations?: Json
           updated_at?: string
         }

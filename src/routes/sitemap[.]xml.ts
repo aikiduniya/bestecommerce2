@@ -13,9 +13,9 @@ export const Route = createFileRoute("/sitemap.xml")({
         const sb = publicClient();
         const [st, pr, pg, bp, cat, br, col] = await Promise.all([
           sb.from("store_settings").select("languages").eq("id", 1).maybeSingle(),
-          sb.from("products").select("slug, updated_at").eq("status", "active"),
-          sb.from("pages").select("slug, updated_at").eq("is_published", true),
-          sb.from("blog_posts").select("slug, updated_at").eq("is_published", true),
+          sb.from("products").select("slug, updated_at").eq("status", "active").eq("robots_noindex", false),
+          sb.from("pages").select("slug, updated_at").eq("is_published", true).eq("robots_noindex", false),
+          sb.from("blog_posts").select("slug, updated_at").eq("is_published", true).eq("robots_noindex", false),
           sb.from("categories").select("slug").eq("is_active", true),
           sb.from("brands").select("slug").eq("is_active", true),
           sb.from("collections").select("slug").eq("is_active", true),

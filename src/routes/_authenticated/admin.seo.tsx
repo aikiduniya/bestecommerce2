@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { settingsQuery, productsQuery, pagesQuery } from "@/lib/store";
+import { settingsQuery, productsQuery, pagesQuery, postsQuery, mediaQuery } from "@/lib/store";
+import { menusQuery, navItems, type NavItem } from "@/lib/sections";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,16 @@ export const Route = createFileRoute("/_authenticated/admin/seo")({ component: S
 
 type Redirect = { id: string; from_path: string; to_path: string; status_code: number; is_active: boolean };
 
+const SITE_ORIGIN = () => (typeof window !== "undefined" ? window.location.origin : "https://bestecommerce2.lovable.app");
+
 function SeoAdmin() {
   const qc = useQueryClient();
   const { data: s } = useQuery(settingsQuery);
   const { data: products = [] } = useQuery(productsQuery);
   const { data: pages = [] } = useQuery(pagesQuery);
+  const { data: posts = [] } = useQuery(postsQuery);
+  const { data: media = [] } = useQuery(mediaQuery);
+  const { data: menus = [] } = useQuery(menusQuery);
   const { data: redirects = [] } = useQuery({
     queryKey: ["redirects"],
     queryFn: async () => {
@@ -66,6 +72,19 @@ function SeoAdmin() {
     qc.invalidateQueries({ queryKey: ["redirects"] });
   };
 
+  const brokenLinks = useMemo(() => {
+    const prodSlugs = new Set(products.filter((p) => p.status === "active").map((p) => p.slug));
+    const pageSlugs = new Set(pages.filter((p) => p.is_published).map((p) => p.slug));
+    const postSlugs = new Set(posts.filter((p) => p.is_published).map((p) => p.slug));
+    const all: NavItem[] = menus.flatMap((m) => navItems(m)).flatMap((i) => [i, ...(i.children ?? [])]);
+    return all.filter((i) => {
+      const u = (i.url ?? "").replace(/^\/[a-z]{2}(?=\/)/, "");
+      const m = u.match(/^\/(product|pages|blog)\/([^/?#]+)/);
+      if (!m) return false;
+      return !(m[1] === "product" ? prodSlugs : m[1] === "pages" ? pageSlugs : postSlugs).has(m[2]!);
+    }).map((i) => `${i.label} → ${i.url}`);
+  }, [menus, products, pages, posts]);
+
   const audit = useMemo(() => {
     const active = products.filter((p) => p.status === "active");
     const titles = new Map<string, number>();
@@ -79,10 +98,18 @@ function SeoAdmin() {
       { label: "Products without images", items: active.filter((p) => !p.images?.length).map((p) => p.name) },
       { label: "Duplicate product titles", items: active.filter((p) => (titles.get((p.seo_title || p.name).trim().toLowerCase()) ?? 0) > 1).map((p) => p.name) },
       { label: "Pages missing meta description", items: pages.filter((p) => p.is_published && !p.seo_description?.trim()).map((p) => p.title) },
+      { label: "Product images missing alt text", items: active.filter((p) => p.images.some((_, i) => !p.image_alts?.[i]?.trim())).map((p) => p.name) },
+      { label: "Blog covers missing alt text", items: posts.filter((b) => b.is_published && b.cover_image && !b.cover_alt?.trim()).map((b) => b.title) },
+      { label: "Media library images missing alt text", items: media.filter((m) => !m.alt_text?.trim()).map((m) => m.filename ?? m.path) },
+      { label: "Hidden from search (noindex) — check intended", items: [...active.filter((p) => p.robots_noindex).map((p) => p.name), ...pages.filter((p) => p.is_published && p.robots_noindex).map((p) => p.title), ...posts.filter((b) => b.is_published && b.robots_noindex).map((b) => b.title)] },
+      { label: "Canonical pointing to another site", items: [...active, ...pages, ...posts].filter((x) => { const c = x.canonical_url?.trim(); return !!c && !c.startsWith(SITE_ORIGIN()); }).map((x) => ("name" in x ? x.name : x.title)) },
+      { label: "Blog posts missing meta description", items: posts.filter((b) => b.is_published && !b.seo_description?.trim() && !b.excerpt?.trim()).map((b) => b.title) },
+      { label: "Broken menu links", items: brokenLinks },
+      { label: "Redirect problems (loops or chains)", items: redirects.filter((r) => r.is_active && (r.from_path === r.to_path || redirects.some((o) => o.is_active && o.from_path === r.to_path))).map((r) => r.from_path) },
       { label: "Store missing default meta description", items: s && !s.seo_description?.trim() ? ["Settings → SEO"] : [] },
       { label: "No search engine verification set", items: !f.google_site_verification && !f.bing_site_verification ? ["Add a code below"] : [] },
     ];
-  }, [products, pages, s, f.google_site_verification, f.bing_site_verification]);
+  }, [products, pages, posts, media, redirects, brokenLinks, s, f.google_site_verification, f.bing_site_verification]);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 

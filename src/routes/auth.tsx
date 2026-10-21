@@ -24,6 +24,7 @@ export const Route = createFileRoute("/auth")({
   validateSearch: z.object({ next: z.string().optional() }),
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, follow" },
       { title: "Sign in" },
       { name: "description", content: "Sign in to your account or the store dashboard." },
       { property: "og:title", content: "Sign in" },

@@ -36,7 +36,7 @@ export function ContentEditor({ kind, rows, queryKey }: { kind: "pages" | "blog_
     setSaving(true);
     const { id, created_at: _c, updated_at: _u, ...rest } = edit;
     const payload: Record<string, unknown> = { ...rest, title, slug };
-    for (const k of ["seo_title", "seo_description", "excerpt", "author"]) if (k in payload && payload[k] === "") payload[k] = null;
+    for (const k of ["seo_title", "seo_description", "excerpt", "author", "meta_keywords", "canonical_url", "og_image_url", "cover_alt"]) if (k in payload && payload[k] === "") payload[k] = null;
     if (isBlog && payload["is_published"] && !payload["published_at"]) payload["published_at"] = new Date().toISOString();
     const q = id ? supabase.from(kind).update(payload as never).eq("id", id) : supabase.from(kind).insert(payload as never);
     const { error } = await q;
@@ -79,11 +79,16 @@ export function ContentEditor({ kind, rows, queryKey }: { kind: "pages" | "blog_
               {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Author</Label><Input value={str("author")} onChange={(e) => set("author", e.target.value)} /></div>}
               {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Tags (comma separated)</Label><Input value={((edit["tags"] as string[]) ?? []).join(", ")} onChange={(e) => set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} /></div>}
               {isBlog && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Cover image</Label><ImagePicker multiple={false} value={edit["cover_image"] ? [String(edit["cover_image"])] : []} onChange={(v) => set("cover_image", v[0] ?? null)} /></div>}
+              {isBlog && !!edit["cover_image"] && <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Cover image alt text</Label><div className="flex gap-2"><Input placeholder={str("title")} value={str("cover_alt")} onChange={(e) => set("cover_alt", e.target.value)} /><Button type="button" variant="outline" size="sm" onClick={() => set("cover_alt", `Cover image for ${str("title") || "article"}`)}>Suggest</Button></div></div>}
             </Card>
             <Card className="space-y-4 p-6">
               <p className="text-sm font-medium">Search engine listing</p>
               <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">SEO title ({str("seo_title").length}/60)</Label><Input value={str("seo_title")} onChange={(e) => set("seo_title", e.target.value)} /></div>
               <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">SEO description ({str("seo_description").length}/160)</Label><Textarea rows={3} value={str("seo_description")} onChange={(e) => set("seo_description", e.target.value)} /></div>
+              <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Meta keywords (optional)</Label><Input value={str("meta_keywords")} onChange={(e) => set("meta_keywords", e.target.value)} /></div>
+              <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Canonical URL (empty = this page)</Label><Input placeholder="https://…" value={str("canonical_url")} onChange={(e) => set("canonical_url", e.target.value)} /></div>
+              <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Social share image URL</Label><Input placeholder="https://…" value={str("og_image_url")} onChange={(e) => set("og_image_url", e.target.value)} /></div>
+              <label className="flex items-center justify-between text-sm">Hide from search engines (noindex) <Switch checked={!!edit["robots_noindex"]} onCheckedChange={(v) => set("robots_noindex", v)} /></label>
               <div className="rounded border p-3 text-xs"><p className="truncate text-base text-[color:var(--gold)]">{str("seo_title") || str("title") || "Title"}</p><p className="line-clamp-2 text-muted-foreground">{str("seo_description") || str(isBlog ? "excerpt" : "body").slice(0, 160)}</p></div>
             </Card>
           </div>

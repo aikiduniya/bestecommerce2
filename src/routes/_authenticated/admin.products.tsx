@@ -135,6 +135,11 @@ function ProductsPage() {
       related_ids: form.related_ids ?? [],
       seo_title: form.seo_title || null,
       seo_description: form.seo_description || null,
+      meta_keywords: form.meta_keywords || null,
+      canonical_url: form.canonical_url || null,
+      og_image_url: form.og_image_url || null,
+      robots_noindex: !!form.robots_noindex,
+      image_alts: (form.images ?? []).map((_: string, i: number) => (form.image_alts?.[i] ?? "").trim()),
       options: opts.filter((o) => o.name.trim() && o.values.length),
     };
     try {
@@ -388,6 +393,18 @@ function ProductsPage() {
                 <TabsContent value="media">
                   <p className="mb-3 text-sm text-muted-foreground">First image is the main image. Hover to reorder or remove.</p>
                   <ImagePicker value={form.images ?? []} onChange={(v) => set("images", v)} />
+                  {(form.images ?? []).length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm font-medium">Image alt text <span className="font-normal text-muted-foreground">— describes each photo for search engines and screen readers</span></p>
+                      {(form.images as string[]).map((u, i) => (
+                        <div key={u + i} className="flex items-center gap-2">
+                          <img src={u} alt="" className="size-10 rounded object-cover" />
+                          <Input placeholder={suggestAlt(form.name, i)} value={form.image_alts?.[i] ?? ""} onChange={(e) => { const a = [...(form.image_alts ?? [])]; a[i] = e.target.value; set("image_alts", a); }} />
+                          <Button type="button" variant="outline" size="sm" onClick={() => { const a = [...(form.image_alts ?? [])]; a[i] = suggestAlt(form.name, i); set("image_alts", a); }}>Suggest</Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </TabsContent>
                 <TabsContent value="pricing" className="grid gap-4 sm:grid-cols-3">
                   <F label="Price *"><Input type="number" step="0.01" min="0" required value={form.price ?? ""} onChange={(e) => set("price", e.target.value)} /></F>
@@ -410,6 +427,10 @@ function ProductsPage() {
                 <TabsContent value="seo" className="grid gap-4">
                   <F label="SEO title"><Input value={form.seo_title ?? ""} onChange={(e) => set("seo_title", e.target.value)} /></F>
                   <F label="SEO description"><Textarea rows={3} value={form.seo_description ?? ""} onChange={(e) => set("seo_description", e.target.value)} /></F>
+                  <F label="Meta keywords (optional, comma separated)"><Input value={form.meta_keywords ?? ""} onChange={(e) => set("meta_keywords", e.target.value)} /></F>
+                  <F label="Canonical URL (leave empty to use this product's own URL)"><Input placeholder="https://…" value={form.canonical_url ?? ""} onChange={(e) => set("canonical_url", e.target.value)} /></F>
+                  <F label="Social share image URL (defaults to first product image)"><Input placeholder="https://…" value={form.og_image_url ?? ""} onChange={(e) => set("og_image_url", e.target.value)} /></F>
+                  <label className="flex items-center gap-3 text-sm"><Switch checked={!!form.robots_noindex} onCheckedChange={(v) => set("robots_noindex", v)} /> Hide from search engines (noindex)</label>
                 </TabsContent>
               </Tabs>
               <div className="mt-6 flex justify-end gap-2 border-t pt-4">
@@ -438,4 +459,9 @@ function F({ label, children, className }: { label: string; children: React.Reac
       {children}
     </div>
   );
+}
+
+function suggestAlt(name: string | undefined, i: number) {
+  const n = (name ?? "").trim() || "Product";
+  return i === 0 ? `${n} — front view` : `${n} — detail view ${i + 1}`;
 }

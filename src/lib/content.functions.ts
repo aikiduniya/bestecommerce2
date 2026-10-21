@@ -14,11 +14,11 @@ export const getPageSeo = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     if (!slugOk(data)) return null;
     const sb = publicClient();
-    let { data: p } = await sb.from("pages").select("title, seo_title, seo_description, body").eq("slug", data).eq("is_published", true).maybeSingle();
+    let { data: p } = await sb.from("pages").select("title, seo_title, seo_description, body, meta_keywords, canonical_url, robots_noindex, og_image_url").eq("slug", data).eq("is_published", true).maybeSingle();
     if (!p) {
       const id = await translatedId(sb, "page", data);
       if (id) {
-        const { data: byId } = await sb.from("pages").select("title, seo_title, seo_description, body").eq("id", id).eq("is_published", true).maybeSingle();
+        const { data: byId } = await sb.from("pages").select("title, seo_title, seo_description, body, meta_keywords, canonical_url, robots_noindex, og_image_url").eq("id", id).eq("is_published", true).maybeSingle();
         p = byId;
       }
     }
@@ -27,6 +27,9 @@ export const getPageSeo = createServerFn({ method: "GET" })
     return {
       title: p.seo_title || `${p.title} | ${s?.store_name ?? ""}`,
       description: p.seo_description || p.body.slice(0, 155),
+      keywords: p.meta_keywords?.trim() || null, canonical: p.canonical_url?.trim() || null, noindex: p.robots_noindex,
+      image: p.og_image_url?.startsWith("https://") ? p.og_image_url : null,
+      name: p.title,
     };
   });
 
@@ -35,11 +38,11 @@ export const getPostSeo = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     if (!slugOk(data)) return null;
     const sb = publicClient();
-    let { data: p } = await sb.from("blog_posts").select("title, seo_title, seo_description, excerpt, cover_image").eq("slug", data).eq("is_published", true).maybeSingle();
+    let { data: p } = await sb.from("blog_posts").select("title, seo_title, seo_description, excerpt, cover_image, meta_keywords, canonical_url, robots_noindex, og_image_url, author, published_at, updated_at").eq("slug", data).eq("is_published", true).maybeSingle();
     if (!p) {
       const id = await translatedId(sb, "blog_post", data);
       if (id) {
-        const { data: byId } = await sb.from("blog_posts").select("title, seo_title, seo_description, excerpt, cover_image").eq("id", id).eq("is_published", true).maybeSingle();
+        const { data: byId } = await sb.from("blog_posts").select("title, seo_title, seo_description, excerpt, cover_image, meta_keywords, canonical_url, robots_noindex, og_image_url, author, published_at, updated_at").eq("id", id).eq("is_published", true).maybeSingle();
         p = byId;
       }
     }
@@ -48,12 +51,14 @@ export const getPostSeo = createServerFn({ method: "GET" })
     return {
       title: p.seo_title || `${p.title} | ${s?.store_name ?? ""}`,
       description: p.seo_description || p.excerpt || "",
-      image: p.cover_image && p.cover_image.startsWith("https://") ? p.cover_image : null,
+      image: (p.og_image_url || p.cover_image)?.startsWith("https://") ? (p.og_image_url || p.cover_image) : null,
+      keywords: p.meta_keywords?.trim() || null, canonical: p.canonical_url?.trim() || null, noindex: p.robots_noindex,
+      name: p.title, author: p.author, published: p.published_at, modified: p.updated_at, store: s?.store_name ?? "",
     };
   });
 
 export const getHomeSeo = createServerFn({ method: "GET" }).handler(async () => {
-  const { data } = await publicClient().from("store_settings").select("store_name, tagline, seo_title, seo_description, google_site_verification, bing_site_verification, og_image_url").eq("id", 1).maybeSingle();
+  const { data } = await publicClient().from("store_settings").select("store_name, tagline, seo_title, seo_description, google_site_verification, bing_site_verification, og_image_url, logo_url, support_email, support_phone").eq("id", 1).maybeSingle();
   if (!data) return null;
   return {
     title: data.seo_title || `${data.store_name} — ${data.tagline ?? ""}`,
@@ -61,5 +66,7 @@ export const getHomeSeo = createServerFn({ method: "GET" }).handler(async () => 
     verification: data.google_site_verification?.trim() || null,
     bing: data.bing_site_verification?.trim() || null,
     image: data.og_image_url?.startsWith("https://") ? data.og_image_url : null,
+    store: data.store_name, logo: data.logo_url?.startsWith("https://") ? data.logo_url : null,
+    email: data.support_email, phone: data.support_phone,
   };
 });

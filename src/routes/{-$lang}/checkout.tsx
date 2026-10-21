@@ -20,6 +20,7 @@ export const Route = createFileRoute("/{-$lang}/checkout")({
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, follow" },
       { title: "Checkout" },
       { name: "description", content: "Complete your order securely." },
       { property: "og:title", content: "Checkout" },
