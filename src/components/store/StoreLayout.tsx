@@ -78,10 +78,10 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   if (s?.maintenance_mode && !isStaff) {
     return (
       <div className="bg-hero flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center text-primary-foreground">
-        <p className="eyebrow text-gold">Temporarily closed</p>
+        <p className="eyebrow text-gold">{t("maintenance.closed")}</p>
         <h1 className="text-6xl">{s.store_name}</h1>
-        <p className="opacity-70">We're polishing things up. Please check back shortly.</p>
-        <Link to="/auth" className="mt-6 text-xs opacity-50 hover:opacity-100">Staff sign in</Link>
+        <p className="opacity-70">{t("maintenance.message")}</p>
+        <Link to="/auth" className="mt-6 text-xs opacity-50 hover:opacity-100">{t("maintenance.staff_signin")}</Link>
       </div>
     );
   }
@@ -95,7 +95,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       {s?.maintenance_mode && isStaff && (
-        <div className="bg-warning py-1.5 text-center text-xs font-medium text-foreground">Maintenance mode is ON — only staff can see the store.</div>
+        <div className="bg-warning py-1.5 text-center text-xs font-medium text-foreground">{t("maintenance.banner")}</div>
       )}
       {s?.announcement_enabled && s.announcement && (
         <div className="bg-primary py-2 text-center text-xs tracking-wide text-primary-foreground">{s.announcement}</div>
