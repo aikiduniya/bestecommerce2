@@ -1,0 +1,2 @@
+REVOKE ALL ON public.smtp_profiles FROM anon, authenticated;
+GRANT SELECT (purpose, host, port, encryption, username, sender_name, sender_email, is_enabled, last_test_at, last_test_ok, last_test_error, updated_at) ON public.smtp_profiles TO authenticated;
