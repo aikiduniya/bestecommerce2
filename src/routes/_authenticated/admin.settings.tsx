@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, type Settings } from "@/lib/store";
+import { extraCurrencies, type DisplayCurrency } from "@/lib/currency";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -32,6 +33,14 @@ function SettingsPage() {
   if (!s) return null;
 
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => setS({ ...s, [k]: v });
+  const currencyList: DisplayCurrency[] = Array.isArray(s.currencies) ? (s.currencies as DisplayCurrency[]) : [];
+  const updateCurrency = (i: number, c: DisplayCurrency | null) => {
+    const raw = currencyList.slice();
+    if (i === -1 && c) raw.push(c);
+    else if (c) raw[i] = c;
+    else raw.splice(i, 1);
+    set("currencies", raw as never);
+  };
 
   async function save() {
     if (!s) return;
@@ -39,6 +48,12 @@ function SettingsPage() {
     const { id: _id, updated_at: _u, ...rest } = s;
     if (rest.currency && !/^[A-Z]{3}$/.test(rest.currency.toUpperCase())) { setSaving(false); toast.error("Currency must be a 3-letter code like USD"); return; }
     rest.currency = rest.currency.toUpperCase();
+    const curList = extraCurrencies(rest.currencies);
+    const rawList = Array.isArray(rest.currencies) ? rest.currencies : [];
+    if (rawList.length !== curList.length) { setSaving(false); toast.error("Each currency needs a 3-letter code and a rate above 0"); return; }
+    if (new Set(curList.map((c) => c.code)).size !== curList.length) { setSaving(false); toast.error("Duplicate currency codes"); return; }
+    if (curList.some((c) => c.code === rest.currency)) { setSaving(false); toast.error("The store currency cannot also be an extra currency"); return; }
+    rest.currencies = curList;
     if (rest.cod_min_order !== null && rest.cod_max_order !== null && Number(rest.cod_min_order) > Number(rest.cod_max_order)) { setSaving(false); toast.error("COD minimum cannot be above the maximum"); return; }
     for (const [k, re, label] of [["ga4_id", /^G-[A-Z0-9]{4,20}$/i, "GA4 ID should look like G-XXXXXXX"], ["gtm_id", /^GTM-[A-Z0-9]{4,12}$/i, "GTM ID should look like GTM-XXXXXX"], ["meta_pixel_id", /^\d{6,20}$/, "Meta Pixel ID should be numbers only"]] as const) {
       const v = (rest[k] ?? "").trim();
@@ -112,10 +127,25 @@ function SettingsPage() {
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
             {text("support_email", "Support email", "email")}
             {text("support_phone", "Support phone")}
-            {text("currency", "Currency code (e.g. USD, EUR, PKR)")}
+            {text("currency", "Store currency code (e.g. USD, EUR, PKR) — orders are charged in this currency")}
             {text("announcement", "Announcement bar text")}
             {toggle("announcement_enabled", "Show announcement bar", "Displayed at the top of every page")}
             {toggle("maintenance_mode", "Maintenance mode", "Hides the storefront from visitors")}
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">Extra display currencies (visitors can switch; rates are per 1 {s.currency || "USD"})</Label>
+              {currencyList.map((c, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input className="w-24 uppercase" maxLength={3} placeholder="PKR" value={c.code}
+                    onChange={(e) => updateCurrency(i, { ...c, code: e.target.value.toUpperCase() })} />
+                  <Input type="number" min="0" step="0.0001" placeholder="Rate" value={c.rate || ""}
+                    onChange={(e) => updateCurrency(i, { ...c, rate: Number(e.target.value) })} />
+                  <span className="text-xs text-muted-foreground">1 {s.currency || "USD"} = {c.rate || "?"} {c.code}</span>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => updateCurrency(i, null)}>Remove</Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => updateCurrency(-1, { code: "", rate: 0 } as DisplayCurrency)}>Add currency</Button>
+              <p className="text-xs text-muted-foreground">Display only — checkout and orders always use the store currency. Update rates yourself; they do not refresh automatically.</p>
+            </div>
           </Card>
         </TabsContent>
         <TabsContent value="payments">

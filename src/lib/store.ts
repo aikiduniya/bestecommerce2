@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getDisplayCurrency } from "@/lib/currency";
 import type { Database } from "@/integrations/supabase/types";
 
 export type Settings = Database["public"]["Tables"]["store_settings"]["Row"];
@@ -68,11 +69,17 @@ export function slugify(s: string) {
 }
 
 export function money(n: number | string | null | undefined, currency = "USD") {
-  try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(n ?? 0));
-  } catch {
-    return `${currency} ${Number(n ?? 0).toFixed(2)}`;
-  }
+  const v = Number(n ?? 0);
+  const sel = getDisplayCurrency();
+  const fmt = (amount: number, code: string) => {
+    try {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: code }).format(amount);
+    } catch {
+      return `${code} ${amount.toFixed(2)}`;
+    }
+  };
+  if (sel && sel.code !== currency) return fmt(v * sel.rate, sel.code);
+  return fmt(v, currency);
 }
 
 export type Variant = Database["public"]["Tables"]["product_variants"]["Row"];

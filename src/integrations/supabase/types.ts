@@ -995,6 +995,7 @@ export type Database = {
           cod_max_order: number | null
           cod_min_order: number | null
           cod_requires_confirmation: boolean
+          currencies: Json
           currency: string
           favicon_url: string | null
           font_body: string
@@ -1034,6 +1035,7 @@ export type Database = {
           cod_max_order?: number | null
           cod_min_order?: number | null
           cod_requires_confirmation?: boolean
+          currencies?: Json
           currency?: string
           favicon_url?: string | null
           font_body?: string
@@ -1073,6 +1075,7 @@ export type Database = {
           cod_max_order?: number | null
           cod_min_order?: number | null
           cod_requires_confirmation?: boolean
+          currencies?: Json
           currency?: string
           favicon_url?: string | null
           font_body?: string

@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Heart, Search, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
 import { categoriesQuery, pagesQuery, settingsQuery } from "@/lib/store";
 import { menusQuery, navItems } from "@/lib/sections";
 import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
+import { extraCurrencies, initDisplayCurrency, setDisplayCurrency, useDisplayCurrency } from "@/lib/currency";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s, isLoading } = useQuery(settingsQuery);
@@ -21,6 +22,30 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const topCats = cats.filter((c) => c.is_active && !c.parent_id);
   const headerItems = navItems(menus.find((m) => m.handle === "header"));
   const footerItems = navItems(menus.find((m) => m.handle === "footer"));
+
+  // Multi-currency display: restore the visitor's choice after mount, keep it valid.
+  const dc = useDisplayCurrency();
+  const baseCurrency = s?.currency ?? "USD";
+  const extras = extraCurrencies(s?.currencies);
+  useEffect(() => { initDisplayCurrency(); }, []);
+  useEffect(() => {
+    if (!s || !dc) return;
+    if (dc.code !== baseCurrency && !extras.some((c) => c.code === dc.code)) setDisplayCurrency(null);
+  }, [s, dc, baseCurrency, extras]);
+  const currencyPicker = extras.length > 0 && (
+    <select
+      aria-label="Currency"
+      className="h-8 rounded-full border bg-card px-2 text-xs outline-none focus:border-gold"
+      value={dc?.code ?? baseCurrency}
+      onChange={(e) => {
+        const code = e.target.value;
+        setDisplayCurrency(code === baseCurrency ? null : { code, rate: extras.find((c) => c.code === code)!.rate });
+      }}
+    >
+      <option value={baseCurrency}>{baseCurrency}</option>
+      {extras.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
+    </select>
+  );
 
   if (s?.maintenance_mode && !isStaff) {
     return (
@@ -79,6 +104,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             )}
           </nav>
           <div className="ml-auto flex items-center gap-4 md:ml-0">
+            {currencyPicker}
             <form onSubmit={search} className="relative hidden lg:block">
               <Search className="absolute left-2.5 top-2 size-4 text-muted-foreground" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-8 w-44 rounded-full border bg-card pl-8 pr-3 text-sm outline-none focus:border-gold" />
@@ -93,6 +119,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
         </div>
         {open && (
           <div className="space-y-3 border-t px-4 py-4 md:hidden">
+            {currencyPicker}
             <form onSubmit={search}><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="h-10 w-full rounded border bg-card px-3 text-sm" /></form>
             {headerItems.length > 0 ? (
               headerItems.map((item, i) => (
