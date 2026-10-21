@@ -185,5 +185,5 @@ html[data-nav="underline"] .store-nav a:hover { text-decoration: underline; text
   border: 1px solid color-mix(in oklab, var(--gold) 22%, var(--border));
   background-image: linear-gradient(160deg, var(--card), color-mix(in oklab, var(--card) 88%, var(--gold)));
   font-variant-numeric: lining-nums tabular-nums;
-    &::before { content: ""; position: absolute; inset: 0 0 auto 0;::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, var(--gold), transparent); }
+    &::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, var(--gold), transparent); }
 }
