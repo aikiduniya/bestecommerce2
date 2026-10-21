@@ -49,6 +49,7 @@ const groups = [
       { perm: "orders", to: "/admin/returns", label: "Returns", icon: RotateCcw },
       { perm: "customers", to: "/admin/customers", label: "Customers", icon: Users },
       { perm: "customers", to: "/admin/tickets", label: "Support tickets", icon: LifeBuoy },
+      { perm: "orders", to: "/admin/carts", label: "Abandoned carts", icon: ShoppingCart },
       { perm: "admin", to: "/admin/shipping", label: "Shipping", icon: Truck },
     ],
   },
@@ -57,6 +58,8 @@ const groups = [
     items: [
       { perm: "marketing", to: "/admin/coupons", label: "Coupons & promos", icon: TicketPercent },
       { perm: "marketing", to: "/admin/discounts", label: "Automatic discounts", icon: BadgePercent },
+      { perm: "marketing", to: "/admin/gift-cards", label: "Gift cards", icon: Gift },
+      { perm: "marketing", to: "/admin/loyalty", label: "Loyalty & referrals", icon: Star },
       { perm: "content", to: "/admin/homepage", label: "Homepage builder", icon: LayoutTemplate },
       { perm: "content", to: "/admin/navigation", label: "Navigation", icon: MenuSquare },
       { perm: "content", to: "/admin/reviews", label: "Reviews & Q&A", icon: MessageSquareText },

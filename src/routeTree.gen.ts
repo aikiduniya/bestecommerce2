@@ -23,13 +23,16 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin.activity'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 import { Route as AuthenticatedAdminBrandsRouteImport } from './routes/_authenticated/admin.brands'
+import { Route as AuthenticatedAdminCartsRouteImport } from './routes/_authenticated/admin.carts'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin.categories'
 import { Route as AuthenticatedAdminCollectionsRouteImport } from './routes/_authenticated/admin.collections'
 import { Route as AuthenticatedAdminCouponsRouteImport } from './routes/_authenticated/admin.coupons'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminDiscountsRouteImport } from './routes/_authenticated/admin.discounts'
 import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
+import { Route as AuthenticatedAdminGiftCardsRouteImport } from './routes/_authenticated/admin.gift-cards'
 import { Route as AuthenticatedAdminHomepageRouteImport } from './routes/_authenticated/admin.homepage'
+import { Route as AuthenticatedAdminLoyaltyRouteImport } from './routes/_authenticated/admin.loyalty'
 import { Route as AuthenticatedAdminMediaRouteImport } from './routes/_authenticated/admin.media'
 import { Route as AuthenticatedAdminNavigationRouteImport } from './routes/_authenticated/admin.navigation'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
@@ -125,6 +128,11 @@ const AuthenticatedAdminBrandsRoute =
     path: '/brands',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCartsRoute = AuthenticatedAdminCartsRouteImport.update({
+  id: '/carts',
+  path: '/carts',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminCategoriesRoute =
   AuthenticatedAdminCategoriesRouteImport.update({
     id: '/categories',
@@ -161,10 +169,22 @@ const AuthenticatedAdminEmailsRoute =
     path: '/emails',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminGiftCardsRoute =
+  AuthenticatedAdminGiftCardsRouteImport.update({
+    id: '/gift-cards',
+    path: '/gift-cards',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminHomepageRoute =
   AuthenticatedAdminHomepageRouteImport.update({
     id: '/homepage',
     path: '/homepage',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminLoyaltyRoute =
+  AuthenticatedAdminLoyaltyRouteImport.update({
+    id: '/loyalty',
+    path: '/loyalty',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminMediaRoute = AuthenticatedAdminMediaRouteImport.update({
@@ -309,13 +329,16 @@ export interface FileRoutesByFullPath {
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
+  '/admin/carts': typeof AuthenticatedAdminCartsRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/discounts': typeof AuthenticatedAdminDiscountsRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
+  '/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
   '/admin/homepage': typeof AuthenticatedAdminHomepageRoute
+  '/admin/loyalty': typeof AuthenticatedAdminLoyaltyRoute
   '/admin/media': typeof AuthenticatedAdminMediaRoute
   '/admin/navigation': typeof AuthenticatedAdminNavigationRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -353,13 +376,16 @@ export interface FileRoutesByTo {
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
+  '/admin/carts': typeof AuthenticatedAdminCartsRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/discounts': typeof AuthenticatedAdminDiscountsRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
+  '/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
   '/admin/homepage': typeof AuthenticatedAdminHomepageRoute
+  '/admin/loyalty': typeof AuthenticatedAdminLoyaltyRoute
   '/admin/media': typeof AuthenticatedAdminMediaRoute
   '/admin/navigation': typeof AuthenticatedAdminNavigationRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -399,13 +425,16 @@ export interface FileRoutesById {
   '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/brands': typeof AuthenticatedAdminBrandsRoute
+  '/_authenticated/admin/carts': typeof AuthenticatedAdminCartsRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/discounts': typeof AuthenticatedAdminDiscountsRoute
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
+  '/_authenticated/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
   '/_authenticated/admin/homepage': typeof AuthenticatedAdminHomepageRoute
+  '/_authenticated/admin/loyalty': typeof AuthenticatedAdminLoyaltyRoute
   '/_authenticated/admin/media': typeof AuthenticatedAdminMediaRoute
   '/_authenticated/admin/navigation': typeof AuthenticatedAdminNavigationRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -446,13 +475,16 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/blog'
     | '/admin/brands'
+    | '/admin/carts'
     | '/admin/categories'
     | '/admin/collections'
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/discounts'
     | '/admin/emails'
+    | '/admin/gift-cards'
     | '/admin/homepage'
+    | '/admin/loyalty'
     | '/admin/media'
     | '/admin/navigation'
     | '/admin/orders'
@@ -490,13 +522,16 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/blog'
     | '/admin/brands'
+    | '/admin/carts'
     | '/admin/categories'
     | '/admin/collections'
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/discounts'
     | '/admin/emails'
+    | '/admin/gift-cards'
     | '/admin/homepage'
+    | '/admin/loyalty'
     | '/admin/media'
     | '/admin/navigation'
     | '/admin/orders'
@@ -535,13 +570,16 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/activity'
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/brands'
+    | '/_authenticated/admin/carts'
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/collections'
     | '/_authenticated/admin/coupons'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/discounts'
     | '/_authenticated/admin/emails'
+    | '/_authenticated/admin/gift-cards'
     | '/_authenticated/admin/homepage'
+    | '/_authenticated/admin/loyalty'
     | '/_authenticated/admin/media'
     | '/_authenticated/admin/navigation'
     | '/_authenticated/admin/orders'
@@ -683,6 +721,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminBrandsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/carts': {
+      id: '/_authenticated/admin/carts'
+      path: '/carts'
+      fullPath: '/admin/carts'
+      preLoaderRoute: typeof AuthenticatedAdminCartsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/categories': {
       id: '/_authenticated/admin/categories'
       path: '/categories'
@@ -725,11 +770,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmailsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/gift-cards': {
+      id: '/_authenticated/admin/gift-cards'
+      path: '/gift-cards'
+      fullPath: '/admin/gift-cards'
+      preLoaderRoute: typeof AuthenticatedAdminGiftCardsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/homepage': {
       id: '/_authenticated/admin/homepage'
       path: '/homepage'
       fullPath: '/admin/homepage'
       preLoaderRoute: typeof AuthenticatedAdminHomepageRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/loyalty': {
+      id: '/_authenticated/admin/loyalty'
+      path: '/loyalty'
+      fullPath: '/admin/loyalty'
+      preLoaderRoute: typeof AuthenticatedAdminLoyaltyRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/media': {
@@ -893,13 +952,16 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminActivityRoute: typeof AuthenticatedAdminActivityRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminBrandsRoute: typeof AuthenticatedAdminBrandsRoute
+  AuthenticatedAdminCartsRoute: typeof AuthenticatedAdminCartsRoute
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
   AuthenticatedAdminCollectionsRoute: typeof AuthenticatedAdminCollectionsRoute
   AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
   AuthenticatedAdminDiscountsRoute: typeof AuthenticatedAdminDiscountsRoute
   AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
+  AuthenticatedAdminGiftCardsRoute: typeof AuthenticatedAdminGiftCardsRoute
   AuthenticatedAdminHomepageRoute: typeof AuthenticatedAdminHomepageRoute
+  AuthenticatedAdminLoyaltyRoute: typeof AuthenticatedAdminLoyaltyRoute
   AuthenticatedAdminMediaRoute: typeof AuthenticatedAdminMediaRoute
   AuthenticatedAdminNavigationRoute: typeof AuthenticatedAdminNavigationRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
@@ -923,13 +985,16 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminActivityRoute: AuthenticatedAdminActivityRoute,
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
   AuthenticatedAdminBrandsRoute: AuthenticatedAdminBrandsRoute,
+  AuthenticatedAdminCartsRoute: AuthenticatedAdminCartsRoute,
   AuthenticatedAdminCategoriesRoute: AuthenticatedAdminCategoriesRoute,
   AuthenticatedAdminCollectionsRoute: AuthenticatedAdminCollectionsRoute,
   AuthenticatedAdminCouponsRoute: AuthenticatedAdminCouponsRoute,
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
   AuthenticatedAdminDiscountsRoute: AuthenticatedAdminDiscountsRoute,
   AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
+  AuthenticatedAdminGiftCardsRoute: AuthenticatedAdminGiftCardsRoute,
   AuthenticatedAdminHomepageRoute: AuthenticatedAdminHomepageRoute,
+  AuthenticatedAdminLoyaltyRoute: AuthenticatedAdminLoyaltyRoute,
   AuthenticatedAdminMediaRoute: AuthenticatedAdminMediaRoute,
   AuthenticatedAdminNavigationRoute: AuthenticatedAdminNavigationRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
