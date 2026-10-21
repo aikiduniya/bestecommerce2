@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   component: ProductsPage,
@@ -49,6 +50,25 @@ function ProductsPage() {
   const [variants, setVariants] = useState<VariantDraft[]>([]);
   const [colSel, setColSel] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [selIds, setSelIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const toggleSel = (id: string, on: boolean) => setSelIds((s) => { const n = new Set(s); on ? n.add(id) : n.delete(id); return n; });
+
+  async function bulk(action: "active" | "draft" | "archived" | "delete") {
+    const ids = [...selIds];
+    if (!ids.length) return;
+    if (action === "delete" && !confirm(`Delete ${ids.length} product${ids.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
+    setBulkBusy(true);
+    const { error } = action === "delete"
+      ? await supabase.from("products").delete().in("id", ids)
+      : await supabase.from("products").update({ status: action }).in("id", ids);
+    setBulkBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(action === "delete" ? `Deleted ${ids.length} products` : `Updated ${ids.length} products`);
+    setSelIds(new Set());
+    qc.invalidateQueries({ queryKey: ["products"] });
+  }
 
   const list = useMemo(() => products.filter((p) => {
     const s = q.toLowerCase();
