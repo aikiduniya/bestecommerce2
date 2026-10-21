@@ -123,6 +123,7 @@ function OrdersPage() {
                   {Number(view.discount_total) > 0 && <div className="flex justify-between text-success"><span>Discount{view.coupon_code ? ` (${view.coupon_code})` : ""}</span><span>−{money(view.discount_total, view.currency)}</span></div>}
                   {Number(view.auto_discount_total) > 0 && <div className="flex justify-between text-success"><span>Auto discount{view.auto_discount_name ? ` (${view.auto_discount_name})` : ""}</span><span>−{money(view.auto_discount_total, view.currency)}</span></div>}
 <div className="flex justify-between"><span>Shipping</span><span>{money(view.shipping_total, view.currency)}</span></div>
+                  {Number(view.tax_total) > 0 && <div className="flex justify-between"><span>Tax</span><span>{money(view.tax_total, view.currency)}</span></div>}
                   {Number(view.payment_fee) > 0 && <div className="flex justify-between"><span>COD fee</span><span>{money(view.payment_fee, view.currency)}</span></div>}
                   <div className="flex justify-between font-semibold"><span>Total</span><span>{money(view.total, view.currency)}</span></div>
                 </div>
