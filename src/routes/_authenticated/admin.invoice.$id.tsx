@@ -6,7 +6,7 @@ import { money, optionLabel, settingsQuery } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export const Route = createFileRoute("/_authenticated/admin/orders/$id/invoice")({
+export const Route = createFileRoute("/_authenticated/admin/invoice/$id")({
   head: () => ({ meta: [{ title: "Invoice" }, { name: "robots", content: "noindex" }] }),
   component: InvoicePage,
 });
