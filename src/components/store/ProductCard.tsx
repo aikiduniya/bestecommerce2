@@ -1,9 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { money, type Product } from "@/lib/store";
+import { effectivePrice, regularPrice, saleActive } from "@/lib/sale";
 
 export function ProductCard({ p, currency, fromPrice }: { p: Product; currency?: string | undefined; fromPrice?: number | undefined }) {
-  const price = fromPrice ?? Number(p.price);
-  const onSale = p.compare_at_price && Number(p.compare_at_price) > price;
+  const eff = effectivePrice(p);
+  const reg = regularPrice(p);
+  const price = fromPrice ?? eff;
+  const flashSale = fromPrice === undefined && saleActive(p) && p.sale_price !== null && eff < reg;
+  const onSale = flashSale || (p.compare_at_price && Number(p.compare_at_price) > price);
+  const struck = flashSale ? reg : p.compare_at_price;
   return (
     <Link to="/product/$slug" params={{ slug: p.slug }} className="group block">
       <div className="relative aspect-[4/5] overflow-hidden rounded bg-secondary">
@@ -17,9 +22,9 @@ export function ProductCard({ p, currency, fromPrice }: { p: Product; currency?:
       </div>
       <h3 className="mt-4 text-xl leading-tight">{p.name}</h3>
       <p className="mt-1 text-sm">
-        {fromPrice !== undefined && fromPrice !== Number(p.price) ? "From " : ""}
+        {fromPrice !== undefined && fromPrice !== eff ? "From " : ""}
         {money(price, currency)}
-        {onSale && <span className="ml-2 text-muted-foreground line-through">{money(p.compare_at_price, currency)}</span>}
+        {onSale && struck && <span className="ml-2 text-muted-foreground line-through">{money(struck, currency)}</span>}
       </p>
     </Link>
   );

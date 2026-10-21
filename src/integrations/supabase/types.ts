@@ -1171,6 +1171,10 @@ export type Database = {
           product_id: string
         }[]
       }
+      check_automatic_discount: {
+        Args: { _items: Json; _subtotal: number }
+        Returns: Json
+      }
       check_coupon: {
         Args: { _code: string; _subtotal: number }
         Returns: Json
