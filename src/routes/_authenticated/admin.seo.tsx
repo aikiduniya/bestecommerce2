@@ -34,7 +34,7 @@ function SeoAdmin() {
   const [nr, setNr] = useState({ from_path: "", to_path: "", status_code: 301 });
   useEffect(() => {
     if (s) {
-      const r = s as unknown as Record<string, string | null>;
+      const r = s as unknown as { robots_txt: string | null; llms_txt: string | null; google_site_verification: string | null; bing_site_verification: string | null };
       setF({ robots_txt: r.robots_txt ?? "", llms_txt: r.llms_txt ?? "", google_site_verification: r.google_site_verification ?? "", bing_site_verification: r.bing_site_verification ?? "" });
     }
   }, [s]);
@@ -42,21 +42,21 @@ function SeoAdmin() {
   const save = async () => {
     const patch = Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v.trim() || null]));
     const { error } = await supabase.from("store_settings").update(patch as never).eq("id", 1);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("SEO settings saved");
     qc.invalidateQueries({ queryKey: ["settings"] });
   };
 
   const addRedirect = async () => {
     const from = "/" + nr.from_path.trim().replace(/^\/+/, "").replace(/\/+$/, "");
-    if (from === "/" || !nr.to_path.trim()) return toast.error("Enter both paths");
+    if (from === "/" || !nr.to_path.trim()) { toast.error("Enter both paths"); return; }
     const { error } = await supabase.from("redirects").insert({ from_path: from, to_path: nr.to_path.trim(), status_code: nr.status_code });
-    if (error) return toast.error(error.code === "23505" ? "A redirect for that path already exists" : error.message);
+    if (error) { toast.error(error.code === "23505" ? "A redirect for that path already exists" : error.message); return; }
     setNr({ from_path: "", to_path: "", status_code: 301 });
     qc.invalidateQueries({ queryKey: ["redirects"] });
   };
   const patchRedirect = async (id: string, p: Partial<Redirect>) => {
-    const { error } = p.id === undefined && Object.keys(p).length === 0 ? { error: null } : await supabase.from("redirects").update(p).eq("id", id);
+    const { error } = await supabase.from("redirects").update(p).eq("id", id);
     if (error) toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["redirects"] });
   };
