@@ -308,3 +308,27 @@ export const orderReturnsQuery = (orderId: string) =>
       return (data ?? []) as unknown as ReturnRequest[];
     },
   });
+
+export type Address = {
+  id: string;
+  user_id: string;
+  label: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string | null;
+  postal: string | null;
+  country: string;
+  phone: string | null;
+  is_default: boolean;
+};
+
+export const myAddressesQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["addresses", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("addresses").select("*").eq("user_id", userId).order("created_at");
+      if (error) throw error;
+      return (data ?? []) as Address[];
+    },
+  });
