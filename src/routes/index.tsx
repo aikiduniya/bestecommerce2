@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import {
   categoriesQuery, collectionsQuery, productCollectionsQuery, productsQuery, settingsQuery, zonesQuery, money,
+  type Product,
 } from "@/lib/store";
 import { getRecentlyViewed } from "@/lib/cart";
 import { useFromPrice } from "@/lib/useFromPrice";
+import { sectionsQuery } from "@/lib/sections";
 import { StoreLayout } from "@/components/store/StoreLayout";
+import { HomeSections } from "@/components/store/HomeSections";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { getHomeSeo } from "@/lib/content.functions";
@@ -34,6 +37,16 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { data: sections = [], isLoading } = useQuery(sectionsQuery);
+  return (
+    <StoreLayout>
+      {isLoading ? null : sections.length > 0 ? <HomeSections sections={sections} /> : <LegacyHome />}
+    </StoreLayout>
+  );
+}
+
+/** Built-in layout shown until the admin creates sections in the homepage builder. */
+function LegacyHome() {
   const { data: s } = useQuery(settingsQuery);
   const { data: products = [] } = useQuery(productsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
@@ -48,23 +61,23 @@ function Index() {
   const featured = active.filter((p) => p.is_featured).slice(0, 8);
   const newest = active.slice(0, 4);
   const homeCols = cols.filter((c) => c.is_active && c.show_on_home);
-  const recentProducts = recent.map((id) => active.find((p) => p.id === id)).filter(Boolean).slice(0, 4) as typeof active;
+  const recentProducts = recent.map((id) => active.find((p) => p.id === id)).filter(Boolean).slice(0, 4) as Product[];
   const freeOver = zones.filter((z) => z.is_active && z.free_over).map((z) => Number(z.free_over));
   const cur = s?.currency;
 
-  const Grid = ({ items }: { items: typeof active }) => (
+  const Grid = ({ items }: { items: Product[] }) => (
     <div className="grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-4">
       {items.map((p) => <ProductCard key={p.id} p={p} currency={cur} fromPrice={fromPrice(p.id)} />)}
     </div>
   );
 
   return (
-    <StoreLayout>
+    <>
       <section className="bg-hero relative overflow-hidden text-primary-foreground">
         {s?.hero_image_url && <img src={s.hero_image_url} alt="" className="absolute inset-0 size-full object-cover opacity-45" />}
         <div className="relative mx-auto max-w-7xl px-6 py-28 md:py-44">
           {s?.hero_eyebrow && <p className="eyebrow text-gold">{s.hero_eyebrow}</p>}
-          <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{s?.tagline ?? "\u00a0"}</h1>
+          <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{s?.tagline ?? " "}</h1>
           {s?.hero_cta && (
             <Button variant="hero" size="lg" className="mt-10" asChild>
               <Link to="/shop">{s.hero_cta} <ArrowRight /></Link>
@@ -135,6 +148,6 @@ function Index() {
           <Grid items={recentProducts} />
         </section>
       )}
-    </StoreLayout>
+    </>
   );
 }
