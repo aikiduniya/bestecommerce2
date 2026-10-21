@@ -29,6 +29,33 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const baseCurrency = s?.currency ?? "USD";
   const extras = extraCurrencies(s?.currencies);
   useEffect(() => { initDisplayCurrency(); }, []);
+
+  // Storefront language: restore the visitor's choice after mount, keep it valid,
+  // and reflect language + direction on <html> for correct RTL rendering.
+  const lang = useLang();
+  const langs = extraLanguages(s?.languages);
+  const t = (key: string) => translate(s?.translations, lang, key);
+  useEffect(() => { initLang(); }, []);
+  useEffect(() => {
+    if (!s || !lang) return;
+    if (!langs.some((l) => l.code === lang)) setLang(null);
+  }, [s, lang, langs]);
+  useEffect(() => {
+    const code = lang ?? DEFAULT_LANG.code;
+    document.documentElement.lang = code;
+    document.documentElement.dir = langDir(lang);
+  }, [lang]);
+  const langPicker = langs.length > 0 && (
+    <select
+      aria-label={t("nav.language")}
+      className="h-8 rounded-full border bg-card px-2 text-xs outline-none focus:border-gold"
+      value={lang ?? DEFAULT_LANG.code}
+      onChange={(e) => setLang(e.target.value === DEFAULT_LANG.code ? null : e.target.value)}
+    >
+      <option value={DEFAULT_LANG.code}>{DEFAULT_LANG.label}</option>
+      {langs.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
+    </select>
+  );
   useEffect(() => {
     if (!s || !dc) return;
     if (dc.code !== baseCurrency && !extras.some((c) => c.code === dc.code)) setDisplayCurrency(null);
