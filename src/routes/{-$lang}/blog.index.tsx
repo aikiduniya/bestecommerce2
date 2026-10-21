@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { contentTranslationsQuery, postsQuery, settingsQuery } from "@/lib/store";
 import { applyTranslation, hreflangLinks, indexTranslations, isValidLang, useLang } from "@/lib/i18n";
+import { buildHead, pageSeoOf } from "@/lib/seo-head";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
@@ -9,16 +10,11 @@ import { useMemo } from "react";
 export const Route = createFileRoute("/{-$lang}/blog/")({
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
   loader: ({ context }) => context.queryClient.ensureQueryData(settingsQuery).catch(() => null),
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: "Journal — Stories, guides & news" },
-      { name: "description", content: "Read our latest stories, style guides and store news." },
-      { property: "og:title", content: "Journal — Stories, guides & news" },
-      { property: "og:description", content: "Read our latest stories, style guides and store news." },
-      { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
-    ],
-    links: hreflangLinks(loaderData, "/blog"),
-  }),
+  head: ({ loaderData }) => {
+    const ps = pageSeoOf(loaderData, "blog");
+    const h = buildHead({ title: ps.title || "Journal — Stories, guides & news", description: ps.description || "Read our latest stories, style guides and store news.", path: "/blog", keywords: ps.keywords, image: ps.og_image, noindex: ps.noindex });
+    return { meta: h.meta, links: [...hreflangLinks(loaderData, "/blog"), { rel: "canonical", href: h.canonical }] };
+  },
   component: BlogIndex,
 });
 
