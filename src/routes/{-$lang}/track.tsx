@@ -29,9 +29,9 @@ type GuestOrder = {
 export const Route = createFileRoute("/{-$lang}/track")({
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
   validateSearch: (s: Record<string, unknown>) => ({
-    n: typeof s.n === "number" ? s.n : typeof s.n === "string" && /^\d+$/.test(s.n) ? Number(s.n) : undefined,
-    e: typeof s.e === "string" ? s.e : undefined,
-    placed: s.placed === 1 || s.placed === "1" ? 1 : undefined,
+    n: typeof s["n"] === "number" ? s["n"] : typeof s["n"] === "string" && /^\d+$/.test(s["n"]) ? Number(s["n"]) : undefined,
+    e: typeof s["e"] === "string" ? s["e"] : undefined,
+    placed: s["placed"] === 1 || s["placed"] === "1" ? 1 : undefined,
   }),
   head: () => ({
     meta: [
