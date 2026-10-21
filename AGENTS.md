@@ -26,3 +26,5 @@
 - robots.txt, llms.txt and sitemap.xml are server routes generated live from the database (admin overrides in `store_settings`); never add static copies in `public/`. Why: crawler files must follow content changes automatically.
 - Redirects (`redirects` table) are applied in `src/server.ts` only when a request would 404. Why: real pages always win and lookups stay off the hot path.
 - Theme presets live in `src/lib/theme.ts` and only write look-and-feel columns on `store_settings`; `StoreTheme` maps them to CSS variables (`--btn-radius`, `data-card`). Why: switching themes must never touch content.
+- Storefront layout options (header/footer/nav/banner/width/spacing/grid) are `store_settings` columns applied by `StoreTheme` as `html[data-*]` attributes + CSS in `src/styles.css`; components only add hook classes (`store-header`, `hero-pad`, `hero-img`). Why: admin layout changes must not require code edits.
+- Category/brand/collection SEO lives on their own rows and is rendered by the shop route head via `taxoHead`; fixed pages use `store_settings.page_seo[key]` via `pageSeoOf`. Why: every public page's SEO is admin-controlled.

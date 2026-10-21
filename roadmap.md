@@ -33,3 +33,9 @@
 - [x] Stage 2: per-item SEO fields, alt text everywhere, Product/Breadcrumb/Article/Organization schema, noindex on private pages
 - [x] Stage 3: theme presets + live preview, Heritage Green applied
 - [x] Stage 4: dashboard date range filter
+
+## Upgrade brief — completion pass
+- [x] Admin luxury redesign (shell, headers, KPI tiles on dashboard/products/orders/customers/reports, tables)
+- [x] Layout tab: header, nav, announcement, banner height/strength, width, spacing, grid, footer
+- [x] Category/brand/collection SEO + alt text; shop/blog page SEO
+- [x] Tested: SEO save/reload, canonical, JSON-LD, sitemap noindex, robots, llms, redirects, mobile/tablet
