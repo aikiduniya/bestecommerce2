@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Loader2, Package, Search, ShoppingBag, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { money, settingsQuery } from "@/lib/store";
+import { settingsQuery } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
