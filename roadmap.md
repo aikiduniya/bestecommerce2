@@ -18,3 +18,9 @@
 - Stripe: ON HOLD per owner — never ask for onboarding until requested; live card payments disabled.
 - Email delivery: blocked until a verified provider is configured (module built, logs as queued_disabled).
 - Print-to-PDF for invoices untested; tracking events not verified against real GA4/Meta dashboards.
+
+## Phase 5 log
+- Stage 1 (guest checkout, tax, 2FA): DONE + tested
+- Stage 2 (returns/RMA): DONE + tested
+- Stage 3 (product fields barcode/specs/weight/related, address book, checkout address picker): DONE + tested 2026-10-21
+- Stage 4 next: order tracking numbers + packing slip, save-for-later cart, search improvements
