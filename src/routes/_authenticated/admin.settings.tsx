@@ -29,6 +29,7 @@ function SettingsPage() {
   const { data } = useQuery(settingsQuery);
   const [s, setS] = useState<Settings | null>(null);
   const [saving, setSaving] = useState(false);
+  const [transLang, setTransLang] = useState<string>("");
   const { data: zones = [] } = useQuery(zonesQuery);
   useEffect(() => { if (data) setS(data); }, [data]);
   if (!s) return null;
@@ -46,7 +47,6 @@ function SettingsPage() {
   // Languages: enabled list + per-language UI text translations.
   const langList: StoreLanguage[] = Array.isArray(s.languages) ? (s.languages as StoreLanguage[]) : [];
   const translations: Translations = (s.translations && typeof s.translations === "object" ? s.translations : {}) as Translations;
-  const [transLang, setTransLang] = useState<string>("");
   const updateLang = (i: number, l: StoreLanguage | null) => {
     const raw = langList.slice();
     if (i === -1 && l) raw.push(l);
