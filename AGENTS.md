@@ -19,3 +19,6 @@
 - Coupons are validated and applied only inside `place_order` (via `coupon_discount`); `check_coupon` is a preview for the checkout UI. Why: discounts must never be trusted from the browser.
 - Customer-submitted reviews/questions are forced to pending (and verified-buyer computed) by a BEFORE INSERT trigger. Why: customers must not self-approve or fake badges.
 - Admin-written CMS/blog text is rendered as plain text via `Prose` (no raw HTML). Why: prevents script injection through content.
+- Homepage is driven by `homepage_sections` rows when any exist (storefront falls back to the built-in layout in `LegacyHome` when the table is empty); section configs are JSONB keyed by section type in `src/lib/sections.ts`. Why: admin controls the homepage without code changes.
+- Header/footer menus come from `navigation_menus` (handles `header`/`footer`); empty items array means the storefront uses its built-in links. Menu URLs are admin-entered strings rendered as plain anchors. Why: no hardcoded navigation content.
+- Coupon usage is incremented atomically in `place_order` (WHERE used_count < max_uses) and decremented by `restock_cancelled_order` on cancellation, guarded by `stock_restored`. Why: usage limits must hold under concurrent checkouts and cancelled orders must free the coupon.

@@ -22,8 +22,9 @@
 - [x] Staff permissions: marketing, content
 
 ## Phase 4B (next)
-- [ ] Drag-and-drop homepage section builder
-- [ ] Navigation/menu editor (header + footer)
+- [x] Coupon fix: cancellation restores coupon usage (guarded, no double-restore); usage-limit increment is atomic
+- [x] Drag-and-drop homepage section builder (16 section types, reorder/duplicate/enable/disable, live storefront)
+- [x] Navigation/menu editor (header + footer, nested dropdowns, storefront falls back to built-in when empty)
 - [ ] Product-level flash sale prices with countdown; automatic (no-code) discounts
 - [ ] Super Admin dashboard upgrade: collapsible sidebar, global search, notifications, charts, bulk actions
 - [ ] Advanced sales reports & analytics (revenue over time, top products, coupon performance, CSV export)
