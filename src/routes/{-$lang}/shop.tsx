@@ -1,7 +1,7 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { brandsQuery, categoriesQuery, collectionsQuery, contentTranslationsQuery, productCollectionsQuery, productsQuery, settingsQuery } from "@/lib/store";
 import { useFromPrice } from "@/lib/useFromPrice";
@@ -59,9 +59,17 @@ function Shop() {
   const sp = Route.useSearch();
   const navigate = useNavigate({ from: "/{-$lang}/shop" });
   const { data: products = [], isLoading } = useQuery(productsQuery);
-  const { data: cats = [] } = useQuery(categoriesQuery);
-  const { data: brands = [] } = useQuery(brandsQuery);
-  const { data: cols = [] } = useQuery(collectionsQuery);
+  // Taxonomy lists render after mount so server and first client render match;
+  // the heading uses the server-resolved name meanwhile.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const ld = Route.useLoaderData();
+  const { data: catsRaw = [] } = useQuery(categoriesQuery);
+  const { data: brandsRaw = [] } = useQuery(brandsQuery);
+  const { data: colsRaw = [] } = useQuery(collectionsQuery);
+  const cats = mounted ? catsRaw : [];
+  const brands = mounted ? brandsRaw : [];
+  const cols = mounted ? colsRaw : [];
   const { data: pcs = [] } = useQuery(productCollectionsQuery);
   const { data: s } = useQuery(settingsQuery);
   const lang = useLang();
@@ -100,7 +108,7 @@ function Shop() {
     }
   });
 
-  const title = (col && tcol(col).name) ?? (cat && tc(cat).name) ?? (brand && tb(brand).name) ?? (q ? `Results for “${sp.q}”` : "Shop all");
+  const title = (col && tcol(col).name) ?? (cat && tc(cat).name) ?? (brand && tb(brand).name) ?? (q ? `Results for “${sp.q}”` : ld?.crumb?.name ?? "Shop all");
   const select = "h-9 w-full rounded-md border bg-card px-3 text-sm";
 
   return (
