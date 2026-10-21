@@ -232,6 +232,13 @@
       "when": 1792589662970,
       "tag": "0032_contact_notified",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1792590575636,
+      "tag": "0033_smtp_hide_password",
+      "breakpoints": true
     }
   ]
 }
