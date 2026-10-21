@@ -59,7 +59,7 @@ const groups = [
   {
     label: "Store",
     items: [
-      { perm: "orders", to: "/admin/reports", label: "COD report", icon: BarChart3 },
+      { perm: "orders", to: "/admin/reports", label: "Reports", icon: BarChart3 },
       { perm: "admin", to: "/admin/staff", label: "Staff & roles", icon: ShieldCheck },
       { perm: "admin", to: "/admin/activity", label: "Activity log", icon: History },
       { perm: "admin", to: "/admin/settings", label: "Settings", icon: Settings },
