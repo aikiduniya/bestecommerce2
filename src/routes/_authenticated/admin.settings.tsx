@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, type Settings } from "@/lib/store";
 import { extraCurrencies, type DisplayCurrency } from "@/lib/currency";
+import { LANG_CATALOG, UI_STRINGS, extraLanguages, type StoreLanguage, type Translations } from "@/lib/i18n";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,6 +43,24 @@ function SettingsPage() {
     set("currencies", raw as never);
   };
 
+  // Languages: enabled list + per-language UI text translations.
+  const langList: StoreLanguage[] = Array.isArray(s.languages) ? (s.languages as StoreLanguage[]) : [];
+  const translations: Translations = (s.translations && typeof s.translations === "object" ? s.translations : {}) as Translations;
+  const [transLang, setTransLang] = useState<string>("");
+  const updateLang = (i: number, l: StoreLanguage | null) => {
+    const raw = langList.slice();
+    if (i === -1 && l) raw.push(l);
+    else if (l) raw[i] = l;
+    else raw.splice(i, 1);
+    set("languages", raw as never);
+  };
+  const setTranslation = (lang: string, key: string, value: string) => {
+    const table: Record<string, string> = { ...(translations[lang] ?? {}) };
+    if (value.trim()) table[key] = value;
+    else delete table[key];
+    set("translations", { ...translations, [lang]: table } as never);
+  };
+
   async function save() {
     if (!s) return;
     setSaving(true);
@@ -54,9 +73,14 @@ function SettingsPage() {
     if (new Set(curList.map((c) => c.code)).size !== curList.length) { setSaving(false); toast.error("Duplicate currency codes"); return; }
     if (curList.some((c) => c.code === rest.currency)) { setSaving(false); toast.error("The store currency cannot also be an extra currency"); return; }
     rest.currencies = curList;
+    const langList = extraLanguages(rest.languages);
+    const rawLangs = Array.isArray(rest.languages) ? rest.languages : [];
+    if (rawLangs.length !== langList.length) { setSaving(false); toast.error("Each language must be picked from the list"); return; }
+    if (new Set(langList.map((l) => l.code)).size !== langList.length) { setSaving(false); toast.error("Duplicate languages"); return; }
+    rest.languages = langList;
     if (rest.cod_min_order !== null && rest.cod_max_order !== null && Number(rest.cod_min_order) > Number(rest.cod_max_order)) { setSaving(false); toast.error("COD minimum cannot be above the maximum"); return; }
     for (const [k, re, label] of [["ga4_id", /^G-[A-Z0-9]{4,20}$/i, "GA4 ID should look like G-XXXXXXX"], ["gtm_id", /^GTM-[A-Z0-9]{4,12}$/i, "GTM ID should look like GTM-XXXXXX"], ["meta_pixel_id", /^\d{6,20}$/, "Meta Pixel ID should be numbers only"]] as const) {
-      const v = (rest[k] ?? "").trim();
+      const v = String(rest[k] ?? "").trim();
       if (v && !re.test(v)) { setSaving(false); toast.error(label); return; }
       rest[k] = v || null;
     }
@@ -94,6 +118,7 @@ function SettingsPage() {
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="marketing">Marketing & tracking</TabsTrigger>
+          <TabsTrigger value="languages">Languages</TabsTrigger>
         </TabsList>
         <TabsContent value="brand">
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
@@ -191,6 +216,64 @@ function SettingsPage() {
             {toggle("reviews_enabled", "Customer reviews", "Let signed-in customers write product reviews")}
             {toggle("reviews_require_approval", "Approve reviews before publishing", "New reviews wait in Reviews & Q&A")}
             <p className="text-xs text-muted-foreground sm:col-span-2">Tracking codes load only on the storefront (never in admin). Leave a field empty to turn that service off.</p>
+          </Card>
+        </TabsContent>
+        <TabsContent value="languages">
+          <Card className="grid gap-6 p-6">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Storefront languages (English is always the default; visitors switch in the header)</Label>
+              {langList.map((l, i) => (
+                <div key={i} className="flex flex-wrap items-center gap-2">
+                  <select className="h-9 rounded-md border bg-background px-3 text-sm" value={l.code}
+                    onChange={(e) => { const meta = LANG_CATALOG[e.target.value] ?? { label: e.target.value, dir: "ltr" as const }; updateLang(i, { code: e.target.value, label: meta.label, dir: meta.dir }); }}>
+                    {Object.entries(LANG_CATALOG).map(([code, meta]) => <option key={code} value={code}>{meta.label} ({code})</option>)}
+                  </select>
+                  <Input className="w-40" placeholder="Label shown to visitors" value={l.label}
+                    onChange={(e) => updateLang(i, { ...l, label: e.target.value })} />
+                  <span className="text-xs text-muted-foreground">{l.dir === "rtl" ? "Right-to-left layout" : "Left-to-right layout"}</span>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => updateLang(i, null)}>Remove</Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm"
+                onClick={() => {
+                  const unused = Object.keys(LANG_CATALOG).find((c) => !langList.some((l) => l.code === c));
+                  const meta = unused ? LANG_CATALOG[unused] : undefined;
+                  if (!unused || !meta) { toast.error("All available languages are already added"); return; }
+                  updateLang(-1, { code: unused, label: meta.label, dir: meta.dir });
+                }}>Add language</Button>
+            </div>
+            <div className="space-y-3">
+              <Label className="text-xs text-muted-foreground">Translate storefront text</Label>
+              {langList.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Add a language above to translate the storefront text (menu, cart, checkout labels…). Anything left blank shows the English text.</p>
+              ) : (
+                <>
+                  <select className="h-9 rounded-md border bg-background px-3 text-sm" value={transLang || langList[0]?.code || ""} onChange={(e) => setTransLang(e.target.value)}>
+                    {langList.map((l) => <option key={l.code} value={l.code}>{l.label} ({l.code})</option>)}
+                  </select>
+                  {(() => {
+                    const code = transLang || langList[0]?.code || "";
+                    if (!code) return null;
+                    const table = translations[code] ?? {};
+                    const done = Object.keys(UI_STRINGS).filter((k) => table[k]?.trim()).length;
+                    return (
+                      <>
+                        <p className="text-xs text-muted-foreground">{done} of {Object.keys(UI_STRINGS).length} texts translated — blank fields use the English text shown.</p>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {Object.entries(UI_STRINGS).map(([key, en]) => (
+                            <div key={key} className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">{en}</Label>
+                              <Input dir={LANG_CATALOG[code]?.dir ?? "ltr"} value={table[key] ?? ""} placeholder={en}
+                                onChange={(e) => setTranslation(code, key, e.target.value)} />
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
           </Card>
         </TabsContent>
       </Tabs>

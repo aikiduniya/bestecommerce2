@@ -1,0 +1,4 @@
+ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS languages jsonb NOT NULL DEFAULT '[]'::jsonb;
+COMMENT ON COLUMN public.store_settings.languages IS 'Extra storefront languages: [{code, label, dir}] — code like "ur", label shown in the switcher, dir "ltr"|"rtl". English (en) is always the built-in default.';
+ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS translations jsonb NOT NULL DEFAULT '{}'::jsonb;
+COMMENT ON COLUMN public.store_settings.translations IS 'Storefront UI text translations: {langCode: {stringKey: translatedText}}. Missing keys fall back to the built-in English text.';

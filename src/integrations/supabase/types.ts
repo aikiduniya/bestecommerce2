@@ -1007,6 +1007,7 @@ export type Database = {
           hero_eyebrow: string | null
           hero_image_url: string | null
           id: number
+          languages: Json
           logo_url: string | null
           maintenance_mode: boolean
           merchant_center_id: string | null
@@ -1022,6 +1023,7 @@ export type Database = {
           support_email: string | null
           support_phone: string | null
           tagline: string | null
+          translations: Json
           updated_at: string
         }
         Insert: {
@@ -1047,6 +1049,7 @@ export type Database = {
           hero_eyebrow?: string | null
           hero_image_url?: string | null
           id?: number
+          languages?: Json
           logo_url?: string | null
           maintenance_mode?: boolean
           merchant_center_id?: string | null
@@ -1062,6 +1065,7 @@ export type Database = {
           support_email?: string | null
           support_phone?: string | null
           tagline?: string | null
+          translations?: Json
           updated_at?: string
         }
         Update: {
@@ -1087,6 +1091,7 @@ export type Database = {
           hero_eyebrow?: string | null
           hero_image_url?: string | null
           id?: number
+          languages?: Json
           logo_url?: string | null
           maintenance_mode?: boolean
           merchant_center_id?: string | null
@@ -1102,6 +1107,7 @@ export type Database = {
           support_email?: string | null
           support_phone?: string | null
           tagline?: string | null
+          translations?: Json
           updated_at?: string
         }
         Relationships: []
