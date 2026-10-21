@@ -82,7 +82,7 @@ function HomepageBuilder() {
   const addSection = useMutation({
     mutationFn: async (type: string) => {
       const max = sections.reduce((m, s) => Math.max(m, s.sort_order), -1);
-      const { error } = await supabase.from("homepage_sections").insert({ type, sort_order: max + 1, config: defaultConfig(type) });
+      const { error } = await supabase.from("homepage_sections").insert({ type, sort_order: max + 1, config: defaultConfig(type) as import("@/integrations/supabase/types").Json });
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); setAdding(false); toast.success("Section added"); },
@@ -92,7 +92,7 @@ function HomepageBuilder() {
   const resetDefaults = useMutation({
     mutationFn: async () => {
       const max = sections.reduce((m, s) => Math.max(m, s.sort_order), -1);
-      const rows = DEFAULT_SECTIONS.map((d, i) => ({ type: d.type, title: d.title ?? null, sort_order: max + 1 + i, config: defaultConfig(d.type) }));
+      const rows = DEFAULT_SECTIONS.map((d, i) => ({ type: d.type, title: d.title ?? null, sort_order: max + 1 + i, config: defaultConfig(d.type) as import("@/integrations/supabase/types").Json }));
       const { error } = await supabase.from("homepage_sections").insert(rows);
       if (error) throw error;
     },
@@ -265,7 +265,7 @@ function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: str
             <Select value={cfg.collection_id ?? ""} onValueChange={(v) => set("collection_id", v)}>
               <SelectTrigger><SelectValue placeholder="Choose a collection" /></SelectTrigger>
               <SelectContent>
-                {cols.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                {cols.map((c: { id: string; name: string }) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
