@@ -110,10 +110,14 @@ function Notifications({ isAdmin, perms }: { isAdmin: boolean; perms: string[] }
     refetchInterval: 60_000,
     queryFn: async () => {
       const count = async (q: PromiseLike<{ count: number | null }>) => (await q).count ?? 0;
+      const lowStockCount = async () => {
+        const { data } = await supabase.from("products").select("stock, low_stock_threshold").eq("status", "active").gt("stock", 0);
+        return (data ?? []).filter((p) => p.stock <= p.low_stock_threshold).length;
+      };
       const [reviews, questions, lowStock, unconfirmedCod] = await Promise.all([
         can("content") ? count(supabase.from("reviews").select("id", { count: "exact", head: true }).eq("status", "pending")) : 0,
         can("content") ? count(supabase.from("product_questions").select("id", { count: "exact", head: true }).eq("status", "pending")) : 0,
-        can("catalog") ? count(supabase.from("products").select("id", { count: "exact", head: true }).eq("status", "active").gt("stock", 0).filter("stock", "lte", "low_stock_threshold")) : 0,
+        can("catalog") ? lowStockCount() : 0,
         can("orders") ? count(supabase.from("orders").select("id", { count: "exact", head: true }).eq("payment_method", "cod").is("cod_confirmed_at", null).neq("status", "cancelled")) : 0,
       ]);
       const items = [
