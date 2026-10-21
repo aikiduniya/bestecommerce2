@@ -27,7 +27,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   // render it only after mount so SSR and first client render match.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const topCats = cats.filter((c) => c.is_active && !c.parent_id);
+  const topCats = mounted ? cats.filter((c) => c.is_active && !c.parent_id) : [];
   const headerItems = navItems(menus.find((m) => m.handle === "header"));
   const footerItems = navItems(menus.find((m) => m.handle === "footer"));
 
