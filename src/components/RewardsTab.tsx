@@ -82,7 +82,7 @@ export function RewardsTab({ userId }: { userId: string }) {
               </div>
             </div>
           )}
-          {myReferral && <p className="mt-6 border-t pt-4 text-sm">A referral code is linked to your account {myReferral.rewarded ? <StatusPill tone="ok">Rewarded</StatusPill> : <StatusPill tone="muted">Pending first delivery</StatusPill>}</p>}
+          {myReferral && <p className="mt-6 border-t pt-4 text-sm">A referral code is linked to your account {myReferral.rewarded ? <StatusPill value="Rewarded" /> : <StatusPill value="Pending first delivery" />}</p>}
         </section>
       )}
     </div>

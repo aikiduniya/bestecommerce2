@@ -29,7 +29,7 @@ function Compare() {
   const { data: s } = useQuery(settingsQuery);
   const cur = s?.currency;
 
-  const items = ids.map((id) => products.find((p) => p.id === id)).filter((p) => !!p && p.status === "active");
+  const items = ids.map((id) => products.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => !!p && p.status === "active");
 
   const remove = (id: string) => setCompare(getCompare().filter((x) => x !== id));
 

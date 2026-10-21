@@ -64,7 +64,7 @@ function Carts() {
                   <td className="p-3">{c.email}</td>
                   <td className="p-3 text-muted-foreground">{items.map((i) => `${i.qty}× ${i.name}`).join(", ") || "—"}</td>
                   <td className="p-3 font-medium">{money(c.subtotal, s?.currency)}</td>
-                  <td className="p-3">{hours(c.updated_at) >= 24 ? <StatusPill tone="warn">{hours(c.updated_at)}h</StatusPill> : <StatusPill tone="muted">{hours(c.updated_at)}h</StatusPill>}</td>
+                  <td className="p-3"><StatusPill value={`${hours(c.updated_at)}h idle`} /></td>
                   <td className="p-3 text-right">
                     <Button size="sm" variant="outline" disabled={sending === c.id} onClick={() => remind(c.id, c.email, items, Number(c.subtotal))}>
                       {sending === c.id ? "Sending…" : "Send reminder"}

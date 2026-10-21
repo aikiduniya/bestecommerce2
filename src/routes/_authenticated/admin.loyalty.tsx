@@ -28,12 +28,12 @@ function Loyalty() {
   async function save() {
     if (!s || !form) return;
     setBusy(true);
-    const patch: Record<string, unknown> = {};
+    const patch: Record<string, boolean | number> = {};
     for (const [k, val] of Object.entries(form)) {
       if (k === "loyalty_enabled" || k === "referral_enabled") patch[k] = val === "1";
       else patch[k] = Number(val);
     }
-    const { error } = await supabase.from("store_settings").update(patch).eq("id", 1);
+    const { error } = await supabase.from("store_settings").update(patch as never).eq("id", 1);
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Saved");
@@ -103,7 +103,7 @@ function Loyalty() {
             {referrals.map((r) => (
               <div key={r.id} className="flex items-center justify-between border-b pb-2 last:border-0">
                 <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
-                {r.rewarded ? <StatusPill tone="ok">Rewarded</StatusPill> : <StatusPill tone="muted">Pending first order</StatusPill>}
+                <StatusPill value={r.rewarded ? "Rewarded" : "Pending first order"} />
               </div>
             ))}
             {referrals.length === 0 && <p className="text-muted-foreground">No referrals yet.</p>}

@@ -79,7 +79,7 @@ function GiftCards() {
                   <td className="p-3 font-medium">{money(c.balance, s?.currency)}</td>
                   <td className="p-3 text-muted-foreground">{money(c.initial_balance, s?.currency)}</td>
                   <td className="p-3 text-muted-foreground">{c.expires_at ? new Date(c.expires_at).toLocaleDateString() : "Never"}</td>
-                  <td className="p-3">{expired ? <StatusPill tone="warn">Expired</StatusPill> : Number(c.balance) <= 0 ? <StatusPill tone="muted">Used up</StatusPill> : <StatusPill tone="ok">Valid</StatusPill>}</td>
+                  <td className="p-3"><StatusPill value={expired ? "Expired" : Number(c.balance) <= 0 ? "Used up" : "Valid"} /></td>
                   <td className="p-3"><Switch checked={c.is_active} onCheckedChange={(v) => toggle(c.id, v)} /></td>
                 </tr>
               );
