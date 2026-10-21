@@ -218,6 +218,63 @@ function SettingsPage() {
             <p className="text-xs text-muted-foreground sm:col-span-2">Tracking codes load only on the storefront (never in admin). Leave a field empty to turn that service off.</p>
           </Card>
         </TabsContent>
+        <TabsContent value="languages">
+          <Card className="grid gap-6 p-6">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Storefront languages (English is always the default; visitors switch in the header)</Label>
+              {langList.map((l, i) => (
+                <div key={i} className="flex flex-wrap items-center gap-2">
+                  <select className="h-9 rounded-md border bg-background px-3 text-sm" value={l.code}
+                    onChange={(e) => updateLang(i, { code: e.target.value, label: LANG_CATALOG[e.target.value].label, dir: LANG_CATALOG[e.target.value].dir })}>
+                    {Object.entries(LANG_CATALOG).map(([code, meta]) => <option key={code} value={code}>{meta.label} ({code})</option>)}
+                  </select>
+                  <Input className="w-40" placeholder="Label shown to visitors" value={l.label}
+                    onChange={(e) => updateLang(i, { ...l, label: e.target.value })} />
+                  <span className="text-xs text-muted-foreground">{l.dir === "rtl" ? "Right-to-left layout" : "Left-to-right layout"}</span>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => updateLang(i, null)}>Remove</Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm"
+                onClick={() => {
+                  const unused = Object.keys(LANG_CATALOG).find((c) => !langList.some((l) => l.code === c));
+                  if (!unused) { toast.error("All available languages are already added"); return; }
+                  updateLang(-1, { code: unused, label: LANG_CATALOG[unused].label, dir: LANG_CATALOG[unused].dir });
+                }}>Add language</Button>
+            </div>
+            <div className="space-y-3">
+              <Label className="text-xs text-muted-foreground">Translate storefront text</Label>
+              {langList.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Add a language above to translate the storefront text (menu, cart, checkout labels…). Anything left blank shows the English text.</p>
+              ) : (
+                <>
+                  <select className="h-9 rounded-md border bg-background px-3 text-sm" value={transLang || langList[0]?.code || ""} onChange={(e) => setTransLang(e.target.value)}>
+                    {langList.map((l) => <option key={l.code} value={l.code}>{l.label} ({l.code})</option>)}
+                  </select>
+                  {(() => {
+                    const code = transLang || langList[0]?.code || "";
+                    if (!code) return null;
+                    const table = translations[code] ?? {};
+                    const done = Object.keys(UI_STRINGS).filter((k) => table[k]?.trim()).length;
+                    return (
+                      <>
+                        <p className="text-xs text-muted-foreground">{done} of {Object.keys(UI_STRINGS).length} texts translated — blank fields use the English text shown.</p>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {Object.entries(UI_STRINGS).map(([key, en]) => (
+                            <div key={key} className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">{en}</Label>
+                              <Input dir={LANG_CATALOG[code]?.dir ?? "ltr"} value={table[key] ?? ""} placeholder={en}
+                                onChange={(e) => setTranslation(code, key, e.target.value)} />
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
       </Tabs>
     </>
   );
