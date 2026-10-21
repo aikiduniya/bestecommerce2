@@ -30,9 +30,9 @@
 - [x] Dashboard upgrade: period comparison, top products, recent activity, quick actions, 30-day chart
 - [x] Advanced reports: sales (date ranges, period comparison, product performance), COD, coupons, inventory — all with CSV export
 - [x] Order timeline, internal notes, printable invoice
-- [ ] Collapsible admin sidebar, global admin search, notifications center, bulk actions
+- [x] Collapsible admin sidebar, global admin search (Cmd+K), notifications center, bulk actions on products
 - [ ] Email templates & notifications (needs email domain setup)
-- [ ] GA4 ecommerce events (add_to_cart, purchase)
+- [x] GA4 + Meta Pixel ecommerce events: view_item, add_to_cart, begin_checkout, purchase
 - [ ] Order timeline, internal notes, invoices
 - [ ] International: multi-currency / languages
 
@@ -41,6 +41,6 @@
 - [x] Automatic (no-code) discounts: percent/fixed, whole store / category / collection / product, schedule, priority (one per order — highest priority then largest); enforced in checkout server-side, preview line at checkout, shown on order/invoice
 - [x] Coupons stack on top of automatic discounts (coupon applies to the already-discounted amount)
 - [ ] Email templates & notifications (needs email domain setup)
-- [ ] GA4 ecommerce events (add_to_cart, purchase)
+- [x] GA4 + Meta Pixel ecommerce events: view_item, add_to_cart, begin_checkout, purchase
 - [ ] International: multi-currency / languages
-- [ ] Collapsible admin sidebar, global admin search, notifications center, bulk actions
+- [x] Collapsible admin sidebar, global admin search (Cmd+K), notifications center, bulk actions on products
