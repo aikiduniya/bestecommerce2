@@ -92,6 +92,13 @@
       "when": 1792568576740,
       "tag": "0012_order_timeline_and_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792569277666,
+      "tag": "0013_flash_sales_and_auto_discounts",
+      "breakpoints": true
     }
   ]
 }
