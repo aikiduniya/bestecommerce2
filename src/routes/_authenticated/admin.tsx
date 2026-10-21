@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail,
 } from "lucide-react";
@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin Dashboard" }, { name: "robots", content: "noindex" }] }),
@@ -94,6 +96,35 @@ function AdminLayout() {
     navigate({ to: "/auth", replace: true });
   }
 
+  // Two-factor gate: staff/admins with an active authenticator must confirm a code
+  // once per session before the dashboard opens.
+  const [mfaState, setMfaState] = useState<"loading" | "ok" | "challenge">("loading");
+  const [mfaFactor, setMfaFactor] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaBusy, setMfaBusy] = useState(false);
+  useEffect(() => {
+    void (async () => {
+      const { data: f } = await supabase.auth.mfa.listFactors();
+      const v = (f?.totp ?? []).find((x) => x.status === "verified");
+      if (!v) { setMfaState("ok"); return; }
+      const { data: a } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (a?.currentLevel === "aal2") { setMfaState("ok"); return; }
+      setMfaFactor(v.id);
+      setMfaState("challenge");
+    })();
+  }, []);
+
+  async function verifyMfa() {
+    if (!mfaFactor || mfaCode.trim().length !== 6) { toast.error("Enter the 6-digit code from your app"); return; }
+    setMfaBusy(true);
+    const { data: ch, error: e1 } = await supabase.auth.mfa.challenge({ factorId: mfaFactor });
+    if (e1) { setMfaBusy(false); toast.error(e1.message); return; }
+    const { error } = await supabase.auth.mfa.verify({ factorId: mfaFactor, challengeId: ch.id, code: mfaCode.trim() });
+    setMfaBusy(false);
+    if (error) { toast.error("That code didn't work — try again"); return; }
+    setMfaState("ok");
+  }
+
   if (!isStaff) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
@@ -103,6 +134,21 @@ function AdminLayout() {
           <Button variant="outline" asChild><Link to="/account">My account</Link></Button>
           <Button onClick={signOut}>Sign out</Button>
         </div>
+      </div>
+    );
+  }
+
+  if (mfaState === "loading") return null;
+  if (mfaState === "challenge") {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+        <h1 className="text-4xl">Two-factor check</h1>
+        <p className="max-w-sm text-muted-foreground">Your account has two-factor authentication. Enter the 6-digit code from your authenticator app to open the dashboard.</p>
+        <div className="flex gap-2">
+          <Input inputMode="numeric" maxLength={6} placeholder="123456" value={mfaCode} onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))} className="w-36 text-center" onKeyDown={(e) => { if (e.key === "Enter") void verifyMfa(); }} />
+          <Button variant="gold" onClick={verifyMfa} disabled={mfaBusy}>{mfaBusy ? "Checking…" : "Verify"}</Button>
+        </div>
+        <Button variant="ghost" size="sm" onClick={signOut}>Sign out</Button>
       </div>
     );
   }

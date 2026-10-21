@@ -18,6 +18,7 @@ import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/i
 import { Route as Char123LangChar125CartRouteImport } from './routes/{-$lang}/cart'
 import { Route as Char123LangChar125CheckoutRouteImport } from './routes/{-$lang}/checkout'
 import { Route as Char123LangChar125ShopRouteImport } from './routes/{-$lang}/shop'
+import { Route as Char123LangChar125TrackRouteImport } from './routes/{-$lang}/track'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin.activity'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
@@ -91,6 +92,11 @@ const Char123LangChar125CheckoutRoute =
 const Char123LangChar125ShopRoute = Char123LangChar125ShopRouteImport.update({
   id: '/{-$lang}/shop',
   path: '/{-$lang}/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char123LangChar125TrackRoute = Char123LangChar125TrackRouteImport.update({
+  id: '/{-$lang}/track',
+  path: '/{-$lang}/track',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -270,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
   '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
+  '/{-$lang}/track': typeof Char123LangChar125TrackRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -309,6 +316,7 @@ export interface FileRoutesByTo {
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
   '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
+  '/{-$lang}/track': typeof Char123LangChar125TrackRoute
   '/{-$lang}': typeof Char123LangChar125IndexRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
   '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
+  '/{-$lang}/track': typeof Char123LangChar125TrackRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -392,6 +401,7 @@ export interface FileRouteTypes {
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
     | '/{-$lang}/shop'
+    | '/{-$lang}/track'
     | '/{-$lang}/'
     | '/admin/activity'
     | '/admin/blog'
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
     | '/{-$lang}/shop'
+    | '/{-$lang}/track'
     | '/{-$lang}'
     | '/admin/activity'
     | '/admin/blog'
@@ -471,6 +482,7 @@ export interface FileRouteTypes {
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
     | '/{-$lang}/shop'
+    | '/{-$lang}/track'
     | '/{-$lang}/'
     | '/_authenticated/admin/activity'
     | '/_authenticated/admin/blog'
@@ -510,6 +522,7 @@ export interface RootRouteChildren {
   Char123LangChar125CartRoute: typeof Char123LangChar125CartRoute
   Char123LangChar125CheckoutRoute: typeof Char123LangChar125CheckoutRoute
   Char123LangChar125ShopRoute: typeof Char123LangChar125ShopRoute
+  Char123LangChar125TrackRoute: typeof Char123LangChar125TrackRoute
   Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
   ApiPublicMerchantFeedRoute: typeof ApiPublicMerchantFeedRoute
   Char123LangChar125BlogSlugRoute: typeof Char123LangChar125BlogSlugRoute
@@ -581,6 +594,13 @@ declare module '@tanstack/react-router' {
       path: '/{-$lang}/shop'
       fullPath: '/{-$lang}/shop'
       preLoaderRoute: typeof Char123LangChar125ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{-$lang}/track': {
+      id: '/{-$lang}/track'
+      path: '/{-$lang}/track'
+      fullPath: '/{-$lang}/track'
+      preLoaderRoute: typeof Char123LangChar125TrackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -866,6 +886,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char123LangChar125CartRoute: Char123LangChar125CartRoute,
   Char123LangChar125CheckoutRoute: Char123LangChar125CheckoutRoute,
   Char123LangChar125ShopRoute: Char123LangChar125ShopRoute,
+  Char123LangChar125TrackRoute: Char123LangChar125TrackRoute,
   Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
   ApiPublicMerchantFeedRoute: ApiPublicMerchantFeedRoute,
   Char123LangChar125BlogSlugRoute: Char123LangChar125BlogSlugRoute,

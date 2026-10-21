@@ -642,6 +642,7 @@ export type Database = {
           customer_phone: string | null
           discount_total: number
           fulfillment_status: string
+          guest_token: string | null
           id: string
           items: Json
           notes: string | null
@@ -655,6 +656,7 @@ export type Database = {
           status: string
           stock_restored: boolean
           subtotal: number
+          tax_total: number
           total: number
           updated_at: string
           user_id: string | null
@@ -672,6 +674,7 @@ export type Database = {
           customer_phone?: string | null
           discount_total?: number
           fulfillment_status?: string
+          guest_token?: string | null
           id?: string
           items?: Json
           notes?: string | null
@@ -685,6 +688,7 @@ export type Database = {
           status?: string
           stock_restored?: boolean
           subtotal?: number
+          tax_total?: number
           total?: number
           updated_at?: string
           user_id?: string | null
@@ -702,6 +706,7 @@ export type Database = {
           customer_phone?: string | null
           discount_total?: number
           fulfillment_status?: string
+          guest_token?: string | null
           id?: string
           items?: Json
           notes?: string | null
@@ -715,6 +720,7 @@ export type Database = {
           status?: string
           stock_restored?: boolean
           subtotal?: number
+          tax_total?: number
           total?: number
           updated_at?: string
           user_id?: string | null
@@ -1202,6 +1208,9 @@ export type Database = {
           support_email: string | null
           support_phone: string | null
           tagline: string | null
+          tax_enabled: boolean
+          tax_inclusive: boolean
+          tax_label: string
           translations: Json
           updated_at: string
         }
@@ -1244,6 +1253,9 @@ export type Database = {
           support_email?: string | null
           support_phone?: string | null
           tagline?: string | null
+          tax_enabled?: boolean
+          tax_inclusive?: boolean
+          tax_label?: string
           translations?: Json
           updated_at?: string
         }
@@ -1286,8 +1298,44 @@ export type Database = {
           support_email?: string | null
           support_phone?: string | null
           tagline?: string | null
+          tax_enabled?: boolean
+          tax_inclusive?: boolean
+          tax_label?: string
           translations?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      tax_rates: {
+        Row: {
+          applies_to_shipping: boolean
+          country: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          priority: number
+          rate: number
+        }
+        Insert: {
+          applies_to_shipping?: boolean
+          country?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          priority?: number
+          rate?: number
+        }
+        Update: {
+          applies_to_shipping?: boolean
+          country?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          priority?: number
+          rate?: number
         }
         Relationships: []
       }
@@ -1403,6 +1451,10 @@ export type Database = {
           _notes?: string
           _zone_id: string
         }
+        Returns: Json
+      }
+      track_guest_order: {
+        Args: { _email: string; _order_number: number }
         Returns: Json
       }
     }

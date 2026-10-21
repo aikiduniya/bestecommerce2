@@ -129,6 +129,40 @@ export const productCollectionsQuery = queryOptions({
   },
 });
 
+export type TaxRate = Database["public"]["Tables"]["tax_rates"]["Row"];
+
+export const taxRatesQuery = queryOptions({
+  queryKey: ["tax_rates"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("tax_rates").select("*").order("priority", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+});
+
+// Mirrors the tax logic inside place_order — UI preview only; the server recomputes.
+export function taxPreview(
+  settings: Settings | undefined,
+  rates: TaxRate[],
+  country: string,
+  merchandise: number,
+  shipping: number,
+  fee: number,
+): { tax: number; inclusive: boolean; name?: string } {
+  if (!settings?.tax_enabled) return { tax: 0, inclusive: false };
+  const c = country.trim().toUpperCase();
+  const r = rates
+    .filter((x) => x.is_active && (x.country === c || x.country === "*"))
+    .sort((a, b) => (a.country === c ? 0 : 1) - (b.country === c ? 0 : 1) || b.priority - a.priority)[0];
+  if (!r || Number(r.rate) <= 0) return { tax: 0, inclusive: settings.tax_inclusive };
+  const rate = Number(r.rate);
+  if (settings.tax_inclusive) {
+    return { tax: Math.round(((merchandise + shipping + fee) * rate) / (100 + rate) * 100) / 100, inclusive: true, name: r.name };
+  }
+  const base = merchandise + (r.applies_to_shipping ? shipping : 0) + fee;
+  return { tax: Math.round(base * rate) / 100, inclusive: false, name: r.name };
+}
+
 export const zonesQuery = queryOptions({
   queryKey: ["shipping_zones"],
   queryFn: async () => {

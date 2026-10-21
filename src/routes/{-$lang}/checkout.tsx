@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { money, optionLabel, settingsQuery, zonesQuery } from "@/lib/store";
+import { money, optionLabel, settingsQuery, taxPreview, taxRatesQuery, zonesQuery } from "@/lib/store";
 import { useCart } from "@/lib/cart";
 import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
 import { sendNotification } from "@/lib/email.functions";
@@ -35,6 +35,7 @@ function Checkout() {
   const { user, ready } = useSessionUser();
   const { data: s } = useQuery(settingsQuery);
   const { data: zones = [] } = useQuery(zonesQuery);
+  const { data: taxRates = [] } = useQuery(taxRatesQuery);
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [f, setF] = useState({ name: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", postal: "", country: "", notes: "" });
@@ -50,12 +51,12 @@ function Checkout() {
   const trackItems = cart.items.map((i) => ({ id: i.product_id, name: i.name, price: i.price, qty: i.qty, variant: i.options ? Object.values(i.options).join(" / ") : undefined }));
   const beganRef = useRef(false);
   useEffect(() => {
-    if (!beganRef.current && user && cart.items.length > 0) {
+    if (!beganRef.current && cart.items.length > 0) {
       beganRef.current = true;
       trackBeginCheckout(trackItems, cart.subtotal, cur);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, cart.items.length > 0]);
+  }, [cart.items.length > 0]);
 
   const country = f.country.trim().toUpperCase();
   const available = zones.filter((z) => z.is_active && (z.countries.length === 0 || z.countries.includes("*") || (country && z.countries.includes(country))));
@@ -66,7 +67,7 @@ function Checkout() {
 
   const { data: autoDisc } = useQuery({
     queryKey: ["auto-discount-preview", cart.subtotal, cart.items.map((i) => `${i.product_id}:${i.qty}`).join(",")],
-    enabled: !!user && cart.items.length > 0,
+    enabled: cart.items.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("check_automatic_discount", {
         _items: cart.items.map((i) => ({ product_id: i.product_id, price: i.price, qty: i.qty })),
@@ -90,6 +91,9 @@ function Checkout() {
   useEffect(() => { if (coupon) setCoupon(null); }, [cart.subtotal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const codFee = Number(s?.cod_fee ?? 0);
+  const merchandise = Math.max(cart.subtotal - autoDiscount - discount, 0);
+  const taxInfo = taxPreview(s, taxRates, country, merchandise, shipping, codFee);
+  const grandTotal = merchandise + shipping + codFee + (taxInfo.inclusive ? 0 : taxInfo.tax);
   const codIssue = !s ? null
     : s.cod_countries.length && country && !s.cod_countries.includes(country) ? `Cash on Delivery is not available in ${country}.`
     : zone && s.cod_excluded_zones.includes(zone.id) ? `Cash on Delivery is not available with ${zone.name}.`
@@ -112,12 +116,12 @@ function Checkout() {
     setPlacing(false);
     if (error) { toast.error(error.message); return; }
     const res = data as { id: string; order_number: number };
-    trackPurchase(res.id, trackItems, Math.max(cart.subtotal - autoDiscount - discount, 0) + shipping + codFee, cur);
+    trackPurchase(res.id, trackItems, grandTotal, cur);
     // Queue order emails (logged only until live delivery is enabled by the owner).
     const emailVars = {
       customer_name: f.name, customer_email: f.email,
       order_number: String(res.order_number),
-      order_total: money(Math.max(cart.subtotal - autoDiscount - discount, 0) + shipping + codFee, cur),
+      order_total: money(grandTotal, cur),
       payment_method: "Cash on Delivery",
       items_list: cart.items.map((i) => `${i.qty} × ${i.name}`).join(", "),
     };
@@ -127,7 +131,11 @@ function Checkout() {
     }
     cart.clear();
     qc.invalidateQueries();
-    navigate({ to: "/order/$id", params: { id: res.id } });
+    if (user) {
+      navigate({ to: "/order/$id", params: { id: res.id } });
+    } else {
+      navigate({ to: "/{-$lang}/track", params: { lang: lang ?? undefined }, search: { n: res.order_number, e: f.email, placed: 1 } });
+    }
   }
 
   const field = (k: keyof typeof f, label: string, opts: { required?: boolean; type?: string; placeholder?: string } = {}) => (
@@ -140,23 +148,18 @@ function Checkout() {
   if (cart.items.length === 0) {
     return <StoreLayout><div className="py-32 text-center"><h1 className="text-5xl">Your cart is empty</h1><Button className="mt-6" asChild><Link to="/{-$lang}/shop" params={{ lang: lang ?? undefined }}>Shop now</Link></Button></div></StoreLayout>;
   }
-  if (ready && !user) {
-    return (
-      <StoreLayout>
-        <div className="mx-auto max-w-md py-32 text-center">
-          <h1 className="text-5xl">Sign in to check out</h1>
-          <p className="mt-3 text-muted-foreground">Your cart is saved. Create an account or sign in to place your order and track it later.</p>
-          <Button className="mt-8" size="lg" asChild><Link to="/auth" search={{ next: "/checkout" }}>Sign in or create account</Link></Button>
-        </div>
-      </StoreLayout>
-    );
-  }
 
   return (
     <StoreLayout>
       <form onSubmit={place} className="mx-auto grid max-w-6xl gap-12 px-6 py-14 md:grid-cols-[1fr_380px]">
         <div className="space-y-10">
           <h1 className="text-6xl">Checkout</h1>
+          {ready && !user && (
+            <p className="rounded border bg-card p-4 text-sm text-muted-foreground">
+              Checking out as a guest — you can track your order with your order number and email.{" "}
+              <Link to="/auth" search={{ next: "/checkout" }} className="text-gold underline">Sign in</Link> to keep your order history.
+            </p>
+          )}
           <section className="grid gap-4 sm:grid-cols-2">
             <h2 className="text-2xl sm:col-span-2">Contact</h2>
             {field("name", "Full name", { required: true })}
@@ -220,7 +223,9 @@ function Checkout() {
             <div className="flex justify-between"><span>Shipping</span><span>{zone ? money(shipping, cur) : "—"}</span></div>
             {coupon && <div className="flex justify-between text-success"><span>Coupon {coupon.code} <button type="button" className="ml-1 text-xs underline" onClick={() => setCoupon(null)}>remove</button></span><span>{coupon.free_shipping ? "Free shipping" : `−${money(discount, cur)}`}</span></div>}
             {codFee > 0 && <div className="flex justify-between"><span>Cash on Delivery fee</span><span>{money(codFee, cur)}</span></div>}
-            <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(cart.subtotal - autoDiscount - discount + shipping + codFee, cur)}</span></div>
+            {taxInfo.tax > 0 && !taxInfo.inclusive && <div className="flex justify-between"><span>{s?.tax_label ?? "Tax"}{taxInfo.name ? ` (${taxInfo.name})` : ""}</span><span>{money(taxInfo.tax, cur)}</span></div>}
+            <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(grandTotal, cur)}</span></div>
+            {taxInfo.tax > 0 && taxInfo.inclusive && <p className="text-xs text-muted-foreground">Includes {money(taxInfo.tax, cur)} {s?.tax_label ?? "tax"}.</p>}
             {codIssue && <p className="text-xs text-destructive">{codIssue}</p>}
           </div>
           <Button type="submit" size="lg" className="mt-6 w-full" disabled={placing || !s?.cod_enabled || !zone || !!codIssue}>

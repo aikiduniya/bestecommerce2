@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImagePicker } from "@/components/admin/ImagePicker";
-import { zonesQuery } from "@/lib/store";
+import { zonesQuery, taxRatesQuery, type TaxRate } from "@/lib/store";
 
 const DISPLAY_FONTS = ["Cormorant Garamond", "Playfair Display", "DM Serif Display", "Bodoni Moda", "Fraunces", "Italiana", "Syne", "Space Grotesk"];
 const BODY_FONTS = ["Manrope", "DM Sans", "Work Sans", "Figtree", "Karla", "Nunito Sans", "IBM Plex Sans", "Jost"];
@@ -31,6 +31,8 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [transLang, setTransLang] = useState<string>("");
   const { data: zones = [] } = useQuery(zonesQuery);
+  const { data: taxRates = [] } = useQuery(taxRatesQuery);
+  const [rateDraft, setRateDraft] = useState<{ name: string; country: string; rate: string; applies_to_shipping: boolean; priority: string }>({ name: "", country: "*", rate: "", applies_to_shipping: false, priority: "0" });
   useEffect(() => { if (data) setS(data); }, [data]);
   if (!s) return null;
 
@@ -60,6 +62,29 @@ function SettingsPage() {
     else delete table[key];
     set("translations", { ...translations, [lang]: table } as never);
   };
+
+  async function addRate() {
+    const rate = Number(rateDraft.rate);
+    if (!rateDraft.name.trim() || !(rate > 0) || rate > 100) { toast.error("Enter a name and a rate between 0 and 100"); return; }
+    const country = rateDraft.country.trim().toUpperCase() || "*";
+    if (country !== "*" && !/^[A-Z]{2}$/.test(country)) { toast.error("Country must be a 2-letter code or * for all"); return; }
+    const { error } = await supabase.from("tax_rates").insert({ name: rateDraft.name.trim(), country, rate, applies_to_shipping: rateDraft.applies_to_shipping, priority: Number(rateDraft.priority || 0) });
+    if (error) { toast.error(error.message); return; }
+    setRateDraft({ name: "", country: "*", rate: "", applies_to_shipping: false, priority: "0" });
+    qc.invalidateQueries({ queryKey: ["tax_rates"] });
+    toast.success("Tax rate added");
+  }
+  async function toggleRate(r: TaxRate) {
+    const { error } = await supabase.from("tax_rates").update({ is_active: !r.is_active }).eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["tax_rates"] });
+  }
+  async function removeRate(r: TaxRate) {
+    const { error } = await supabase.from("tax_rates").delete().eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["tax_rates"] });
+    toast.success("Tax rate removed");
+  }
 
   async function save() {
     if (!s) return;
@@ -116,6 +141,7 @@ function SettingsPage() {
           <TabsTrigger value="home">Homepage</TabsTrigger>
           <TabsTrigger value="store">Store</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="taxes">Taxes</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="marketing">Marketing & tracking</TabsTrigger>
           <TabsTrigger value="languages">Languages</TabsTrigger>
@@ -196,6 +222,37 @@ function SettingsPage() {
               <span><span className="block text-sm font-medium">Card payments (Stripe)</span><span className="text-xs text-muted-foreground">Pending — card payments stay off until the owner sets up Stripe.</span></span>
               <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">Pending</span>
             </div>
+          </Card>
+        </TabsContent>
+        <TabsContent value="taxes">
+          <Card className="grid gap-4 p-6 sm:grid-cols-2">
+            {toggle("tax_enabled", "Charge tax", "Tax is calculated on the server when an order is placed")}
+            {toggle("tax_inclusive", "Prices include tax", "When on, tax is already inside your prices; when off, it is added at checkout")}
+            {text("tax_label", "Tax label shown to customers (e.g. Tax, VAT, GST)")}
+          </Card>
+          <Card className="mt-4 space-y-4 p-6">
+            <h3 className="font-display text-xl">Tax rates</h3>
+            <p className="text-xs text-muted-foreground">The most specific matching rate applies: an exact country match beats a * (all countries) rate; higher priority wins ties.</p>
+            {taxRates.length === 0 && <p className="text-sm text-muted-foreground">No tax rates yet.</p>}
+            {taxRates.map((r) => (
+              <div key={r.id} className="flex flex-wrap items-center gap-3 rounded border p-3 text-sm">
+                <span className="font-medium">{r.name}</span>
+                <span className="text-muted-foreground">{r.country === "*" ? "All countries" : r.country} · {Number(r.rate)}%{r.applies_to_shipping ? " · also on shipping" : ""} · priority {r.priority}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs ${r.is_active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>{r.is_active ? "Active" : "Off"}</span>
+                <span className="ml-auto flex gap-2">
+                  <Button type="button" variant="ghost" size="sm" disabled={!isAdmin} onClick={() => toggleRate(r)}>{r.is_active ? "Disable" : "Enable"}</Button>
+                  <Button type="button" variant="ghost" size="sm" disabled={!isAdmin} onClick={() => removeRate(r)}>Delete</Button>
+                </span>
+              </div>
+            ))}
+            <div className="grid gap-3 border-t pt-4 sm:grid-cols-5">
+              <Input placeholder="Name (e.g. VAT)" value={rateDraft.name} onChange={(e) => setRateDraft({ ...rateDraft, name: e.target.value })} />
+              <Input placeholder="Country (US or *)" value={rateDraft.country} onChange={(e) => setRateDraft({ ...rateDraft, country: e.target.value })} />
+              <Input type="number" min="0" max="100" step="0.01" placeholder="Rate %" value={rateDraft.rate} onChange={(e) => setRateDraft({ ...rateDraft, rate: e.target.value })} />
+              <Input type="number" placeholder="Priority" value={rateDraft.priority} onChange={(e) => setRateDraft({ ...rateDraft, priority: e.target.value })} />
+              <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={rateDraft.applies_to_shipping} onChange={(e) => setRateDraft({ ...rateDraft, applies_to_shipping: e.target.checked })} /> Tax shipping too</label>
+            </div>
+            <Button type="button" variant="outline" size="sm" disabled={!isAdmin} onClick={addRate}>Add tax rate</Button>
           </Card>
         </TabsContent>
         <TabsContent value="seo">

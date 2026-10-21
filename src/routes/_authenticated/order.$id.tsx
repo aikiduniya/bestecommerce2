@@ -56,6 +56,7 @@ function OrderPage() {
             {Number(o.discount_total) > 0 && <div className="flex justify-between text-success"><span>Discount{o.coupon_code ? ` (${o.coupon_code})` : ""}</span><span>−{money(o.discount_total, o.currency)}</span></div>}
             {Number(o.auto_discount_total) > 0 && <div className="flex justify-between text-success"><span>Discount{o.auto_discount_name ? ` (${o.auto_discount_name})` : ""}</span><span>−{money(o.auto_discount_total, o.currency)}</span></div>}
 <div className="flex justify-between"><span>Shipping</span><span>{money(o.shipping_total, o.currency)}</span></div>
+            {Number(o.tax_total) > 0 && <div className="flex justify-between"><span>Tax</span><span>{money(o.tax_total, o.currency)}</span></div>}
             <div className="flex justify-between font-display text-2xl"><span>Total</span><span>{money(o.total, o.currency)}</span></div>
           </div>
         </div>
