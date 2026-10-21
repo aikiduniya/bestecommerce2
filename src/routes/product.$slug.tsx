@@ -211,3 +211,24 @@ function ProductPage() {
     </StoreLayout>
   );
 }
+
+function SaleCountdown({ endsAt }: { endsAt: string }) {
+  const [left, setLeft] = useState(() => new Date(endsAt).getTime() - Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setLeft(new Date(endsAt).getTime() - Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [endsAt]);
+  if (left <= 0) return null;
+  const d = Math.floor(left / 86400000);
+  const h = Math.floor((left % 86400000) / 3600000);
+  const m = Math.floor((left % 3600000) / 60000);
+  const sec = Math.floor((left % 60000) / 1000);
+  return (
+    <div className="mt-4 inline-flex items-center gap-3 rounded border border-gold/40 bg-gold/10 px-4 py-2">
+      <span className="eyebrow text-gold">Sale ends in</span>
+      <span className="font-display text-lg tabular-nums">
+        {d > 0 && `${d}d `}{String(h).padStart(2, "0")}:{String(m).padStart(2, "0")}:{String(sec).padStart(2, "0")}
+      </span>
+    </div>
+  );
+}
