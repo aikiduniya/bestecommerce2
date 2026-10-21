@@ -214,13 +214,33 @@ function ProductsPage() {
             <option value="all">All stock</option><option value="low">Low stock</option><option value="out">Out of stock</option>
           </select>
         </div>
+        {selIds.size > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-md border border-gold/40 bg-gold/5 px-3 py-2">
+            <span className="text-sm font-medium">{selIds.size} selected</span>
+            <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => bulk("active")}>Set active</Button>
+            <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => bulk("draft")}>Set draft</Button>
+            <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => bulk("archived")}>Archive</Button>
+            <Button size="sm" variant="destructive" disabled={bulkBusy} onClick={() => bulk("delete")}>Delete</Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelIds(new Set())}>Clear</Button>
+          </div>
+        )}
         <Table>
           <TableHeader>
-            <TableRow><TableHead>Product</TableHead><TableHead>Category</TableHead><TableHead>Price</TableHead><TableHead>Stock</TableHead><TableHead>Status</TableHead><TableHead /></TableRow>
+            <TableRow>
+              <TableHead className="w-8">
+                <Checkbox
+                  checked={list.length > 0 && list.every((p) => selIds.has(p.id))}
+                  onCheckedChange={(on) => setSelIds(on ? new Set(list.map((p) => p.id)) : new Set())}
+                  aria-label="Select all"
+                />
+              </TableHead>
+              <TableHead>Product</TableHead><TableHead>Category</TableHead><TableHead>Price</TableHead><TableHead>Stock</TableHead><TableHead>Status</TableHead><TableHead />
+            </TableRow>
           </TableHeader>
           <TableBody>
             {list.map((p) => (
-              <TableRow key={p.id}>
+              <TableRow key={p.id} data-state={selIds.has(p.id) ? "selected" : undefined}>
+                <TableCell><Checkbox checked={selIds.has(p.id)} onCheckedChange={(on) => toggleSel(p.id, !!on)} aria-label={`Select ${p.name}`} /></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="flex size-11 items-center justify-center overflow-hidden rounded bg-muted">
