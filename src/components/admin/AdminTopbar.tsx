@@ -146,7 +146,6 @@ function Notifications({ isAdmin, perms }: { isAdmin: boolean; perms: string[] }
         {items.map((n) => (
           <a key={n.label} href={n.to} className="block rounded-md px-3 py-2 text-sm hover:bg-muted">{n.label}</a>
         ))}
-        {s && <p className="px-2 pt-2 text-[10px] text-muted-foreground">Refreshes every minute · {money(0, s.currency).replace(/[\d.,\s]/g, "")} store</p>}
       </PopoverContent>
     </Popover>
   );
