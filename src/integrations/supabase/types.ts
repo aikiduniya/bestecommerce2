@@ -1185,8 +1185,12 @@ export type Database = {
       }
       effective_price: {
         Args: {
-          _p: Database["public"]["Tables"]["products"]["Row"]
-          _v?: Database["public"]["Tables"]["product_variants"]["Row"]
+          _ends: string
+          _price: number
+          _sale_price: number
+          _starts: string
+          _v_price?: number
+          _v_sale_price?: number
         }
         Returns: number
       }
