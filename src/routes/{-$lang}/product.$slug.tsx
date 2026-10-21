@@ -83,6 +83,8 @@ function ProductPage() {
     queryFn: async () => (await supabase.from("wishlists").select("product_id")).data?.map((w) => w.product_id) ?? [],
   });
   const inWish = !!p && (wish.data ?? []).includes(p.id);
+  const compareIds = useCompare();
+  const inCompare = !!p && compareIds.includes(p.id);
 
   useEffect(() => {
     if (p) {
