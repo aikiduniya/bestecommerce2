@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Search, Download } from "lucide-react";
+import { Search, Download, Users, Repeat, Crown, Wallet } from "lucide-react";
 import { money, ordersQuery, downloadCsv } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/admin/PageHeader";
+import { KpiCard, KpiGrid, PageHeader } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,6 +35,12 @@ function CustomersPage() {
           ...list.map((c) => [c.name, c.email, c.phone, c.orders, c.spent.toFixed(2), c.currency, c.last.slice(0, 10)]),
         ])}><Download className="size-4" /> Export CSV</Button>
       </PageHeader>
+      <KpiGrid>
+        <KpiCard label="Customers" value={map.size} icon={Users} sub="Unique ordering customers" />
+        <KpiCard label="Repeat buyers" value={[...map.values()].filter((c) => c.orders > 1).length} icon={Repeat} sub="Ordered more than once" />
+        <KpiCard label="Top spender" value={list[0] ? money(list[0].spent, list[0].currency) : "—"} icon={Crown} sub={list[0]?.name ?? "No orders yet"} />
+        <KpiCard label="Avg. lifetime value" value={map.size ? money([...map.values()].reduce((n, c) => n + c.spent, 0) / map.size, orders[0]?.currency ?? "USD") : "—"} icon={Wallet} sub="Per customer" />
+      </KpiGrid>
       <Card className="p-4">
         <div className="relative mb-4">
           <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
