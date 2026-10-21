@@ -382,13 +382,13 @@ function ThemePreview({ s }: { s: { primary_color: string | null; accent_color: 
     <div className="mt-5 overflow-hidden rounded border" aria-label="Live theme preview">
       <p className="border-b bg-muted px-3 py-1.5 text-xs text-muted-foreground">Live preview</p>
       <div style={{ background: bg, color: fg, fontFamily: `"${s.font_body}", sans-serif` }} className="grid gap-6 p-6 sm:grid-cols-[1.4fr_1fr]">
-        <div style={{ background: fg, color: bg }} className="rounded p-6">
+        <div style={{ background: fg, color: bg }} className="self-start rounded p-6">
           <p style={{ color: gold, letterSpacing: ".25em" }} className="text-[10px] font-semibold uppercase">New collection</p>
           <p style={{ fontFamily: `"${s.font_display}", serif` }} className="mt-2 text-3xl leading-tight">{s.store_name}</p>
           <span style={{ background: gold, color: fg, borderRadius: r }} className="mt-4 inline-block px-4 py-2 text-xs font-medium">Shop now</span>
         </div>
         <div>
-          <div style={{ background: card, ...cardCss }} className="aspect-[4/5] rounded" />
+          <div style={{ background: card, ...cardCss }} className="aspect-[4/5] max-h-56 w-full rounded" />
           <p style={{ fontFamily: `"${s.font_display}", serif` }} className="mt-2 text-lg">Product name</p>
           <p className="text-xs">$1,250.00</p>
         </div>
