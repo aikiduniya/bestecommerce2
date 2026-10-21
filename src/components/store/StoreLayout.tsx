@@ -104,6 +104,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             )}
           </nav>
           <div className="ml-auto flex items-center gap-4 md:ml-0">
+            {currencyPicker}
             <form onSubmit={search} className="relative hidden lg:block">
               <Search className="absolute left-2.5 top-2 size-4 text-muted-foreground" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-8 w-44 rounded-full border bg-card pl-8 pr-3 text-sm outline-none focus:border-gold" />
@@ -118,6 +119,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
         </div>
         {open && (
           <div className="space-y-3 border-t px-4 py-4 md:hidden">
+            {currencyPicker}
             <form onSubmit={search}><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="h-10 w-full rounded border bg-card px-3 text-sm" /></form>
             {headerItems.length > 0 ? (
               headerItems.map((item, i) => (
