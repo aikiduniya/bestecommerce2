@@ -33,6 +33,15 @@ function SettingsPage() {
   if (!s) return null;
 
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => setS({ ...s, [k]: v });
+  const updateCurrency = (i: number, c: DisplayCurrency | null) => {
+    const list = extraCurrencies(s.currencies).concat(Array.isArray(s.currencies) ? [] : []);
+    const raw = (Array.isArray(s.currencies) ? (s.currencies as DisplayCurrency[]) : []).slice();
+    if (i === -1 && c) raw.push(c);
+    else if (c) raw[i] = c;
+    else raw.splice(i, 1);
+    void list;
+    set("currencies", raw as never);
+  };
 
   async function save() {
     if (!s) return;
