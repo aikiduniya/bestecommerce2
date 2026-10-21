@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { money } from "@/lib/store";
 import { isValidLang } from "@/lib/i18n";
 import { StoreLayout } from "@/components/store/StoreLayout";
+import { ReturnRequestForm } from "@/components/store/ReturnRequestForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,7 @@ type GuestOrder = {
   status: string;
   payment_status: string;
   fulfillment_status: string;
-  items: { name: string; qty: number; price: number; options?: Record<string, string> }[];
+  items: { product_id?: string; variant_id?: string | null; name: string; qty: number; price: number; options?: Record<string, string> }[];
   subtotal: number;
   shipping_total: number;
   tax_total: number;
@@ -129,6 +130,9 @@ function TrackOrder() {
               {Number(order.payment_fee) > 0 && <div className="flex justify-between"><span>Cash on Delivery fee</span><span>{money(order.payment_fee, order.currency)}</span></div>}
               <div className="flex justify-between pt-2 font-display text-2xl"><span>Total</span><span>{money(order.total, order.currency)}</span></div>
             </div>
+            {order.status === "delivered" && (
+              <ReturnRequestForm orderNumber={order.order_number} email={email} items={order.items} />
+            )}
           </div>
         )}
       </div>
