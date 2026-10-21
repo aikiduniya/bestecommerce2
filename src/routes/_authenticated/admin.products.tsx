@@ -67,7 +67,7 @@ function ProductsPage() {
     const cost = p ? (await supabase.from("product_costs").select("cost_price").eq("product_id", p.id).maybeSingle()).data?.cost_price ?? null : null;
     setForm(
       p
-        ? { ...p, cost_price: cost, ...(duplicate ? { id: undefined, name: `${p.name} (copy)`, slug: "", sku: null, status: "draft" } : {}), tagsText: p.tags.join(", ") }
+        ? { ...p, cost_price: cost, ...(duplicate ? { id: undefined, name: `${p.name} (copy)`, slug: "", sku: null, status: "draft" } : {}), tagsText: p.tags.join(", "), sale_price: p.sale_price?.toString() ?? "", sale_starts_at: toLocalInput(p.sale_starts_at), sale_ends_at: toLocalInput(p.sale_ends_at) }
         : { status: "draft", price: 0, stock: 0, low_stock_threshold: 5, is_featured: false, images: [], tagsText: "" },
     );
   }
