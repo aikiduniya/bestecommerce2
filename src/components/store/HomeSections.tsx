@@ -56,8 +56,8 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
       case "hero":
         return (
           <section className="bg-hero relative overflow-hidden text-primary-foreground">
-            {(c.image_url || s?.hero_image_url) && <img src={c.image_url || s?.hero_image_url} alt="" className="absolute inset-0 size-full object-cover opacity-45" />}
-            <div className="relative mx-auto max-w-7xl px-6 py-28 md:py-44">
+            {(c.image_url || s?.hero_image_url) && <img src={c.image_url || s?.hero_image_url} alt={(c.image_alt as string | undefined) || s?.hero_image_alt || ""} className="hero-img absolute inset-0 size-full object-cover" />}
+            <div className="hero-pad relative mx-auto max-w-7xl px-6">
               {(c.eyebrow || s?.hero_eyebrow) && <p className="eyebrow text-gold">{c.eyebrow || s?.hero_eyebrow}</p>}
               <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{sec.title || s?.tagline || " "}</h1>
               {sec.subtitle && <p className="mt-4 max-w-xl text-lg opacity-80">{sec.subtitle}</p>}
@@ -97,7 +97,7 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               {list.map((x) => (
                 <Link key={x.id} to="/{-$lang}/shop" params={lp} search={{ category: x.slug }} className="group relative flex aspect-square items-end overflow-hidden rounded bg-secondary p-5">
-                  {x.image_url && <img src={x.image_url} alt="" className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105" />}
+                  {x.image_url && <img src={x.image_url} alt={("image_alt" in x && (x as { image_alt?: string | null }).image_alt) || x.name} className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105" />}
                   <span className="relative font-display text-2xl">{x.name}</span>
                 </Link>
               ))}

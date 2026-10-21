@@ -175,10 +175,10 @@ function ReportsPage() {
       {tab === "Sales" && (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Revenue</p><p className="mt-2 font-display text-4xl">{money(revenue, cur)}</p><p className="mt-1 text-xs text-muted-foreground">{delta === null ? "No prior period to compare" : `${delta >= 0 ? "+" : ""}${delta}% vs previous ${days} days`}</p></Card>
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Orders</p><p className="mt-2 font-display text-4xl">{period.length}</p><p className="mt-1 text-xs text-muted-foreground">{orders.filter((o) => o.status === "cancelled" && inRange(o, days)).length} cancelled in range</p></Card>
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Avg. order value</p><p className="mt-2 font-display text-4xl">{money(aov, cur)}</p></Card>
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Items sold</p><p className="mt-2 font-display text-4xl">{itemsSold}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Revenue</p><p className="mt-2 font-display text-4xl">{money(revenue, cur)}</p><p className="mt-1 text-xs text-muted-foreground">{delta === null ? "No prior period to compare" : `${delta >= 0 ? "+" : ""}${delta}% vs previous ${days} days`}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Orders</p><p className="mt-2 font-display text-4xl">{period.length}</p><p className="mt-1 text-xs text-muted-foreground">{orders.filter((o) => o.status === "cancelled" && inRange(o, days)).length} cancelled in range</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Avg. order value</p><p className="mt-2 font-display text-4xl">{money(aov, cur)}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Items sold</p><p className="mt-2 font-display text-4xl">{itemsSold}</p></Card>
           </div>
           <Card className="mt-6 p-6">
             <p className="eyebrow text-muted-foreground">Revenue per day</p>
@@ -276,9 +276,9 @@ function ReportsPage() {
       {tab === "Profitability" && (
         <>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Revenue</p><p className="mt-2 font-display text-4xl">{money(revenue, cur)}</p></Card>
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Cost of goods</p><p className="mt-2 font-display text-4xl">{money(totalCost, cur)}</p></Card>
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Gross profit</p><p className="mt-2 font-display text-4xl">{money(totalProfit, cur)}</p><p className="mt-1 text-xs text-muted-foreground">{revenue > 0 ? `${Math.round((totalProfit / revenue) * 100)}% margin` : "—"}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Revenue</p><p className="mt-2 font-display text-4xl">{money(revenue, cur)}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Cost of goods</p><p className="mt-2 font-display text-4xl">{money(totalCost, cur)}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Gross profit</p><p className="mt-2 font-display text-4xl">{money(totalProfit, cur)}</p><p className="mt-1 text-xs text-muted-foreground">{revenue > 0 ? `${Math.round((totalProfit / revenue) * 100)}% margin` : "—"}</p></Card>
           </div>
           <Card className="mt-6 p-4">
             <p className="eyebrow mb-2 px-2 pt-2 text-muted-foreground">Profit per product · last {days} days</p>
@@ -306,9 +306,9 @@ function ReportsPage() {
       {tab === "Inventory" && (
         <>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Stock value at retail</p><p className="mt-2 font-display text-4xl">{money(stockValue, cur)}</p></Card>
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Out of stock</p><p className="mt-2 font-display text-4xl">{outOfStock.length}</p></Card>
-            <Card className="p-6"><p className="eyebrow text-muted-foreground">Low stock</p><p className="mt-2 font-display text-4xl">{lowStock.length}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Stock value at retail</p><p className="mt-2 font-display text-4xl">{money(stockValue, cur)}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Out of stock</p><p className="mt-2 font-display text-4xl">{outOfStock.length}</p></Card>
+            <Card className="kpi-card p-6"><p className="eyebrow text-muted-foreground">Low stock</p><p className="mt-2 font-display text-4xl">{lowStock.length}</p></Card>
           </div>
           <Card className="mt-6 p-4">
             <Table>

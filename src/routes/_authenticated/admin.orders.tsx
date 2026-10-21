@@ -6,9 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { ordersQuery, orderEventsQuery, orderNotesQuery, money, optionLabel, type Order } from "@/lib/store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Eye, Printer, Search, Trash2 } from "lucide-react";
+import { Eye, Printer, Search, Trash2, ShoppingBag, Clock, Truck, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PageHeader, StatusPill } from "@/components/admin/PageHeader";
+import { KpiCard, KpiGrid, PageHeader, StatusPill } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -51,6 +51,12 @@ function OrdersPage() {
           <option value="all">All payments</option><option value="cod">Cash on Delivery</option><option value="cod-pending">COD awaiting collection</option><option value="card">Card</option>
         </select>
       </PageHeader>
+      <KpiGrid>
+        <KpiCard label="Total orders" value={orders.length} icon={ShoppingBag} sub={`${orders.filter((o) => o.status === "cancelled").length} cancelled`} />
+        <KpiCard label="Awaiting action" value={orders.filter((o) => o.status === "pending").length} icon={Clock} tone={orders.some((o) => o.status === "pending") ? "warn" : "good"} sub="Pending orders" />
+        <KpiCard label="In transit" value={orders.filter((o) => o.status === "shipped").length} icon={Truck} sub="Shipped, not delivered" />
+        <KpiCard label="COD to collect" value={orders.filter((o) => o.payment_method === "cod" && !o.cod_collected_at && o.status !== "cancelled").length} icon={Wallet} sub="Cash orders not yet collected" />
+      </KpiGrid>
       <Card className="p-4">
         <div className="relative mb-4">
           <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />

@@ -131,14 +131,24 @@ function SettingsPage() {
     </label>
   );
 
+  const pick = (k: string, label: string, opts: [string, string][]) => (
+    <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">{label}</Label>
+      <select aria-label={label} className="h-9 w-full rounded-md border bg-background px-3 text-sm" value={String((s as Record<string, unknown>)[k] ?? opts[0]?.[0] ?? "")} onChange={(e) => setS({ ...s, [k]: /^\d+$/.test(e.target.value) ? Number(e.target.value) : e.target.value } as never)}>
+        {opts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+      </select></div>
+  );
+  const pageSeo = (s.page_seo && typeof s.page_seo === "object" ? s.page_seo : {}) as Record<string, { title?: string; keywords?: string; description?: string; og_image?: string; noindex?: boolean }>;
+  const setPageSeo = (page: string, k: string, v: string | boolean) => setS({ ...s, page_seo: { ...pageSeo, [page]: { ...(pageSeo[page] ?? {}), [k]: v } } } as never);
+
   return (
     <>
       <PageHeader title="Store Settings" subtitle={isAdmin ? "Everything here updates your live store." : "Only the Super Admin can save changes."}>
         <Button variant="gold" onClick={save} disabled={saving || !isAdmin}>{saving ? "Saving…" : "Save changes"}</Button>
       </PageHeader>
       <Tabs defaultValue="brand">
-        <TabsList>
+        <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="brand">Branding</TabsTrigger>
+          <TabsTrigger value="layout">Layout</TabsTrigger>
           <TabsTrigger value="home">Homepage</TabsTrigger>
           <TabsTrigger value="store">Store</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
@@ -197,6 +207,27 @@ function SettingsPage() {
             <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Product card style</Label>
               <select className="h-9 w-full rounded-md border bg-background px-3 text-sm" value={(s as { card_style?: string }).card_style ?? "minimal"} onChange={(e) => setS({ ...s, card_style: e.target.value } as never)}>
                 <option value="minimal">Minimal</option><option value="framed">Gold frame</option><option value="elevated">Elevated shadow</option></select></div>
+          </Card>
+        </TabsContent>
+        <TabsContent value="layout">
+          <Card className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3">
+            <p className="text-sm font-medium sm:col-span-2 lg:col-span-3">Header & navigation</p>
+            {pick("header_style", "Header layout", [["classic", "Classic — logo left, menu centre"], ["centered", "Centred — logo on top, menu below"], ["minimal", "Minimal — compact, menu left"]])}
+            {pick("header_tone", "Header colour", [["light", "Light"], ["dark", "Dark (brand colour)"]])}
+            {pick("nav_style", "Menu text style", [["plain", "Plain"], ["uppercase", "Uppercase, spaced"], ["underline", "Gold underline on hover"]])}
+            {toggle("header_sticky" as never, "Sticky header", "Header stays visible while scrolling")}
+            {pick("announcement_style", "Announcement bar", [["solid", "Solid brand colour"], ["gold", "Gold"], ["outline", "Light with gold line"]])}
+            <p className="mt-2 text-sm font-medium sm:col-span-2 lg:col-span-3">Banners & page layout</p>
+            {pick("hero_height", "Banner height", [["compact", "Compact"], ["medium", "Medium"], ["tall", "Tall"], ["full", "Full screen"]])}
+            <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Banner photo strength ({s.hero_overlay}%)</Label>
+              <input aria-label="Banner photo strength" type="range" min={0} max={90} step={5} value={s.hero_overlay} onChange={(e) => setS({ ...s, hero_overlay: Number(e.target.value) })} className="w-full accent-[var(--gold)]" /></div>
+            {pick("container_width", "Page width", [["narrow", "Narrow"], ["standard", "Standard"], ["wide", "Wide"], ["full", "Full width"]])}
+            {pick("section_spacing", "Space between sections", [["compact", "Compact"], ["comfortable", "Comfortable"], ["spacious", "Spacious"]])}
+            {pick("product_grid_cols", "Products per row (shop, desktop)", [["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"]])}
+            <p className="mt-2 text-sm font-medium sm:col-span-2 lg:col-span-3">Footer</p>
+            {pick("footer_style", "Footer layout", [["columns", "Columns (light)"], ["dark", "Columns (dark)"], ["minimal", "Single line"]])}
+            <div className="sm:col-span-2">{text("footer_text" as never, "Copyright line (leave empty for © year + store name)")}</div>
+            <p className="text-xs text-muted-foreground sm:col-span-2 lg:col-span-3">Colours, fonts, buttons and product cards are on the Branding tab. Menu links are edited in Navigation, homepage sections in the Homepage builder.</p>
           </Card>
         </TabsContent>
         <TabsContent value="home">
@@ -298,6 +329,20 @@ function SettingsPage() {
             {text("google_site_verification", "Google Search Console verification code")}
             <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Default social share image</Label><ImagePicker multiple={false} value={s.og_image_url ? [s.og_image_url] : []} onChange={(v) => set("og_image_url", v[0] ?? null)} /></div>
             <p className="text-xs text-muted-foreground">Product, page and blog SEO titles/descriptions are edited on each item. A sitemap is published at /sitemap.xml and the Google product feed at /api/public/merchant-feed.</p>
+          </Card>
+          <Card className="mt-6 grid gap-4 p-6">
+            <p className="text-sm font-medium">Other public pages</p>
+            <p className="text-xs text-muted-foreground">Categories, brands and collections have their own SEO button on their admin pages.</p>
+            {([["shop", "Shop (all products)"], ["blog", "Journal / blog list"]] as const).map(([key, label]) => (
+              <div key={key} className="grid gap-3 rounded-md border p-4 sm:grid-cols-2">
+                <p className="eyebrow text-gold sm:col-span-2">{label}</p>
+                <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">SEO title</Label><Input aria-label={`${key} SEO title`} value={String(pageSeo[key]?.title ?? "")} onChange={(e) => setPageSeo(key, "title", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Keywords</Label><Input aria-label={`${key} keywords`} value={String(pageSeo[key]?.keywords ?? "")} onChange={(e) => setPageSeo(key, "keywords", e.target.value)} /></div>
+                <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Meta description</Label><Input aria-label={`${key} description`} value={String(pageSeo[key]?.description ?? "")} onChange={(e) => setPageSeo(key, "description", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Sharing image (https link)</Label><Input aria-label={`${key} sharing image`} value={String(pageSeo[key]?.og_image ?? "")} onChange={(e) => setPageSeo(key, "og_image", e.target.value)} /></div>
+                <label className="flex items-center gap-2 self-end text-sm"><Switch checked={!!pageSeo[key]?.noindex} onCheckedChange={(v) => setPageSeo(key, "noindex", v)} /> Hide from search engines</label>
+              </div>
+            ))}
           </Card>
         </TabsContent>
         <TabsContent value="marketing">

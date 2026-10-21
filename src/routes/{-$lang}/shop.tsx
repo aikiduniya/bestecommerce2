@@ -6,6 +6,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { brandsQuery, categoriesQuery, collectionsQuery, contentTranslationsQuery, productCollectionsQuery, productsQuery, settingsQuery } from "@/lib/store";
 import { useFromPrice } from "@/lib/useFromPrice";
 import { applyTranslation, hreflangLinks, indexTranslations, isValidLang, useLang } from "@/lib/i18n";
+import { SITE, breadcrumb, buildHead, jsonLd, pageSeoOf, taxoHead } from "@/lib/seo-head";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,15 +25,32 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/{-$lang}/shop")({
   validateSearch: searchSchema,
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
-  loader: ({ context }) => context.queryClient.ensureQueryData(settingsQuery).catch(() => null),
+  loaderDeps: ({ search }) => ({ category: search.category, brand: search.brand, collection: search.collection }),
+  loader: async ({ context, deps }) => {
+    const qc = context.queryClient;
+    const [st, cats, brands, cols] = await Promise.all([
+      qc.ensureQueryData(settingsQuery).catch(() => null),
+      deps.category ? qc.ensureQueryData(categoriesQuery).catch(() => []) : [],
+      deps.brand ? qc.ensureQueryData(brandsQuery).catch(() => []) : [],
+      deps.collection ? qc.ensureQueryData(collectionsQuery).catch(() => []) : [],
+    ]);
+    const col = cols.find((c) => c.slug === deps.collection);
+    const cat = cats.find((c) => c.slug === deps.category);
+    const brand = brands.find((b) => b.slug === deps.brand);
+    const h = col ? taxoHead(col, "collection", col.slug) : cat ? taxoHead(cat, "category", cat.slug) : brand ? taxoHead(brand, "brand", brand.slug) : null;
+    const ps = pageSeoOf(st, "shop");
+    const head = h ?? buildHead({
+      title: ps.title || "Shop all products",
+      description: ps.description || "Browse the full catalog — filter by category, brand, price and availability.",
+      path: "/shop", keywords: ps.keywords, image: ps.og_image, noindex: ps.noindex,
+    });
+    const crumbs = col ?? cat ?? brand;
+    return { st, head, crumb: crumbs ? { name: crumbs.name, url: head.canonical } : null };
+  },
   head: ({ loaderData }) => ({
-    meta: [
-      { title: "Shop all products" },
-      { name: "description", content: "Browse the full catalog — filter by category, brand, price and availability." },
-      { property: "og:title", content: "Shop all products" },
-      { property: "og:description", content: "Browse the full catalog — filter by category, brand, price and availability." },
-    ],
-    links: hreflangLinks(loaderData, "/shop"),
+    meta: loaderData?.head.meta ?? [{ title: "Shop all products" }],
+    links: [...hreflangLinks(loaderData?.st ?? null, "/shop"), ...(loaderData ? [{ rel: "canonical", href: loaderData.head.canonical }] : [])],
+    scripts: loaderData ? [jsonLd(breadcrumb([{ name: "Home", url: SITE }, { name: "Shop", url: `${SITE}/shop` }, ...(loaderData.crumb ? [loaderData.crumb] : [])]))] : [],
   }),
   component: Shop,
 });
@@ -89,7 +107,8 @@ function Shop() {
     <StoreLayout>
       <div className="mx-auto max-w-7xl px-6 py-14">
         <p className="eyebrow text-gold">Catalog</p>
-        <h1 className="mt-2 text-6xl">{title}</h1>
+        <h1 className="mt-2 text-5xl md:text-6xl">{title}</h1>
+        {(() => { const t = col ?? cat ?? brand; const img = t && ("image_url" in t ? t.image_url : t.logo_url); return t && img ? <img src={img} alt={t.image_alt || t.name} className="mt-6 h-40 w-full rounded object-cover md:h-56" loading="lazy" /> : null; })()}
         <div className="mt-10 grid gap-10 lg:grid-cols-[240px_1fr]">
           <aside className="space-y-6 text-sm">
             <p className="flex items-center gap-2 font-medium"><SlidersHorizontal className="size-4" /> Filters</p>
@@ -147,7 +166,7 @@ function Shop() {
             ) : list.length === 0 ? (
               <div className="rounded border border-dashed py-24 text-center text-muted-foreground">No products match these filters.</div>
             ) : (
-              <div className="grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3">
+              <div className={`grid grid-cols-2 gap-x-5 gap-y-10 ${({ 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-3 xl:grid-cols-4", 5: "md:grid-cols-4 xl:grid-cols-5" } as Record<number, string>)[s?.product_grid_cols ?? 3] ?? "md:grid-cols-3"}`}>
                 {list.map((p) => <ProductCard key={p.id} p={p} currency={s?.currency} fromPrice={fromPrice(p.id)} />)}
               </div>
             )}

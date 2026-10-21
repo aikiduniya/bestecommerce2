@@ -146,3 +146,43 @@ html[data-card="elevated"] .product-card-media {
   text-transform: uppercase;
   font-weight: 600;
 }
+
+/* ---- Storefront layout controls (driven by StoreTheme data attributes) ---- */
+:root { --hero-overlay: 0.45; --store-max: 80rem; --section-gap: 5rem; }
+html[data-width="narrow"] { --store-max: 68rem; }
+html[data-width="wide"] { --store-max: 92rem; }
+html[data-width="full"] { --store-max: 100%; }
+.store-root .max-w-7xl { max-width: var(--store-max); }
+html[data-spacing="compact"] { --section-gap: 3rem; }
+html[data-spacing="spacious"] { --section-gap: 7.5rem; }
+.store-root main .mt-20 { margin-top: var(--section-gap); }
+.store-root .hero-img { opacity: var(--hero-overlay); }
+.store-root .hero-pad { padding-block: 7rem; }
+@media (min-width: 768px) { .store-root .hero-pad { padding-block: 11rem; } }
+html[data-hero="medium"] .store-root .hero-pad { padding-block: 5rem; }
+html[data-hero="compact"] .store-root .hero-pad { padding-block: 3.5rem; }
+html[data-hero="full"] .store-root .hero-pad { min-height: calc(100svh - 4.5rem); display: flex; flex-direction: column; justify-content: center; padding-block: 4rem; }
+html[data-nav="uppercase"] .store-nav { text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.72rem; }
+html[data-nav="underline"] .store-nav a:hover { text-decoration: underline; text-underline-offset: 6px; text-decoration-color: var(--gold); }
+.store-header[data-tone="dark"] { background-color: var(--primary); color: var(--primary-foreground); border-color: color-mix(in oklab, var(--primary-foreground) 15%, transparent); }
+.store-header[data-tone="dark"] input, .store-header[data-tone="dark"] select { background-color: color-mix(in oklab, var(--primary-foreground) 10%, transparent); color: inherit; }
+.store-footer[data-style="dark"] { background-color: var(--primary); color: var(--primary-foreground); }
+.store-footer[data-style="dark"] .text-muted-foreground { color: color-mix(in oklab, var(--primary-foreground) 65%, transparent); }
+
+/* ---- Admin: luxury enterprise surface ---- */
+.admin-shell { background-image: radial-gradient(1200px 400px at 100% -10%, color-mix(in oklab, var(--gold) 10%, transparent), transparent 60%); }
+.admin-shell [data-slot="card"], .admin-shell .rounded-lg.border.bg-card {
+  border-color: color-mix(in oklab, var(--gold) 18%, var(--border));
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--card-foreground) 4%, transparent), 0 12px 32px -24px color-mix(in oklab, var(--card-foreground) 35%, transparent);
+}
+.admin-shell table thead th { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-foreground); font-weight: 600; }
+.admin-shell table tbody tr { transition: background-color .15s; }
+.admin-shell table tbody tr:hover { background-color: color-mix(in oklab, var(--gold) 6%, transparent); }
+@utility kpi-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid color-mix(in oklab, var(--gold) 22%, var(--border));
+  background-image: linear-gradient(160deg, var(--card), color-mix(in oklab, var(--card) 88%, var(--gold)));
+  &::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, var(--gold), transparent); }
+}

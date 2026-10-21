@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Copy, Package, Download, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Copy, Package, Download, Upload, Boxes, Warehouse, AlertTriangle, PackageX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   brandsQuery, categoriesQuery, collectionsQuery, productCollectionsQuery, productsQuery, settingsQuery,
   money, optionsOf, slugify, downloadCsv, parseCsv, type Product, type ProductOption,
 } from "@/lib/store";
-import { PageHeader, StatusPill } from "@/components/admin/PageHeader";
+import { KpiCard, KpiGrid, PageHeader, StatusPill } from "@/components/admin/PageHeader";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 import { VariantsEditor, type VariantDraft } from "@/components/admin/VariantsEditor";
 import { Button } from "@/components/ui/button";
@@ -259,6 +259,12 @@ function ProductsPage() {
         <input id="products-csv-input" type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void importCsv(f); e.target.value = ""; }} />
         <Button variant="gold" onClick={() => open()}><Plus /> Add product</Button>
       </PageHeader>
+      <KpiGrid>
+        <KpiCard label="Products" value={products.length} icon={Boxes} sub={`${products.filter((p) => p.status === "active").length} live · ${products.filter((p) => p.status === "draft").length} draft`} />
+        <KpiCard label="Units in stock" value={products.reduce((n, p) => n + Math.max(0, p.stock), 0)} icon={Warehouse} sub="Across all products" />
+        <KpiCard label="Low stock" value={products.filter((p) => p.stock > 0 && p.stock <= p.low_stock_threshold).length} icon={AlertTriangle} tone={products.some((p) => p.stock > 0 && p.stock <= p.low_stock_threshold) ? "warn" : "good"} sub="At or below threshold" />
+        <KpiCard label="Out of stock" value={products.filter((p) => p.stock <= 0).length} icon={PackageX} tone={products.some((p) => p.stock <= 0) ? "warn" : "good"} sub="Need restocking" />
+      </KpiGrid>
 
       <Card className="p-4">
         <div className="mb-4 flex flex-wrap gap-3">

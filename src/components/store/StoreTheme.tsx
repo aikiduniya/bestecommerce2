@@ -51,7 +51,13 @@ export function StoreTheme() {
       root.setProperty("--popover", x.surface_color);
     }
     root.setProperty("--btn-radius", BUTTON_RADIUS[x.button_style ?? ""] ?? "calc(var(--radius) - 2px)");
-    document.documentElement.dataset["card"] = x.card_style ?? "minimal";
+    const ds = document.documentElement.dataset;
+    ds["card"] = x.card_style ?? "minimal";
+    ds["width"] = s.container_width ?? "standard";
+    ds["spacing"] = s.section_spacing ?? "comfortable";
+    ds["hero"] = s.hero_height ?? "tall";
+    ds["nav"] = s.nav_style ?? "plain";
+    root.setProperty("--hero-overlay", String(Math.min(90, Math.max(0, s.hero_overlay ?? 40)) / 100));
     if (s.favicon_url) {
       let icon = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
       if (icon) icon.href = s.favicon_url;

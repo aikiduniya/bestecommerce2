@@ -166,13 +166,16 @@ function AdminLayout() {
   const allowed = !current || can(current.perm);
 
   return (
-    <div className="flex min-h-screen bg-muted">
+    <div className="admin-shell flex min-h-screen bg-muted">
       <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col bg-sidebar text-sidebar-foreground transition-[width] md:flex ${collapsed ? "w-16" : "w-64"}`}>
         <div className={`flex items-center border-b border-sidebar-border py-6 ${collapsed ? "justify-center px-2" : "justify-between px-6"}`}>
           {!collapsed && (
             <div className="min-w-0">
               <p className="eyebrow text-sidebar-primary">{isAdmin ? "Super Admin" : "Staff"}</p>
-              <p className="mt-1 truncate font-display text-2xl text-sidebar-accent-foreground">{settings?.store_name ?? "Store"}</p>
+              <div className="mt-2 flex items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-sidebar-primary/50 font-display text-lg text-sidebar-primary">{(settings?.store_name ?? "S").charAt(0)}</span>
+                <p className="truncate font-display text-2xl text-sidebar-accent-foreground">{settings?.store_name ?? "Store"}</p>
+              </div>
             </div>
           )}
           <button onClick={toggleCollapsed} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className="rounded-md p-1.5 hover:bg-sidebar-accent">
@@ -189,8 +192,8 @@ function AdminLayout() {
                   to={n.to}
                   title={n.label}
                   activeOptions={{ exact: "exact" in n }}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent ${collapsed ? "justify-center px-0" : ""}`}
-                  activeProps={{ className: "bg-sidebar-accent text-sidebar-primary" }}
+                  className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${collapsed ? "justify-center px-0" : ""}`}
+                  activeProps={{ className: "bg-sidebar-accent text-sidebar-primary shadow-[inset_2px_0_0_var(--sidebar-primary)]" }}
                 >
                   <n.icon className="size-4 shrink-0" />
                   {!collapsed && n.label}

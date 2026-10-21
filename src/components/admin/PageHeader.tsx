@@ -1,15 +1,38 @@
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 export function PageHeader({ title, subtitle, children }: { title: string; subtitle?: string; children?: ReactNode }) {
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 className="text-4xl">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-gold/20 pb-6">
+      <div className="min-w-0">
+        <p className="eyebrow text-gold">Super Admin</p>
+        <h1 className="mt-1 text-4xl md:text-5xl">{title}</h1>
+        {subtitle && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{subtitle}</p>}
       </div>
-      {children}
+      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </div>
   );
+}
+
+/** Premium KPI tile used across admin pages. */
+export function KpiCard({ label, value, sub, icon: Icon, tone = "default" }: { label: string; value: ReactNode; sub?: ReactNode; icon?: ComponentType<{ className?: string }>; tone?: "default" | "warn" | "good" }) {
+  return (
+    <div className="kpi-card p-5">
+      <div className="flex items-start justify-between gap-3">
+        <p className="eyebrow text-muted-foreground">{label}</p>
+        {Icon && (
+          <span className={`flex size-8 items-center justify-center rounded-full ${tone === "warn" ? "bg-destructive/10 text-destructive" : tone === "good" ? "bg-success/10 text-success" : "bg-gold-soft text-gold"}`}>
+            <Icon className="size-4" />
+          </span>
+        )}
+      </div>
+      <p className="mt-3 font-display text-3xl md:text-4xl">{value}</p>
+      {sub && <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+export function KpiGrid({ children }: { children: ReactNode }) {
+  return <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{children}</div>;
 }
 
 export function StatusPill({ value }: { value: string }) {
