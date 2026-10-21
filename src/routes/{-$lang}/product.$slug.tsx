@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Heart, Minus, Plus, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { brandsQuery, categoriesQuery, money, optionsOf, productsQuery, settingsQuery, variantsQuery } from "@/lib/store";
+import { brandsQuery, categoriesQuery, contentTranslationsQuery, money, optionsOf, productsQuery, settingsQuery, variantsQuery } from "@/lib/store";
+import { applyTranslation, hreflangLinks, indexTranslations, isValidLang, useLang } from "@/lib/i18n";
 import { pushRecentlyViewed, useCart } from "@/lib/cart";
 import { effectivePrice, regularPrice, saleActive } from "@/lib/sale";
 import { trackAddToCart, trackViewItem } from "@/lib/analytics";
@@ -16,12 +17,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getProductSeo } from "@/lib/seo.functions";
 import { ReviewsQA } from "@/components/store/ReviewsQA";
 
-export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }) => getProductSeo({ data: params.slug }).catch(() => null),
+export const Route = createFileRoute("/{-$lang}/product/$slug")({
+  beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
+  loader: async ({ params, context }) => ({
+    seo: await getProductSeo({ data: params.slug }).catch(() => null),
+    st: await context.queryClient.ensureQueryData(settingsQuery).catch(() => null),
+  }),
   head: ({ loaderData, params }) => {
-    const title = loaderData?.title ?? "Product details";
-    const description = loaderData?.description ?? "Product details, options, pricing and availability.";
-    const url = `https://bestecommerce2.lovable.app/product/${params.slug}`;
+    const title = loaderData?.seo?.title ?? "Product details";
+    const description = loaderData?.seo?.description ?? "Product details, options, pricing and availability.";
+    const url = `https://bestecommerce2.lovable.app${params.lang ? `/${params.lang}` : ""}/product/${params.slug}`;
     return {
       meta: [
         { title },
@@ -31,11 +36,11 @@ export const Route = createFileRoute("/product/$slug")({
         { property: "og:type", content: "product" },
         { property: "og:url", content: url },
         { name: "twitter:card", content: "summary_large_image" },
-        ...(loaderData?.image
-          ? [{ property: "og:image", content: loaderData.image }, { name: "twitter:image", content: loaderData.image }]
+        ...(loaderData?.seo?.image
+          ? [{ property: "og:image", content: loaderData.seo.image }, { name: "twitter:image", content: loaderData.seo.image }]
           : []),
       ],
-      links: [{ rel: "canonical", href: url }],
+      links: [{ rel: "canonical", href: url }, ...hreflangLinks(loaderData?.st, `/product/${params.slug}`)],
     };
   },
   component: ProductPage,
@@ -43,11 +48,17 @@ export const Route = createFileRoute("/product/$slug")({
 
 function ProductPage() {
   const { slug } = Route.useParams();
+  const lang = useLang();
+  const lp = { lang: lang ?? undefined };
   const { data: products = [], isLoading } = useQuery(productsQuery);
   const { data: s } = useQuery(settingsQuery);
   const { data: cats = [] } = useQuery(categoriesQuery);
   const { data: brands = [] } = useQuery(brandsQuery);
-  const p = products.find((x) => x.slug === slug && x.status === "active");
+  const { data: trs = [] } = useQuery(contentTranslationsQuery);
+  const tIndex = useMemo(() => indexTranslations(trs), [trs]);
+  // Match the base slug or the translated slug for the active language.
+  const baseP = products.find((x) => x.status === "active" && (x.slug === slug || tIndex["product"]?.[x.id]?.[lang ?? ""]?.["slug"] === slug));
+  const p = baseP ? applyTranslation(tIndex, "product", baseP, lang) : undefined;
   const { data: variants = [] } = useQuery({ ...variantsQuery(p?.id ?? ""), enabled: !!p });
   const { user } = useSessionUser();
   const qc = useQueryClient();
@@ -85,7 +96,7 @@ function ProductPage() {
       <StoreLayout>
         <div className="py-32 text-center">
           <h1 className="text-5xl">Product not found</h1>
-          <Link to="/shop" className="mt-6 inline-block text-gold">Back to shop</Link>
+          <Link to="/{-$lang}/shop" params={lp} className="mt-6 inline-block text-gold">Back to shop</Link>
         </div>
       </StoreLayout>
     );
@@ -114,7 +125,7 @@ function ProductPage() {
       image: images[0] ?? null, options: (variant?.options as Record<string, string>) ?? undefined,
     });
     trackAddToCart({ id: p.id, name: p.name, price, qty, variant: variant ? Object.values(variant.options as Record<string, string>).join(" / ") : undefined }, s?.currency);
-    toast.success("Added to cart", { action: { label: "View cart", onClick: () => (window.location.href = "/cart") } });
+    toast.success("Added to cart", { action: { label: "View cart", onClick: () => (window.location.href = lang ? `/${lang}/cart` : "/cart") } });
   }
 
   async function toggleWish() {
@@ -130,9 +141,9 @@ function ProductPage() {
     <StoreLayout>
       <div className="mx-auto max-w-7xl px-6 py-10">
         <nav className="mb-8 text-xs text-muted-foreground">
-          <Link to="/shop" className="hover:text-foreground">Shop</Link>
+          <Link to="/{-$lang}/shop" params={lp} className="hover:text-foreground">Shop</Link>
           {cats.find((c) => c.id === p.category_id) && (
-            <> / <Link to="/shop" search={{ category: cats.find((c) => c.id === p.category_id)!.slug }} className="hover:text-foreground">{cats.find((c) => c.id === p.category_id)!.name}</Link></>
+            <> / <Link to="/{-$lang}/shop" params={lp} search={{ category: cats.find((c) => c.id === p.category_id)!.slug }} className="hover:text-foreground">{applyTranslation(tIndex, "category", cats.find((c) => c.id === p.category_id)!, lang).name}</Link></>
           )}
         </nav>
         <div className="grid gap-12 md:grid-cols-2">
@@ -151,7 +162,7 @@ function ProductPage() {
             )}
           </div>
           <div>
-            {brands.find((b) => b.id === p.brand_id) && <p className="eyebrow text-gold">{brands.find((b) => b.id === p.brand_id)!.name}</p>}
+            {brands.find((b) => b.id === p.brand_id) && <p className="eyebrow text-gold">{applyTranslation(tIndex, "brand", brands.find((b) => b.id === p.brand_id)!, lang).name}</p>}
             <h1 className="mt-2 text-5xl leading-tight">{p.name}</h1>
             <p className="mt-4 text-2xl">
               {money(price, s?.currency)}

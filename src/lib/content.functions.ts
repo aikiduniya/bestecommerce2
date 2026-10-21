@@ -3,15 +3,26 @@ import { publicClient } from "@/lib/public-db";
 
 const slugOk = (s: string) => /^[a-z0-9-]{1,120}$/.test(s);
 
+// Resolve an entity id from a translated slug in content_translations.
+async function translatedId(sb: ReturnType<typeof publicClient>, entityType: string, slug: string): Promise<string | null> {
+  const { data } = await sb.from("content_translations").select("entity_id").eq("entity_type", entityType).filter("fields->>slug", "eq", slug).limit(1).maybeSingle();
+  return data?.entity_id ?? null;
+}
+
 export const getPageSeo = createServerFn({ method: "GET" })
   .inputValidator((slug: string) => String(slug))
   .handler(async ({ data }) => {
     if (!slugOk(data)) return null;
     const sb = publicClient();
-    const [{ data: p }, { data: s }] = await Promise.all([
-      sb.from("pages").select("title, seo_title, seo_description, body").eq("slug", data).eq("is_published", true).maybeSingle(),
-      sb.from("store_settings").select("store_name").eq("id", 1).maybeSingle(),
-    ]);
+    let { data: p } = await sb.from("pages").select("title, seo_title, seo_description, body").eq("slug", data).eq("is_published", true).maybeSingle();
+    if (!p) {
+      const id = await translatedId(sb, "page", data);
+      if (id) {
+        const { data: byId } = await sb.from("pages").select("title, seo_title, seo_description, body").eq("id", id).eq("is_published", true).maybeSingle();
+        p = byId;
+      }
+    }
+    const { data: s } = await sb.from("store_settings").select("store_name").eq("id", 1).maybeSingle();
     if (!p) return null;
     return {
       title: p.seo_title || `${p.title} | ${s?.store_name ?? ""}`,
@@ -24,10 +35,15 @@ export const getPostSeo = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     if (!slugOk(data)) return null;
     const sb = publicClient();
-    const [{ data: p }, { data: s }] = await Promise.all([
-      sb.from("blog_posts").select("title, seo_title, seo_description, excerpt, cover_image").eq("slug", data).eq("is_published", true).maybeSingle(),
-      sb.from("store_settings").select("store_name").eq("id", 1).maybeSingle(),
-    ]);
+    let { data: p } = await sb.from("blog_posts").select("title, seo_title, seo_description, excerpt, cover_image").eq("slug", data).eq("is_published", true).maybeSingle();
+    if (!p) {
+      const id = await translatedId(sb, "blog_post", data);
+      if (id) {
+        const { data: byId } = await sb.from("blog_posts").select("title, seo_title, seo_description, excerpt, cover_image").eq("id", id).eq("is_published", true).maybeSingle();
+        p = byId;
+      }
+    }
+    const { data: s } = await sb.from("store_settings").select("store_name").eq("id", 1).maybeSingle();
     if (!p) return null;
     return {
       title: p.seo_title || `${p.title} | ${s?.store_name ?? ""}`,

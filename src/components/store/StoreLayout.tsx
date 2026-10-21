@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { Heart, Search, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
@@ -7,7 +7,7 @@ import { menusQuery, navItems } from "@/lib/sections";
 import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
 import { extraCurrencies, initDisplayCurrency, setDisplayCurrency, useDisplayCurrency } from "@/lib/currency";
-import { DEFAULT_LANG, extraLanguages, initLang, langDir, setLang, translate, useLang } from "@/lib/i18n";
+import { DEFAULT_LANG, extraLanguages, initLang, langDir, langUrl, setLang, translate, useLang, useLangParam } from "@/lib/i18n";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s, isLoading } = useQuery(settingsQuery);
@@ -35,7 +35,13 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const lang = useLang();
   const langs = extraLanguages(s?.languages);
   const t = (key: string) => translate(s?.translations, lang, key);
+  const urlLang = useLangParam();
+  const { pathname } = useLocation();
   useEffect(() => { initLang(); }, []);
+  // The URL prefix is the source of truth when present (/ur/shop → Urdu).
+  useEffect(() => {
+    if (urlLang && urlLang !== lang) setLang(urlLang);
+  }, [urlLang, lang]);
   useEffect(() => {
     if (!s || !lang) return;
     if (!langs.some((l) => l.code === lang)) setLang(null);
@@ -45,12 +51,21 @@ export function StoreLayout({ children }: { children: ReactNode }) {
     document.documentElement.lang = code;
     document.documentElement.dir = langDir(lang);
   }, [lang]);
+  // Params object reused by every storefront link so the language prefix is kept.
+  const lp = { lang: lang ?? undefined };
   const langPicker = langs.length > 0 && (
     <select
       aria-label={t("nav.language")}
       className="h-8 rounded-full border bg-card px-2 text-xs outline-none focus:border-gold"
       value={lang ?? DEFAULT_LANG.code}
-      onChange={(e) => setLang(e.target.value === DEFAULT_LANG.code ? null : e.target.value)}
+      onChange={(e) => {
+        const code = e.target.value === DEFAULT_LANG.code ? null : e.target.value;
+        setLang(code);
+        // Keep the visitor on the same page, under the new language prefix.
+        // Full navigation so the page re-renders server-side with the new language.
+        const base = urlLang ? pathname.slice(urlLang.length + 1) || "/" : pathname;
+        window.location.assign(langUrl(base, code));
+      }}
     >
       <option value={DEFAULT_LANG.code}>{DEFAULT_LANG.label}</option>
       {langs.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
@@ -88,7 +103,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
 
   function search(e: React.FormEvent) {
     e.preventDefault();
-    navigate({ to: "/shop", search: { q: q || undefined } });
+    navigate({ to: "/{-$lang}/shop", params: lp, search: { q: q || undefined } });
     setOpen(false);
   }
 
@@ -103,7 +118,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 md:px-6">
           <button className="md:hidden" onClick={() => setOpen(!open)} aria-label={t("nav.menu")}>{open ? <X /> : <Menu />}</button>
-          <Link to="/" className="shrink-0">
+          <Link to="/{-$lang}" params={lp} className="shrink-0">
             {s?.logo_url ? <img src={s.logo_url} alt={s.store_name} className="h-8" /> : <span className="font-display text-3xl">{isLoading ? "\u00a0" : s?.store_name}</span>}
           </Link>
           <nav className="hidden flex-1 justify-center gap-7 text-sm md:flex">
@@ -124,9 +139,9 @@ export function StoreLayout({ children }: { children: ReactNode }) {
               )
             ) : (
               <>
-                <Link to="/shop" className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>{t("nav.shop_all")}</Link>
+                <Link to="/{-$lang}/shop" params={lp} className="hover:text-gold" activeProps={{ className: "text-gold" }} activeOptions={{ includeSearch: false, exact: true }}>{t("nav.shop_all")}</Link>
                 {topCats.slice(0, 6).map((c) => (
-                  <Link key={c.id} to="/shop" search={{ category: c.slug }} className="hover:text-gold">{c.name}</Link>
+                  <Link key={c.id} to="/{-$lang}/shop" params={lp} search={{ category: c.slug }} className="hover:text-gold">{c.name}</Link>
                 ))}
               </>
             )}
@@ -140,7 +155,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             </form>
             <Link to="/account" aria-label={t("nav.wishlist")} className="hover:text-gold"><Heart className="size-5" /></Link>
             <Link to={user ? (isStaff ? "/admin" : "/account") : "/auth"} aria-label={t("nav.account")} className="hover:text-gold"><User className="size-5" /></Link>
-            <Link to="/cart" aria-label={t("nav.cart")} className="relative hover:text-gold">
+            <Link to="/{-$lang}/cart" params={lp} aria-label={t("nav.cart")} className="relative hover:text-gold">
               <ShoppingBag className="size-5" />
               {count > 0 && <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-accent-foreground">{count}</span>}
             </Link>
@@ -160,8 +175,8 @@ export function StoreLayout({ children }: { children: ReactNode }) {
               ))
             ) : (
               <>
-                <Link to="/shop" className="block py-1" onClick={() => setOpen(false)}>{t("nav.shop_all")}</Link>
-                {topCats.map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1" onClick={() => setOpen(false)}>{c.name}</Link>)}
+                <Link to="/{-$lang}/shop" params={lp} className="block py-1" onClick={() => setOpen(false)}>{t("nav.shop_all")}</Link>
+                {topCats.map((c) => <Link key={c.id} to="/{-$lang}/shop" params={lp} search={{ category: c.slug }} className="block py-1" onClick={() => setOpen(false)}>{c.name}</Link>)}
               </>
             )}
           </div>
@@ -191,12 +206,12 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             <>
               <div className="text-sm">
                 <p className="eyebrow mb-3 text-muted-foreground">{t("footer.shop")}</p>
-                {topCats.slice(0, 5).map((c) => <Link key={c.id} to="/shop" search={{ category: c.slug }} className="block py-1 hover:text-gold">{c.name}</Link>)}
+                {topCats.slice(0, 5).map((c) => <Link key={c.id} to="/{-$lang}/shop" params={lp} search={{ category: c.slug }} className="block py-1 hover:text-gold">{c.name}</Link>)}
               </div>
               <div className="text-sm">
                 <p className="eyebrow mb-3 text-muted-foreground">{t("footer.information")}</p>
-                <Link to="/blog" className="block py-1 hover:text-gold">{t("footer.journal")}</Link>
-                {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/pages/$slug" params={{ slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
+                <Link to="/{-$lang}/blog" params={lp} className="block py-1 hover:text-gold">{t("footer.journal")}</Link>
+                {pages.filter((pg) => pg.is_published && pg.show_in_footer).map((pg) => <Link key={pg.id} to="/{-$lang}/pages/$slug" params={{ ...lp, slug: pg.slug }} className="block py-1 hover:text-gold">{pg.title}</Link>)}
               </div>
             </>
           )}

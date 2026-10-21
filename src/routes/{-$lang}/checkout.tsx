@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -6,7 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { money, optionLabel, settingsQuery, zonesQuery } from "@/lib/store";
 import { useCart } from "@/lib/cart";
 import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
+import { sendNotification } from "@/lib/email.functions";
 import { useDisplayCurrency } from "@/lib/currency";
+import { isValidLang, useLang } from "@/lib/i18n";
 import { useSessionUser } from "@/lib/auth";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-export const Route = createFileRoute("/checkout")({
+export const Route = createFileRoute("/{-$lang}/checkout")({
+  beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
   head: () => ({
     meta: [
       { title: "Checkout" },
@@ -27,6 +30,7 @@ export const Route = createFileRoute("/checkout")({
 });
 
 function Checkout() {
+  const lang = useLang();
   const cart = useCart();
   const { user, ready } = useSessionUser();
   const { data: s } = useQuery(settingsQuery);
@@ -109,6 +113,18 @@ function Checkout() {
     if (error) { toast.error(error.message); return; }
     const res = data as { id: string; order_number: number };
     trackPurchase(res.id, trackItems, Math.max(cart.subtotal - autoDiscount - discount, 0) + shipping + codFee, cur);
+    // Queue order emails (logged only until live delivery is enabled by the owner).
+    const emailVars = {
+      customer_name: f.name, customer_email: f.email,
+      order_number: String(res.order_number),
+      order_total: money(Math.max(cart.subtotal - autoDiscount - discount, 0) + shipping + codFee, cur),
+      payment_method: "Cash on Delivery",
+      items_list: cart.items.map((i) => `${i.qty} × ${i.name}`).join(", "),
+    };
+    void sendNotification({ data: { event: "order_placed", recipientEmail: f.email, vars: emailVars, orderId: res.id } }).catch(() => {});
+    if (s?.support_email) {
+      void sendNotification({ data: { event: "order_placed_admin", recipientEmail: s.support_email, vars: emailVars, orderId: res.id } }).catch(() => {});
+    }
     cart.clear();
     qc.invalidateQueries();
     navigate({ to: "/order/$id", params: { id: res.id } });
@@ -122,7 +138,7 @@ function Checkout() {
   );
 
   if (cart.items.length === 0) {
-    return <StoreLayout><div className="py-32 text-center"><h1 className="text-5xl">Your cart is empty</h1><Button className="mt-6" asChild><Link to="/shop">Shop now</Link></Button></div></StoreLayout>;
+    return <StoreLayout><div className="py-32 text-center"><h1 className="text-5xl">Your cart is empty</h1><Button className="mt-6" asChild><Link to="/{-$lang}/shop" params={{ lang: lang ?? undefined }}>Shop now</Link></Button></div></StoreLayout>;
   }
   if (ready && !user) {
     return (

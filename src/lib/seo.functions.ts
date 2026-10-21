@@ -19,10 +19,16 @@ export const getProductSeo = createServerFn({ method: "GET" })
             },
       },
     });
-    const [{ data: p }, { data: s }] = await Promise.all([
-      sb.from("products").select("name,seo_title,seo_description,short_description,images").eq("slug", slug).eq("status", "active").maybeSingle(),
-      sb.from("store_settings").select("store_name").eq("id", 1).maybeSingle(),
-    ]);
+    // Resolve the base slug, or a translated slug stored in content_translations.
+    let { data: p } = await sb.from("products").select("id,name,seo_title,seo_description,short_description,images").eq("slug", slug).eq("status", "active").maybeSingle();
+    if (!p) {
+      const { data: tr } = await sb.from("content_translations").select("entity_id").eq("entity_type", "product").filter("fields->>slug", "eq", slug).limit(1).maybeSingle();
+      if (tr) {
+        const { data: byId } = await sb.from("products").select("id,name,seo_title,seo_description,short_description,images").eq("id", tr.entity_id).eq("status", "active").maybeSingle();
+        p = byId;
+      }
+    }
+    const { data: s } = await sb.from("store_settings").select("store_name").eq("id", 1).maybeSingle();
     if (!p) return null;
     const store = s?.store_name ?? "";
     const title = p.seo_title?.trim() || (store ? `${p.name} | ${store}` : p.name);
