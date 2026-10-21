@@ -24,3 +24,4 @@
 - Stage 2 (returns/RMA): DONE + tested
 - Stage 3 (product fields barcode/specs/weight/related, address book, checkout address picker): DONE + tested 2026-10-21
 - Stage 4 next: order tracking numbers + packing slip, save-for-later cart, search improvements
+- Stage 4 (tracking numbers, packing slip, save-for-later, search autocomplete): implemented; browser test pending
