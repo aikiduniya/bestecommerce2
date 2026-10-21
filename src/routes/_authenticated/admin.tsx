@@ -1,11 +1,13 @@
 import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import {
-  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent,
+  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/store";
 import { Button } from "@/components/ui/button";
+import { AdminTopbar } from "@/components/admin/AdminTopbar";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin Dashboard" }, { name: "robots", content: "noindex" }] }),
@@ -75,6 +77,13 @@ function AdminLayout() {
   const { data: settings } = useQuery(settingsQuery);
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("admin_sidebar_collapsed") === "1"; } catch { return false; }
+  });
+  const toggleCollapsed = () => setCollapsed((c) => {
+    try { localStorage.setItem("admin_sidebar_collapsed", c ? "0" : "1"); } catch { /* ignore */ }
+    return !c;
+  });
 
   async function signOut() {
     await qc.cancelQueries();
@@ -103,37 +112,46 @@ function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-muted">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
-        <div className="border-b border-sidebar-border px-6 py-6">
-          <p className="eyebrow text-sidebar-primary">{isAdmin ? "Super Admin" : "Staff"}</p>
-          <p className="mt-1 truncate font-display text-2xl text-sidebar-accent-foreground">{settings?.store_name ?? "Store"}</p>
+      <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col bg-sidebar text-sidebar-foreground transition-[width] md:flex ${collapsed ? "w-16" : "w-64"}`}>
+        <div className={`flex items-center border-b border-sidebar-border py-6 ${collapsed ? "justify-center px-2" : "justify-between px-6"}`}>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="eyebrow text-sidebar-primary">{isAdmin ? "Super Admin" : "Staff"}</p>
+              <p className="mt-1 truncate font-display text-2xl text-sidebar-accent-foreground">{settings?.store_name ?? "Store"}</p>
+            </div>
+          )}
+          <button onClick={toggleCollapsed} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className="rounded-md p-1.5 hover:bg-sidebar-accent">
+            {collapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+          </button>
         </div>
         <nav className="flex-1 space-y-5 overflow-y-auto p-3">
           {visible.map((g) => (
             <div key={g.label}>
-              <p className="eyebrow mb-1 px-3 text-[10px] opacity-40">{g.label}</p>
+              {!collapsed && <p className="eyebrow mb-1 px-3 text-[10px] opacity-40">{g.label}</p>}
               {g.items.map((n) => (
                 <Link
                   key={n.to}
                   to={n.to}
+                  title={n.label}
                   activeOptions={{ exact: "exact" in n }}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent"
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent ${collapsed ? "justify-center px-0" : ""}`}
                   activeProps={{ className: "bg-sidebar-accent text-sidebar-primary" }}
                 >
-                  <n.icon className="size-4" />
-                  {n.label}
+                  <n.icon className="size-4 shrink-0" />
+                  {!collapsed && n.label}
                 </Link>
               ))}
             </div>
           ))}
         </nav>
         <div className="space-y-1 border-t border-sidebar-border p-3">
-          <Link to="/" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent"><Store className="size-4" /> View storefront</Link>
-          <button onClick={signOut} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent"><LogOut className="size-4" /> Sign out</button>
-          <p className="truncate px-3 pt-2 text-xs opacity-50">{user.email}</p>
+          <Link to="/" title="View storefront" className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${collapsed ? "justify-center px-0" : ""}`}><Store className="size-4 shrink-0" /> {!collapsed && "View storefront"}</Link>
+          <button onClick={signOut} title="Sign out" className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${collapsed ? "justify-center px-0" : ""}`}><LogOut className="size-4 shrink-0" /> {!collapsed && "Sign out"}</button>
+          {!collapsed && <p className="truncate px-3 pt-2 text-xs opacity-50">{user.email}</p>}
         </div>
       </aside>
       <div className="min-w-0 flex-1">
+        <AdminTopbar isAdmin={isAdmin} perms={perms} />
         <div className="flex gap-1 overflow-x-auto border-b bg-sidebar p-2 text-sidebar-foreground md:hidden">
           {flat.map((n) => (
             <Link key={n.to} to={n.to} activeOptions={{ exact: "exact" in n }} className="flex items-center gap-1.5 whitespace-nowrap rounded px-3 py-1.5 text-xs" activeProps={{ className: "bg-sidebar-accent text-sidebar-primary" }}>
