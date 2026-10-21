@@ -49,6 +49,7 @@ import { Route as Char123LangChar125BlogSlugRouteImport } from './routes/{-$lang
 import { Route as Char123LangChar125PagesSlugRouteImport } from './routes/{-$lang}/pages.$slug'
 import { Route as Char123LangChar125ProductSlugRouteImport } from './routes/{-$lang}/product.$slug'
 import { Route as AuthenticatedAdminInvoiceIdRouteImport } from './routes/_authenticated/admin.invoice.$id'
+import { Route as AuthenticatedAdminPackingIdRouteImport } from './routes/_authenticated/admin.packing.$id'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -273,6 +274,12 @@ const AuthenticatedAdminInvoiceIdRoute =
     path: '/invoice/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminPackingIdRoute =
+  AuthenticatedAdminPackingIdRouteImport.update({
+    id: '/packing/$id',
+    path: '/packing/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedRouteRouteWithChildren
@@ -315,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/{-$lang}/blog/': typeof Char123LangChar125BlogIndexRoute
   '/admin/invoice/$id': typeof AuthenticatedAdminInvoiceIdRoute
+  '/admin/packing/$id': typeof AuthenticatedAdminPackingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedRouteRouteWithChildren
@@ -356,6 +364,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/{-$lang}/blog': typeof Char123LangChar125BlogIndexRoute
   '/admin/invoice/$id': typeof AuthenticatedAdminInvoiceIdRoute
+  '/admin/packing/$id': typeof AuthenticatedAdminPackingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -399,6 +408,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/{-$lang}/blog/': typeof Char123LangChar125BlogIndexRoute
   '/_authenticated/admin/invoice/$id': typeof AuthenticatedAdminInvoiceIdRoute
+  '/_authenticated/admin/packing/$id': typeof AuthenticatedAdminPackingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -443,6 +453,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/{-$lang}/blog/'
     | '/admin/invoice/$id'
+    | '/admin/packing/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -484,6 +495,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/{-$lang}/blog'
     | '/admin/invoice/$id'
+    | '/admin/packing/$id'
   id:
     | '__root__'
     | '/_authenticated'
@@ -526,6 +538,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/{-$lang}/blog/'
     | '/_authenticated/admin/invoice/$id'
+    | '/_authenticated/admin/packing/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -826,6 +839,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInvoiceIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/packing/$id': {
+      id: '/_authenticated/admin/packing/$id'
+      path: '/packing/$id'
+      fullPath: '/admin/packing/$id'
+      preLoaderRoute: typeof AuthenticatedAdminPackingIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
@@ -854,6 +874,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminTranslationsRoute: typeof AuthenticatedAdminTranslationsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminInvoiceIdRoute: typeof AuthenticatedAdminInvoiceIdRoute
+  AuthenticatedAdminPackingIdRoute: typeof AuthenticatedAdminPackingIdRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -881,6 +902,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminTranslationsRoute: AuthenticatedAdminTranslationsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminInvoiceIdRoute: AuthenticatedAdminInvoiceIdRoute,
+  AuthenticatedAdminPackingIdRoute: AuthenticatedAdminPackingIdRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
