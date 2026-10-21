@@ -15,12 +15,12 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: pages = [] } = useQuery(pagesQuery);
   const { data: menus = [] } = useQuery(menusQuery);
   const { data: allProducts = [] } = useQuery(productsQuery);
-  const suggestions = q.trim().length >= 2 ? allProducts.filter((p) => p.status === "active" && p.name.toLowerCase().includes(q.trim().toLowerCase())).slice(0, 6) : [];
   const { user } = useSessionUser();
   const isStaff = useIsStaff(user?.id);
   const { count } = useCart();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const suggestions = q.trim().length >= 2 ? allProducts.filter((p) => p.status === "active" && p.name.toLowerCase().includes(q.trim().toLowerCase())).slice(0, 6) : [];
   const [open, setOpen] = useState(false);
   // Banner content depends on client-only state (settings fetch, staff check);
   // render it only after mount so SSR and first client render match.
