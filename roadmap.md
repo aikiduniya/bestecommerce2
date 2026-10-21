@@ -8,8 +8,9 @@
 - [x] Staff: custom roles, granular permissions (catalog/orders/customers), enable/disable, Super Admin assignment, activity log, permission-based menu, server-side enforcement
 - [x] Order fulfilment status, COD fee on orders, payment filters
 - [ ] Built-in Stripe card payments — ON HOLD by owner (do not ask again until requested)
-- [ ] Order timeline, internal notes, invoices, refunds/transactions (with Stripe)
-- [ ] Admin dashboard upgrade: collapsible sidebar, global search, notifications, charts, bulk actions
+- [x] Order timeline (auto-logged status/payment/fulfilment events), internal staff-only notes, printable invoice/PDF
+- [ ] Refunds/transactions (with Stripe)
+- [ ] Admin dashboard upgrade: collapsible sidebar, global search, notifications, bulk actions (charts done)
 - [ ] Staff invite emails + login activity (needs email sending setup)
 - [ ] Remaining tests: Google sign-in, email signup/password reset emails (need real inbox), tablet layout
 
@@ -26,8 +27,10 @@
 - [x] Drag-and-drop homepage section builder (16 section types, reorder/duplicate/enable/disable, live storefront)
 - [x] Navigation/menu editor (header + footer, nested dropdowns, storefront falls back to built-in when empty)
 - [ ] Product-level flash sale prices with countdown; automatic (no-code) discounts
-- [ ] Super Admin dashboard upgrade: collapsible sidebar, global search, notifications, charts, bulk actions
-- [ ] Advanced sales reports & analytics (revenue over time, top products, coupon performance, CSV export)
+- [x] Dashboard upgrade: period comparison, top products, recent activity, quick actions, 30-day chart
+- [x] Advanced reports: sales (date ranges, period comparison, product performance), COD, coupons, inventory — all with CSV export
+- [x] Order timeline, internal notes, printable invoice
+- [ ] Collapsible admin sidebar, global admin search, notifications center, bulk actions
 - [ ] Email templates & notifications (needs email domain setup)
 - [ ] GA4 ecommerce events (add_to_cart, purchase)
 - [ ] Order timeline, internal notes, invoices

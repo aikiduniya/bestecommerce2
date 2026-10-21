@@ -1,12 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ordersQuery, money, optionLabel, type Order } from "@/lib/store";
+import { ordersQuery, orderEventsQuery, orderNotesQuery, money, optionLabel, type Order } from "@/lib/store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Eye, Search } from "lucide-react";
+import { Eye, Printer, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader, StatusPill } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/card";
@@ -104,10 +104,15 @@ function OrdersPage() {
         </Table>
       </Card>
       <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
           {view && (
             <>
-              <DialogHeader><DialogTitle className="font-display text-3xl">Order #{view.order_number}</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <DialogTitle className="font-display text-3xl">Order #{view.order_number}</DialogTitle>
+                  <Button size="sm" variant="outline" asChild><Link to="/admin/orders/$id/invoice" params={{ id: view.id }} target="_blank"><Printer className="size-4" /> Invoice</Link></Button>
+                </div>
+              </DialogHeader>
               <div className="divide-y rounded border text-sm">
                 {(view.items as { name: string; qty: number; price: number; sku?: string; options?: Record<string, string> }[]).map((l, i) => (
                   <div key={i} className="flex justify-between p-3"><span>{l.name} × {l.qty}<span className="block text-xs text-muted-foreground">{[l.sku, optionLabel(l.options)].filter(Boolean).join(" · ")}</span></span><span>{money(l.price * l.qty, view.currency)}</span></div>
@@ -139,10 +144,70 @@ function OrdersPage() {
                   </>
                 )}
               </div>
+              <div>
+                <p className="eyebrow mb-2 text-muted-foreground">Timeline</p>
+                <OrderTimeline orderId={view.id} />
+              </div>
+              <div>
+                <p className="eyebrow mb-2 text-muted-foreground">Internal notes · visible to staff only</p>
+                <OrderNotes orderId={view.id} />
+              </div>
             </>
           )}
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function OrderTimeline({ orderId }: { orderId: string }) {
+  const { data: events = [] } = useQuery(orderEventsQuery(orderId));
+  if (events.length === 0) return <p className="text-sm text-muted-foreground">No events yet.</p>;
+  return (
+    <ol className="space-y-3 border-l pl-4 text-sm">
+      {[...events].reverse().map((e) => (
+        <li key={e.id} className="relative">
+          <span className="absolute -left-[21px] top-1.5 size-2 rounded-full bg-gold" />
+          <p>{e.message}</p>
+          <p className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</p>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function OrderNotes({ orderId }: { orderId: string }) {
+  const qc = useQueryClient();
+  const { data: notes = [] } = useQuery(orderNotesQuery(orderId));
+  const [body, setBody] = useState("");
+
+  async function add() {
+    if (!body.trim()) return;
+    const { error } = await supabase.from("order_notes").insert({ order_id: orderId, body: body.trim() });
+    if (error) { toast.error(error.message); return; }
+    setBody("");
+    qc.invalidateQueries({ queryKey: ["order_notes", orderId] });
+  }
+
+  async function remove(id: number) {
+    const { error } = await supabase.from("order_notes").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["order_notes", orderId] });
+  }
+
+  return (
+    <div className="space-y-3">
+      {notes.map((n) => (
+        <div key={n.id} className="flex items-start justify-between gap-3 rounded bg-muted p-3 text-sm">
+          <div><p>{n.body}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString()}</p></div>
+          <Button size="icon" variant="ghost" aria-label="Delete note" onClick={() => remove(n.id)}><Trash2 className="size-4" /></Button>
+        </div>
+      ))}
+      {notes.length === 0 && <p className="text-sm text-muted-foreground">No internal notes yet.</p>}
+      <div className="flex gap-2">
+        <Input placeholder="Add an internal note…" value={body} onChange={(e) => setBody(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+        <Button variant="outline" onClick={add}>Add</Button>
+      </div>
+    </div>
   );
 }

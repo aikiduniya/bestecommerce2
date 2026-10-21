@@ -43,6 +43,7 @@ import { Route as AuthenticatedAdminShippingRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
 import { Route as AuthenticatedOrderIdRouteImport } from './routes/_authenticated/order.$id'
 import { Route as ApiPublicMerchantFeedRouteImport } from './routes/api/public/merchant-feed'
+import { Route as AuthenticatedAdminOrdersIdInvoiceRouteImport } from './routes/_authenticated/admin.orders.$id.invoice'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -227,6 +228,12 @@ const ApiPublicMerchantFeedRoute = ApiPublicMerchantFeedRouteImport.update({
   path: '/api/public/merchant-feed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminOrdersIdInvoiceRoute =
+  AuthenticatedAdminOrdersIdInvoiceRouteImport.update({
+    id: '/$id/invoice',
+    path: '/$id/invoice',
+    getParentRoute: () => AuthenticatedAdminOrdersRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -251,7 +258,7 @@ export interface FileRoutesByFullPath {
   '/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/admin/media': typeof AuthenticatedAdminMediaRoute
   '/admin/navigation': typeof AuthenticatedAdminNavigationRoute
-  '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/admin/pages': typeof AuthenticatedAdminPagesRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/orders/$id/invoice': typeof AuthenticatedAdminOrdersIdInvoiceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -285,7 +293,7 @@ export interface FileRoutesByTo {
   '/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/admin/media': typeof AuthenticatedAdminMediaRoute
   '/admin/navigation': typeof AuthenticatedAdminNavigationRoute
-  '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/admin/pages': typeof AuthenticatedAdminPagesRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
@@ -296,6 +304,7 @@ export interface FileRoutesByTo {
   '/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/orders/$id/invoice': typeof AuthenticatedAdminOrdersIdInvoiceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -322,7 +331,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/_authenticated/admin/media': typeof AuthenticatedAdminMediaRoute
   '/_authenticated/admin/navigation': typeof AuthenticatedAdminNavigationRoute
-  '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/_authenticated/admin/pages': typeof AuthenticatedAdminPagesRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
@@ -333,6 +342,7 @@ export interface FileRoutesById {
   '/_authenticated/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/orders/$id/invoice': typeof AuthenticatedAdminOrdersIdInvoiceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -370,6 +380,7 @@ export interface FileRouteTypes {
     | '/order/$id'
     | '/api/public/merchant-feed'
     | '/admin/'
+    | '/admin/orders/$id/invoice'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -404,6 +415,7 @@ export interface FileRouteTypes {
     | '/order/$id'
     | '/api/public/merchant-feed'
     | '/admin'
+    | '/admin/orders/$id/invoice'
   id:
     | '__root__'
     | '/'
@@ -440,6 +452,7 @@ export interface FileRouteTypes {
     | '/_authenticated/order/$id'
     | '/api/public/merchant-feed'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/orders/$id/invoice'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -697,8 +710,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMerchantFeedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/orders/$id/invoice': {
+      id: '/_authenticated/admin/orders/$id/invoice'
+      path: '/$id/invoice'
+      fullPath: '/admin/orders/$id/invoice'
+      preLoaderRoute: typeof AuthenticatedAdminOrdersIdInvoiceRouteImport
+      parentRoute: typeof AuthenticatedAdminOrdersRoute
+    }
   }
 }
+
+interface AuthenticatedAdminOrdersRouteChildren {
+  AuthenticatedAdminOrdersIdInvoiceRoute: typeof AuthenticatedAdminOrdersIdInvoiceRoute
+}
+
+const AuthenticatedAdminOrdersRouteChildren: AuthenticatedAdminOrdersRouteChildren =
+  {
+    AuthenticatedAdminOrdersIdInvoiceRoute:
+      AuthenticatedAdminOrdersIdInvoiceRoute,
+  }
+
+const AuthenticatedAdminOrdersRouteWithChildren =
+  AuthenticatedAdminOrdersRoute._addFileChildren(
+    AuthenticatedAdminOrdersRouteChildren,
+  )
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminActivityRoute: typeof AuthenticatedAdminActivityRoute
@@ -711,7 +746,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminHomepageRoute: typeof AuthenticatedAdminHomepageRoute
   AuthenticatedAdminMediaRoute: typeof AuthenticatedAdminMediaRoute
   AuthenticatedAdminNavigationRoute: typeof AuthenticatedAdminNavigationRoute
-  AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRouteWithChildren
   AuthenticatedAdminPagesRoute: typeof AuthenticatedAdminPagesRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
@@ -733,7 +768,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminHomepageRoute: AuthenticatedAdminHomepageRoute,
   AuthenticatedAdminMediaRoute: AuthenticatedAdminMediaRoute,
   AuthenticatedAdminNavigationRoute: AuthenticatedAdminNavigationRoute,
-  AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRouteWithChildren,
   AuthenticatedAdminPagesRoute: AuthenticatedAdminPagesRoute,
   AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
