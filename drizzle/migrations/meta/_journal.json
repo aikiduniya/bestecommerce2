@@ -57,6 +57,13 @@
       "when": 1792527042495,
       "tag": "0007_phase4a_marketing_reviews_cms",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792567058819,
+      "tag": "0008_coupon_restore_on_cancel",
+      "breakpoints": true
     }
   ]
 }
