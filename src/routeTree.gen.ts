@@ -17,6 +17,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
 import { Route as Char123LangChar125CartRouteImport } from './routes/{-$lang}/cart'
 import { Route as Char123LangChar125CheckoutRouteImport } from './routes/{-$lang}/checkout'
+import { Route as Char123LangChar125CompareRouteImport } from './routes/{-$lang}/compare'
 import { Route as Char123LangChar125ShopRouteImport } from './routes/{-$lang}/shop'
 import { Route as Char123LangChar125TrackRouteImport } from './routes/{-$lang}/track'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -94,6 +95,12 @@ const Char123LangChar125CheckoutRoute =
   Char123LangChar125CheckoutRouteImport.update({
     id: '/{-$lang}/checkout',
     path: '/{-$lang}/checkout',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char123LangChar125CompareRoute =
+  Char123LangChar125CompareRouteImport.update({
+    id: '/{-$lang}/compare',
+    path: '/{-$lang}/compare',
     getParentRoute: () => rootRouteImport,
   } as any)
 const Char123LangChar125ShopRoute = Char123LangChar125ShopRouteImport.update({
@@ -323,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
+  '/{-$lang}/compare': typeof Char123LangChar125CompareRoute
   '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
   '/{-$lang}/track': typeof Char123LangChar125TrackRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
@@ -370,6 +378,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
+  '/{-$lang}/compare': typeof Char123LangChar125CompareRoute
   '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
   '/{-$lang}/track': typeof Char123LangChar125TrackRoute
   '/{-$lang}': typeof Char123LangChar125IndexRoute
@@ -419,6 +428,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
+  '/{-$lang}/compare': typeof Char123LangChar125CompareRoute
   '/{-$lang}/shop': typeof Char123LangChar125ShopRoute
   '/{-$lang}/track': typeof Char123LangChar125TrackRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
@@ -469,6 +479,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
+    | '/{-$lang}/compare'
     | '/{-$lang}/shop'
     | '/{-$lang}/track'
     | '/{-$lang}/'
@@ -516,6 +527,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
+    | '/{-$lang}/compare'
     | '/{-$lang}/shop'
     | '/{-$lang}/track'
     | '/{-$lang}'
@@ -564,6 +576,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
+    | '/{-$lang}/compare'
     | '/{-$lang}/shop'
     | '/{-$lang}/track'
     | '/{-$lang}/'
@@ -611,6 +624,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char123LangChar125CartRoute: typeof Char123LangChar125CartRoute
   Char123LangChar125CheckoutRoute: typeof Char123LangChar125CheckoutRoute
+  Char123LangChar125CompareRoute: typeof Char123LangChar125CompareRoute
   Char123LangChar125ShopRoute: typeof Char123LangChar125ShopRoute
   Char123LangChar125TrackRoute: typeof Char123LangChar125TrackRoute
   Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
@@ -677,6 +691,13 @@ declare module '@tanstack/react-router' {
       path: '/{-$lang}/checkout'
       fullPath: '/{-$lang}/checkout'
       preLoaderRoute: typeof Char123LangChar125CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{-$lang}/compare': {
+      id: '/{-$lang}/compare'
+      path: '/{-$lang}/compare'
+      fullPath: '/{-$lang}/compare'
+      preLoaderRoute: typeof Char123LangChar125CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/{-$lang}/shop': {
@@ -1038,6 +1059,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char123LangChar125CartRoute: Char123LangChar125CartRoute,
   Char123LangChar125CheckoutRoute: Char123LangChar125CheckoutRoute,
+  Char123LangChar125CompareRoute: Char123LangChar125CompareRoute,
   Char123LangChar125ShopRoute: Char123LangChar125ShopRoute,
   Char123LangChar125TrackRoute: Char123LangChar125TrackRoute,
   Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
