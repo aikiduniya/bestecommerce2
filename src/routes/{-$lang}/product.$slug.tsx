@@ -203,7 +203,7 @@ function ProductPage() {
                 : <span className="text-destructive">Out of stock</span>}
             </p>
 
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <div className="flex items-center rounded border">
                 <button className="p-3" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Decrease"><Minus className="size-4" /></button>
                 <span className="w-8 text-center">{qty}</span>
