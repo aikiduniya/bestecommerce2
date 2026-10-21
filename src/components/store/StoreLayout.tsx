@@ -7,6 +7,7 @@ import { menusQuery, navItems } from "@/lib/sections";
 import { useCart } from "@/lib/cart";
 import { useIsStaff, useSessionUser } from "@/lib/auth";
 import { extraCurrencies, initDisplayCurrency, setDisplayCurrency, useDisplayCurrency } from "@/lib/currency";
+import { DEFAULT_LANG, extraLanguages, initLang, langDir, setLang, translate, useLang } from "@/lib/i18n";
 
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { data: s, isLoading } = useQuery(settingsQuery);
