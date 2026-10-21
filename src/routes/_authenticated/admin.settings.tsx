@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, type Settings } from "@/lib/store";
+import { extraCurrencies, type DisplayCurrency } from "@/lib/currency";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,6 +40,12 @@ function SettingsPage() {
     const { id: _id, updated_at: _u, ...rest } = s;
     if (rest.currency && !/^[A-Z]{3}$/.test(rest.currency.toUpperCase())) { setSaving(false); toast.error("Currency must be a 3-letter code like USD"); return; }
     rest.currency = rest.currency.toUpperCase();
+    const curList = extraCurrencies(rest.currencies);
+    const rawList = Array.isArray(rest.currencies) ? rest.currencies : [];
+    if (rawList.length !== curList.length) { setSaving(false); toast.error("Each currency needs a 3-letter code and a rate above 0"); return; }
+    if (new Set(curList.map((c) => c.code)).size !== curList.length) { setSaving(false); toast.error("Duplicate currency codes"); return; }
+    if (curList.some((c) => c.code === rest.currency)) { setSaving(false); toast.error("The store currency cannot also be an extra currency"); return; }
+    rest.currencies = curList;
     if (rest.cod_min_order !== null && rest.cod_max_order !== null && Number(rest.cod_min_order) > Number(rest.cod_max_order)) { setSaving(false); toast.error("COD minimum cannot be above the maximum"); return; }
     for (const [k, re, label] of [["ga4_id", /^G-[A-Z0-9]{4,20}$/i, "GA4 ID should look like G-XXXXXXX"], ["gtm_id", /^GTM-[A-Z0-9]{4,12}$/i, "GTM ID should look like GTM-XXXXXX"], ["meta_pixel_id", /^\d{6,20}$/, "Meta Pixel ID should be numbers only"]] as const) {
       const v = (rest[k] ?? "").trim();
