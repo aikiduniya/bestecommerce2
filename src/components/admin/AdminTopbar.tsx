@@ -18,15 +18,17 @@ function useGlobalSearch(q: string, open: boolean) {
     queryFn: async (): Promise<Hit[]> => {
       const like = `%${q.trim()}%`;
       const num = /^\d+$/.test(q.trim()) ? Number(q.trim()) : null;
-      const [p, o, c] = await Promise.all([
+      const [p, o] = await Promise.all([
         supabase.from("products").select("id, name, sku, status").or(`name.ilike.${like},sku.ilike.${like}`).limit(6),
-        supabase.from("orders").select("id, order_number, customer_name, customer_email, total").or(`customer_name.ilike.${like},customer_email.ilike.${like}${num !== null ? `,order_number.eq.${num}` : ""}`).limit(6),
-        supabase.from("profiles").select("id, email, full_name").or(`email.ilike.${like},full_name.ilike.${like}`).limit(6),
+        supabase.from("orders").select("id, order_number, customer_name, customer_email, total").or(`customer_name.ilike.${like},customer_email.ilike.${like}${num !== null ? `,order_number.eq.${num}` : ""}`).limit(8),
       ]);
+      const orders = o.data ?? [];
+      const seen = new Set<string>();
+      const customers = orders.filter((x) => { const k = x.customer_email.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 4);
       return [
         ...(p.data ?? []).map((x): Hit => ({ kind: "product", label: x.name, sub: `${x.sku ?? "No SKU"} · ${x.status}`, to: "/admin/products" })),
-        ...(o.data ?? []).map((x): Hit => ({ kind: "order", label: `Order #${x.order_number} — ${x.customer_name}`, sub: x.customer_email, to: "/admin/orders" })),
-        ...(c.data ?? []).map((x): Hit => ({ kind: "customer", label: x.full_name || x.email, sub: x.email, to: "/admin/customers" })),
+        ...orders.map((x): Hit => ({ kind: "order", label: `Order #${x.order_number} — ${x.customer_name}`, sub: x.customer_email, to: "/admin/orders" })),
+        ...customers.map((x): Hit => ({ kind: "customer", label: x.customer_name, sub: x.customer_email, to: "/admin/customers" })),
       ];
     },
     staleTime: 10_000,
