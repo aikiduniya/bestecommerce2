@@ -10,6 +10,7 @@ export type VariantDraft = {
   sku: string;
   price: string;
   compare_at_price: string;
+  sale_price: string;
   stock: number;
   image_url: string;
   is_active: boolean;
@@ -43,7 +44,7 @@ export function VariantsEditor({
       combos.map((c) => existing.get(key(c)) ?? {
         options: c,
         sku: baseSku ? `${baseSku}-${Object.values(c).join("-").toUpperCase().replace(/\s+/g, "")}` : "",
-        price: "", compare_at_price: "", stock: 0, image_url: "", is_active: true,
+        price: "", compare_at_price: "", sale_price: "", stock: 0, image_url: "", is_active: true,
       }),
     );
   }
@@ -72,7 +73,7 @@ export function VariantsEditor({
         <div className="overflow-x-auto rounded border">
           <table className="w-full text-xs">
             <thead className="bg-muted text-left text-muted-foreground">
-              <tr><th className="p-2">Variant</th><th className="p-2">SKU</th><th className="p-2">Price</th><th className="p-2">Compare</th><th className="p-2">Stock</th><th className="p-2">Image</th><th className="p-2">On</th></tr>
+              <tr><th className="p-2">Variant</th><th className="p-2">SKU</th><th className="p-2">Price</th><th className="p-2">Compare</th><th className="p-2">Sale</th><th className="p-2">Stock</th><th className="p-2">Image</th><th className="p-2">On</th></tr>
             </thead>
             <tbody>
               {variants.map((v, i) => (
@@ -81,6 +82,7 @@ export function VariantsEditor({
                   <td className="p-1"><Input className="h-8 w-32 text-xs" value={v.sku} onChange={(e) => upd(i, { sku: e.target.value })} /></td>
                   <td className="p-1"><Input className="h-8 w-20 text-xs" type="number" step="0.01" min="0" placeholder="Base" value={v.price} onChange={(e) => upd(i, { price: e.target.value })} /></td>
                   <td className="p-1"><Input className="h-8 w-20 text-xs" type="number" step="0.01" min="0" value={v.compare_at_price} onChange={(e) => upd(i, { compare_at_price: e.target.value })} /></td>
+                  <td className="p-1"><Input className="h-8 w-20 text-xs" type="number" step="0.01" min="0" placeholder="Sale" value={v.sale_price} onChange={(e) => upd(i, { sale_price: e.target.value })} /></td>
                   <td className="p-1"><Input className="h-8 w-16 text-xs" type="number" min="0" value={v.stock} onChange={(e) => upd(i, { stock: Math.max(0, Number(e.target.value)) })} /></td>
                   <td className="p-1">
                     <select className="h-8 w-24 rounded border bg-background text-xs" value={v.image_url} onChange={(e) => upd(i, { image_url: e.target.value })}>
