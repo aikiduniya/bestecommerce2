@@ -6,6 +6,7 @@ import { Heart, Minus, Plus, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { brandsQuery, categoriesQuery, money, optionsOf, productsQuery, settingsQuery, variantsQuery } from "@/lib/store";
 import { pushRecentlyViewed, useCart } from "@/lib/cart";
+import { effectivePrice, regularPrice, saleActive } from "@/lib/sale";
 import { useSessionUser } from "@/lib/auth";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
@@ -89,8 +90,10 @@ function ProductPage() {
   }
 
   const images = [...(variant?.image_url ? [variant.image_url] : []), ...p.images].filter((v, i, a) => a.indexOf(v) === i);
-  const price = Number(variant?.price ?? p.price);
-  const compare = variant?.compare_at_price ?? p.compare_at_price;
+  const price = effectivePrice(p, variant);
+  const reg = regularPrice(p, variant);
+  const flashSale = saleActive(p) && (p.sale_price !== null || variant?.sale_price != null) && price < reg;
+  const compare = flashSale ? reg : (variant?.compare_at_price ?? p.compare_at_price);
   const stock = hasVariants ? variant?.stock ?? 0 : p.stock;
   const needsChoice = hasVariants && !variant;
   const related = products.filter((x) => x.status === "active" && x.id !== p.id && x.category_id === p.category_id).slice(0, 4);
