@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Minus, Plus, X } from "lucide-react";
 import { money, optionLabel, settingsQuery } from "@/lib/store";
 import { useCart } from "@/lib/cart";
+import { translate, useLang } from "@/lib/i18n";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { Button } from "@/components/ui/button";
 
@@ -22,14 +23,16 @@ function CartPage() {
   const cart = useCart();
   const { data: s } = useQuery(settingsQuery);
   const cur = s?.currency;
+  const lang = useLang();
+  const t = (key: string) => translate(s?.translations, lang, key);
   return (
     <StoreLayout>
       <div className="mx-auto max-w-5xl px-6 py-14">
-        <h1 className="text-6xl">Your cart</h1>
+        <h1 className="text-6xl">{t("cart.title")}</h1>
         {cart.items.length === 0 ? (
           <div className="mt-12 rounded border border-dashed py-24 text-center">
-            <p className="text-muted-foreground">Your cart is empty.</p>
-            <Button className="mt-6" asChild><Link to="/shop">Continue shopping</Link></Button>
+            <p className="text-muted-foreground">{t("cart.empty")}</p>
+            <Button className="mt-6" asChild><Link to="/shop">{t("cart.continue")}</Link></Button>
           </div>
         ) : (
           <div className="mt-10 grid gap-10 md:grid-cols-[1fr_320px]">
@@ -48,17 +51,17 @@ function CartPage() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end justify-between">
-                    <button onClick={() => cart.remove(i.product_id, i.variant_id)} aria-label="Remove"><X className="size-4 text-muted-foreground" /></button>
+                    <button onClick={() => cart.remove(i.product_id, i.variant_id)} aria-label={t("cart.remove")}><X className="size-4 text-muted-foreground" /></button>
                     <p className="font-medium">{money(i.price * i.qty, cur)}</p>
                   </div>
                 </div>
               ))}
             </div>
             <div className="h-fit rounded border bg-card p-6">
-              <div className="flex justify-between text-sm"><span>Subtotal</span><span>{money(cart.subtotal, cur)}</span></div>
+              <div className="flex justify-between text-sm"><span>{t("cart.subtotal")}</span><span>{money(cart.subtotal, cur)}</span></div>
               <p className="mt-2 text-xs text-muted-foreground">Shipping is calculated at checkout. Final prices are confirmed when you place your order.</p>
-              <Button className="mt-6 w-full" size="lg" asChild><Link to="/checkout">Checkout</Link></Button>
-              <Link to="/shop" className="mt-4 block text-center text-sm text-muted-foreground hover:text-foreground">Continue shopping</Link>
+              <Button className="mt-6 w-full" size="lg" asChild><Link to="/checkout">{t("cart.checkout")}</Link></Button>
+              <Link to="/shop" className="mt-4 block text-center text-sm text-muted-foreground hover:text-foreground">{t("cart.continue")}</Link>
             </div>
           </div>
         )}
