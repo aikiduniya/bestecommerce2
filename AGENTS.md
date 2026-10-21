@@ -15,3 +15,7 @@
 - Admin pages live under `src/routes/_authenticated/admin.*` and read/write via the browser client protected by RLS.
 - Admin write access is enforced by RLS via `has_permission(uid, perm)` (perms: catalog, orders, customers; admin has all); settings/shipping/staff/activity are admin-only. Staff are managed only through the `admin_set_staff` RPC. Why: permissions must hold server-side, not just in the menu.
 - COD rules live in `store_settings` and are enforced inside `place_order`; the checkout UI only mirrors them for messaging. Why: totals and eligibility must never be trusted from the browser.
+
+- Coupons are validated and applied only inside `place_order` (via `coupon_discount`); `check_coupon` is a preview for the checkout UI. Why: discounts must never be trusted from the browser.
+- Customer-submitted reviews/questions are forced to pending (and verified-buyer computed) by a BEFORE INSERT trigger. Why: customers must not self-approve or fake badges.
+- Admin-written CMS/blog text is rendered as plain text via `Prose` (no raw HTML). Why: prevents script injection through content.
