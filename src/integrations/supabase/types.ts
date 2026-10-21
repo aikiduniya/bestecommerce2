@@ -1032,6 +1032,56 @@ export type Database = {
           },
         ]
       }
+      return_requests: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          email: string
+          id: string
+          items: Json
+          order_id: string
+          reason: string
+          restocked: boolean
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          items?: Json
+          order_id: string
+          reason: string
+          restocked?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          items?: Json
+          order_id?: string
+          reason?: string
+          restocked?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           author_name: string
@@ -1450,6 +1500,19 @@ export type Database = {
           _items: Json
           _notes?: string
           _zone_id: string
+        }
+        Returns: Json
+      }
+      process_return: {
+        Args: { _action: string; _id: string; _note: string; _restock: boolean }
+        Returns: Json
+      }
+      submit_return: {
+        Args: {
+          _email: string
+          _items: Json
+          _order_number: number
+          _reason: string
         }
         Returns: Json
       }
