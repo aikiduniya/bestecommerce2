@@ -226,8 +226,8 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
       case "text":
         return (
           <section className="mx-auto max-w-3xl px-6 pt-20 text-center">
-            {sec.title && <h2 className="text-4xl">{sec.title}</h2>}
-            <Prose className="mt-4 text-muted-foreground">{c.body ?? ""}</Prose>
+            {sec.title && <h2 className="mb-4 text-4xl">{sec.title}</h2>}
+            <Prose text={c.body ?? ""} />
           </section>
         );
       case "image":
