@@ -18,7 +18,8 @@ export const Route = createFileRoute("/_authenticated/admin/discounts")({ compon
 
 type Discount = Database["public"]["Tables"]["automatic_discounts"]["Row"];
 
-const empty = { name: "", kind: "percent", value: "10", scope: "all", target_id: "", starts_at: "", ends_at: "", priority: "0" };
+type DiscForm = { id?: string | undefined; name: string; kind: string; value: string; scope: string; target_id: string; starts_at: string; ends_at: string; priority: string };
+const empty: DiscForm = { name: "", kind: "percent", value: "10", scope: "all", target_id: "", starts_at: "", ends_at: "", priority: "0" };
 const toIso = (v: string) => (v ? new Date(v).toISOString() : null);
 const toLocal = (v: string | null) => (v ? new Date(v).toISOString().slice(0, 16) : "");
 
