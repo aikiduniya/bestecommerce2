@@ -51,6 +51,7 @@ function CartPage() {
                       <span className="w-8 text-center text-sm">{i.qty}</span>
                       <button className="p-2" onClick={() => cart.setQty(i.product_id, i.variant_id, i.qty + 1)} aria-label="Increase"><Plus className="size-3" /></button>
                     </div>
+                    <button className="ml-4 text-xs text-muted-foreground underline hover:text-foreground" onClick={() => cart.saveForLater(i.product_id, i.variant_id)}>Save for later</button>
                   </div>
                   <div className="flex flex-col items-end justify-between">
                     <button onClick={() => cart.remove(i.product_id, i.variant_id)} aria-label={t("cart.remove")}><X className="size-4 text-muted-foreground" /></button>
@@ -66,6 +67,25 @@ function CartPage() {
               <Link to="/{-$lang}/shop" params={lp} className="mt-4 block text-center text-sm text-muted-foreground hover:text-foreground">{t("cart.continue")}</Link>
             </div>
           </div>
+        )}
+        {cart.saved.length > 0 && (
+          <section className="mt-14">
+            <h2 className="text-3xl">Saved for later ({cart.saved.length})</h2>
+            <div className="mt-6 divide-y border-y">
+              {cart.saved.map((i) => (
+                <div key={i.product_id + (i.variant_id ?? "")} className="flex items-center gap-4 py-4">
+                  <div className="size-16 shrink-0 overflow-hidden rounded bg-secondary">{i.image && <img src={i.image} alt="" className="size-full object-cover" />}</div>
+                  <div className="flex-1">
+                    <Link to="/{-$lang}/product/$slug" params={{ ...lp, slug: i.slug }} className="font-display text-lg hover:text-gold">{i.name}</Link>
+                    {i.options && <p className="text-xs text-muted-foreground">{optionLabel(i.options)}</p>}
+                    <p className="text-sm">{money(i.price, cur)}</p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => cart.moveToCart(i.product_id, i.variant_id)}>Move to cart</Button>
+                  <button onClick={() => cart.removeSaved(i.product_id, i.variant_id)} aria-label="Remove"><X className="size-4 text-muted-foreground" /></button>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </StoreLayout>
