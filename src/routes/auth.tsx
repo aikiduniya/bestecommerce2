@@ -78,7 +78,7 @@ function AuthPage() {
 
   async function google() {
     // Self-hosted (VITE_OAUTH_MODE=supabase): standard Supabase Auth Google provider with the owner's own Google client.
-    if (import.meta.env.VITE_OAUTH_MODE === "supabase") {
+    if (import.meta.env["VITE_OAUTH_MODE"] === "supabase") {
       const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + "/auth" } });
       if (error) toast.error(error.message);
       return;
@@ -109,7 +109,7 @@ function AuthPage() {
               Sign in to track orders, save favourites and check out faster.
             </p>
           </div>
-          {import.meta.env.VITE_GOOGLE_LOGIN !== "off" && (
+          {import.meta.env["VITE_GOOGLE_LOGIN"] !== "off" && (
             <>
               <Button type="button" variant="outline" className="w-full" onClick={google}>
                 Continue with Google
