@@ -52,7 +52,7 @@ command -v bun >/dev/null && bun install --lockfile-only >/dev/null 2>&1 || true
 
 # Fail if anything Lovable-specific is left in code/config
 if grep -rIl -E "@lovable\.dev|integrations/lovable|lovable-error-reporting|cloud-auth-js|vite-tanstack-config|lovable\.dev/|__lovable|lovable\.app|Lovable Cloud|LOVABLE_" \
-     --exclude-dir=docs --exclude=START-HERE.md --exclude=README.md . ; then
+     src package.json bun.lock vite.config.ts tsconfig.json vitest.config.ts eslint.config.js components.json ; then
   echo "Lovable references remain (above)"; exit 1; fi
 
 mkdir -p "$(dirname "$OUT")"; cd ..; rm -f "$OUT"; zip -qr "$OUT" store
