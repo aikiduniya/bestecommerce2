@@ -239,6 +239,13 @@
       "when": 1792590575636,
       "tag": "0033_smtp_hide_password",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1792751609026,
+      "tag": "0034_stripe_payments",
+      "breakpoints": true
     }
   ]
 }
