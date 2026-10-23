@@ -4,7 +4,7 @@
 set -euo pipefail
 BASE=${BASE:-/srv/store}; APP=$BASE/app; REL=$BASE/releases/$(date +%Y%m%d%H%M%S)
 PORT=${PORT:-3000}
-RESTART=${RESTART_CMD:-"$RESTART"}   # override for non-systemd hosts
+RESTART=${RESTART_CMD:-"sudo systemctl restart store"}   # override for non-systemd hosts
 cd "$APP"
 [ "${NO_PULL:-}" = "1" ] || git pull --ff-only
 scripts/selfhost/build-node.sh
