@@ -9,7 +9,7 @@ Goal: move products, customers, orders, images, settings and admin access with z
 4. Search Console: add the new property, submit `/sitemap.xml`. Merchant Center: update feed URL.
 
 ## Phase 1 — Prepare the new stack (no downtime)
-1. Provision VPS + Supabase (INSTALL.md §A–D). **Do not run `apply-migrations.sh`** — the export contains the schema.
+1. Provision VPS + Supabase (INSTALL.md §A–D). **Do not run `apply-migrations.sh` normally** — the export contains the schema. After the import, run it once as `BASELINE=1 scripts/selfhost/apply-migrations.sh` (export taken from the same source version) so future updates apply only newer files.
 2. Generate a new `SMTP_ENCRYPTION_KEY` (`openssl rand -base64 32`).
 3. Deploy the app on a staging host (e.g. `new.yourstore.com`) pointing at the new Supabase (INSTALL.md §E–F).
 

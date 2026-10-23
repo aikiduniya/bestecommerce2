@@ -60,3 +60,4 @@
 | cPanel | **NOT TESTED** |
 
 The complete independent stack (own PostgreSQL, auth, storage, API) was installed from zero and the core store flows passed. SMTP sending, Google sign-in, Stripe and Docker/cPanel variants remain unverified.
+- [FEATURE-PARITY.md](FEATURE-PARITY.md) — module-by-module parity, differences outside Lovable, update process
