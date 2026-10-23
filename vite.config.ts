@@ -20,8 +20,9 @@ const STUBS: [RegExp, string][] = [
 const selfHostStubs: Plugin = {
   name: "selfhost-stubs",
   enforce: "pre",
-  resolveId(id) {
-    for (const [re, target] of STUBS) if (re.test(id)) return target;
+  resolveId(id, importer) {
+    const full = id.startsWith(".") && importer ? fileURLToPath(new URL(id, `file://${importer}`)) : id;
+    for (const [re, target] of STUBS) if (re.test(full)) return target;
     return null;
   },
 };
