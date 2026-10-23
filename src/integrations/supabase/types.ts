@@ -1957,6 +1957,7 @@ export type Database = {
           cookie_consent_text: string
           currencies: Json
           currency: string
+          enforce_primary_host: boolean
           favicon_url: string | null
           font_body: string
           font_display: string
@@ -2000,6 +2001,7 @@ export type Database = {
           section_spacing: string
           seo_description: string | null
           seo_title: string | null
+          site_url: string | null
           social_links: Json
           store_name: string
           stripe_enabled: boolean
@@ -2046,6 +2048,7 @@ export type Database = {
           cookie_consent_text?: string
           currencies?: Json
           currency?: string
+          enforce_primary_host?: boolean
           favicon_url?: string | null
           font_body?: string
           font_display?: string
@@ -2089,6 +2092,7 @@ export type Database = {
           section_spacing?: string
           seo_description?: string | null
           seo_title?: string | null
+          site_url?: string | null
           social_links?: Json
           store_name?: string
           stripe_enabled?: boolean
@@ -2135,6 +2139,7 @@ export type Database = {
           cookie_consent_text?: string
           currencies?: Json
           currency?: string
+          enforce_primary_host?: boolean
           favicon_url?: string | null
           font_body?: string
           font_display?: string
@@ -2178,6 +2183,7 @@ export type Database = {
           section_spacing?: string
           seo_description?: string | null
           seo_title?: string | null
+          site_url?: string | null
           social_links?: Json
           store_name?: string
           stripe_enabled?: boolean
