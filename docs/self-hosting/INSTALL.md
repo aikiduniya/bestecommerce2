@@ -190,13 +190,24 @@ Optional: `curl -fsS https://yourstore.com/sitemap.xml >/dev/null` hourly as an 
 
 ## L. Backups
 
-`scripts/selfhost/backup.sh` writes one complete, checksummed set per run (keeps `KEEP_DAYS`=14, optional off-site copy with `RCLONE_REMOTE`):
-* `db-*.dump` — `public` (store data, settings, roles, migration log), `auth` (accounts, password hashes, 2FA, Google identities) and `storage` (file records). The store uses no other schemas.
-* `storage-*.tgz` — uploaded files from `STORAGE_DIR` (S3/R2 users back up the bucket instead).
-* `config-*.tgz(.enc)` — `.env` (incl. `SMTP_ENCRYPTION_KEY`, without which saved SMTP/Stripe secrets can't be decrypted) plus any `CONFIG_FILES` (e.g. auth/storage service env files). Set `BACKUP_PASSPHRASE` to encrypt it.
-* `SHA256SUMS-*`.
+Backups are **always encrypted** with [age](https://age-encryption.org) (authenticated encryption) to a public key; the private key never lives on the server.
 
-Restore into an empty database: `DATABASE_URL=... STORAGE_DIR=... BACKUP_PASSPHRASE=... scripts/selfhost/restore.sh /srv/store/backups <timestamp>` (verifies checksums, restores all three schemas, files and config, prints counts). Test a restore monthly on a staging database.
+```bash
+sudo apt install age
+age-keygen -o backup.key            # store OFFLINE (password manager / USB) — needed to restore
+age-keygen -y backup.key > /srv/store/app/backup.pub
+# .env: BACKUP_AGE_RECIPIENTS=/srv/store/app/backup.pub  STORAGE_DIR=...  (STORAGE_EXTERNAL=1 only for S3/R2)
+scripts/selfhost/backup.sh          # prints BACKUP_SET=<timestamp>
+```
+
+Each set = `db-*.dump.age` (schemas public, auth, storage), `storage-*.tar.age` (uploaded files), `config-*.tar.age` (`.env` + `CONFIG_FILES`), `MANIFEST-*` (row/file counts), `SHA256SUMS-*`. Files are mode 600 in a 700 folder; a set is published only when complete. The script fails (and leaves nothing) if the key, database dump, files folder or `.env` is missing, or if a private key is configured by mistake. `RCLONE_REMOTE` copies only the encrypted files and then verifies the copy with `rclone check`.
+
+**Restore** (into an empty database, superuser URL):
+```bash
+DATABASE_URL=postgresql://postgres:PW@host:5432/store_restore AGE_IDENTITY=backup.key STORAGE_DIR=/new/empty/dir \
+  scripts/selfhost/restore.sh /srv/store/backups <timestamp>
+```
+It checks checksums, decrypts (tampered or wrong-key files are rejected), restores the database in **one transaction** (any error = nothing committed, exit 1), then compares every count against the MANIFEST. `RESTORE OK` is printed only after all checks pass. Test a restore monthly.
 
 ## M. Security
 
@@ -256,3 +267,13 @@ tar -xzf /srv/store/backups/storage-YYYYMMDD-HHMMSS.tgz -C /path/to/storage
 Then point `DATABASE_URL` (and the auth/API/storage services) at the restored database, or rename databases during a maintenance window.
 
 **Moved from Lovable?** After importing the export, run once: `BASELINE=1 scripts/selfhost/apply-migrations.sh`.
+
+
+## Database migrations & safe updates
+
+* `deploy-vps.sh` order: build → compatibility check → encrypted pre-deploy backup → migrations → switch → health check (`/` and `/sitemap.xml`) → automatic rollback.
+* All pending migrations run in **one transaction**: a failing migration changes nothing, the deploy stops (exit 4) and the old release keeps running.
+* **Expand/contract rule:** migrations must keep the previous release working (add tables/columns with defaults; never drop/rename/retype in the same release). `apply-migrations.sh` refuses DROP / RENAME / TRUNCATE / ALTER TYPE / SET NOT NULL (exit 3) unless `ALLOW_BREAKING=1`. Remove old columns in a *later* release once no live code uses them.
+* Health check fails → app goes back to the previous release (exit 5); the schema is compatible, so no database restore is needed. If the update used `ALLOW_BREAKING=1`, the deploy also prints the restore command for its pre-deploy backup (exit 6).
+* Failed releases are renamed `*.failed`; `rollback.sh` only returns to releases marked healthy and health-checks after switching.
+* Every deploy is logged in `/srv/store/deploy.log` with its backup timestamp.
