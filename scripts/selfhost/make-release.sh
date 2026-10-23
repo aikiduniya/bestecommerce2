@@ -43,11 +43,14 @@ for (const k of ["dependencies","devDependencies"]) for (const d of Object.keys(
 fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n");'
 sed -i '/SELF_HOSTED=1/d' scripts/selfhost/build-node.sh
 cp docs/self-hosting/RELEASE.md START-HERE.md
+cp docs/self-hosting/RELEASE.md README.md
+sed -i 's#Unset = Lovable broker\.#Google sign-in always uses your own auth server in this package.#' .env.example
+sed -i 's#foo\.lovable\.app#foo.other-host.app#' src/lib/site-url.test.ts
 rm -rf $S
 
 # Fail if anything Lovable-specific is left in code/config
-if grep -rIl -E "@lovable\.dev|integrations/lovable|lovable-error-reporting|cloud-auth-js|vite-tanstack-config|lovable\.dev/|__lovable" \
-     --exclude-dir=docs --exclude=START-HERE.md --exclude=README.md . ; then
+if grep -rIl -E "@lovable\.dev|integrations/lovable|lovable-error-reporting|cloud-auth-js|vite-tanstack-config|lovable\.dev/|__lovable|lovable\.app" \
+     --exclude-dir=docs --exclude=START-HERE.md --exclude=README.md --exclude=make-release.sh . ; then
   echo "Lovable references remain (above)"; exit 1; fi
 
 cd ..; rm -f "$OUT"; zip -qr "$OUT" store
