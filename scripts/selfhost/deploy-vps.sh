@@ -7,6 +7,11 @@ PORT=${PORT:-3000}
 cd "$APP"
 git pull --ff-only
 scripts/selfhost/build-node.sh
+# Database: backup first, then apply only new versioned migrations (additive; existing rows untouched)
+set -a; . ./.env; set +a
+: "${DATABASE_URL:?DATABASE_URL must be in .env for migrations}"
+scripts/selfhost/backup.sh
+scripts/selfhost/apply-migrations.sh
 mkdir -p "$REL" && cp -a .output "$REL/" && cp .env "$REL/.env"
 PREV=$(readlink -f "$BASE/current" || true)
 ln -sfn "$REL" "$BASE/current"
