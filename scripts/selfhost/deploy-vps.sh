@@ -40,10 +40,12 @@ ok=0; for i in $(seq 1 30); do
 if [ $ok -ne 1 ]; then
   log "health check failed — rolling back app to ${PREV:-none}"
   [ -n "$PREV" ] && ln -sfn "$PREV" "$BASE/current" && $RESTART
+  mv "$REL" "$REL.failed"   # never chosen by rollback.sh
   if [ $BREAKING -eq 1 ]; then
     log "schema change was NOT backward compatible: restore backup $SET into a new database (scripts/selfhost/restore.sh ${BACKUP_DIR:-/srv/store/backups} $SET) and point the services at it"; exit 6
   fi
   exit 5
 fi
-ls -1dt "$BASE"/releases/* | tail -n +6 | xargs -r rm -rf
+touch "$REL/HEALTHY"
+ls -1dt "$BASE"/releases/*/ | tail -n +6 | xargs -r rm -rf
 log "deployed $REL (backup $SET)"
