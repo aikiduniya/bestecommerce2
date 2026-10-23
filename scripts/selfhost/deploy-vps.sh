@@ -41,7 +41,7 @@ if [ $ok -ne 1 ]; then
   log "health check failed — rolling back app to ${PREV:-none}"
   [ -n "$PREV" ] && ln -sfn "$PREV" "$BASE/current" && $RESTART
   if [ $BREAKING -eq 1 ]; then
-    log "schema change was NOT backward compatible: restore backup $SET into a new database (scripts/selfhost/restore.sh $BACKUP_DIR $SET) and point the services at it"; exit 6
+    log "schema change was NOT backward compatible: restore backup $SET into a new database (scripts/selfhost/restore.sh ${BACKUP_DIR:-/srv/store/backups} $SET) and point the services at it"; exit 6
   fi
   exit 5
 fi
