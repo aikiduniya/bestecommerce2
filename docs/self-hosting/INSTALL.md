@@ -202,12 +202,13 @@ scripts/selfhost/backup.sh          # prints BACKUP_SET=<timestamp>
 
 Each set = `db-*.dump.age` (schemas public, auth, storage), `storage-*.tar.age` (uploaded files), `config-*.tar.age` (`.env` + `CONFIG_FILES`), `MANIFEST-*` (row/file counts), `SHA256SUMS-*`. Files are mode 600 in a 700 folder; a set is published only when complete. The script fails (and leaves nothing) if the key, database dump, files folder or `.env` is missing, or if a private key is configured by mistake. `RCLONE_REMOTE` copies only the encrypted files and then verifies the copy with `rclone check`.
 
-**Restore** (into an empty database, superuser URL):
+**Restore** (never overwrites; creates a NEW database, photo folder and config folder):
 ```bash
-DATABASE_URL=postgresql://postgres:PW@host:5432/store_restore AGE_IDENTITY=backup.key STORAGE_DIR=/new/empty/dir \
+ADMIN_URL=postgresql://postgres:PW@host:5432/postgres TARGET_DB=store_restored AGE_IDENTITY=backup.key \
+STORAGE_DIR=/srv/storage-restored CONFIG_OUT=/srv/store/config-restored \
   scripts/selfhost/restore.sh /srv/store/backups <timestamp>
 ```
-It checks checksums, decrypts (tampered or wrong-key files are rejected), restores the database in **one transaction** (any error = nothing committed, exit 1), then compares every count against the MANIFEST. `RESTORE OK` is printed only after all checks pass. Test a restore monthly.
+Staged: (1) checksums, decryption (tampered/wrong-key files rejected) and validation of all three archives; (2) database into a staging database in one transaction, counts checked against the MANIFEST; (3) photos and config into staging folders, counts checked; (4) only then everything is renamed into place. Any failure drops the staging database, deletes staging folders, undoes partial activation and exits 1. `RESTORE OK` is printed only after activation. Then point the auth/API/storage services and `.env` at the new database and folder. Test a restore monthly.
 
 ## M. Security
 
@@ -273,7 +274,14 @@ Then point `DATABASE_URL` (and the auth/API/storage services) at the restored da
 
 * `deploy-vps.sh` order: build → compatibility check → encrypted pre-deploy backup → migrations → switch → health check (`/` and `/sitemap.xml`) → automatic rollback.
 * All pending migrations run in **one transaction**: a failing migration changes nothing, the deploy stops (exit 4) and the old release keeps running.
-* **Expand/contract rule:** migrations must keep the previous release working (add tables/columns with defaults; never drop/rename/retype in the same release). `apply-migrations.sh` refuses DROP / RENAME / TRUNCATE / ALTER TYPE / SET NOT NULL (exit 3) unless `ALLOW_BREAKING=1`. Remove old columns in a *later* release once no live code uses them.
-* Health check fails → app goes back to the previous release (exit 5); the schema is compatible, so no database restore is needed. If the update used `ALLOW_BREAKING=1`, the deploy also prints the restore command for its pre-deploy backup (exit 6).
+* **Expand/contract rule:** migrations must keep the previous release working (add tables/columns with defaults; never drop/rename/retype in the same release). `apply-migrations.sh` refuses DROP / RENAME / TRUNCATE / ALTER TYPE / SET NOT NULL (exit 3). `deploy-vps.sh` **never** deploys these automatically, even with `ALLOW_BREAKING=1`. Remove old columns in a *later* release once no live code uses them.
+* Health check fails → app goes back to the previous release (exit 5); the schema is compatible, so no database restore is needed. If the previous release is also unhealthy, the deploy logs CRITICAL and exits 7 (never success).
 * Failed releases are renamed `*.failed`; `rollback.sh` only returns to releases marked healthy and health-checks after switching.
 * Every deploy is logged in `/srv/store/deploy.log` with its backup timestamp.
+
+### Breaking schema changes (manual maintenance window only)
+1. Announce downtime; `sudo systemctl stop store`.
+2. `scripts/selfhost/backup.sh` → note `BACKUP_SET`.
+3. Rehearse first: restore that set into a scratch database (`restore.sh`, `TARGET_DB=rehearsal`), run `ALLOW_BREAKING=1 DATABASE_URL=<rehearsal> scripts/selfhost/apply-migrations.sh`, start the new release against it and check it.
+4. Only if the rehearsal passed: `ALLOW_BREAKING=1 scripts/selfhost/apply-migrations.sh` on the live database, then `NO_PULL=1 scripts/selfhost/deploy-vps.sh`.
+5. If anything fails: keep the store stopped, restore the step-2 backup into a new database with `restore.sh`, point the services at it, start the previous release.
