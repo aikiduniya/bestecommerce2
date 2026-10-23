@@ -46,11 +46,11 @@ cp docs/self-hosting/RELEASE.md START-HERE.md
 cp docs/self-hosting/RELEASE.md README.md
 sed -i 's#Unset = Lovable broker\.#Google sign-in always uses your own auth server in this package.#' .env.example
 sed -i 's#foo\.lovable\.app#foo.other-host.app#' src/lib/site-url.test.ts
-rm -rf $S
+rm -rf $S scripts/selfhost/make-release.sh
 
 # Fail if anything Lovable-specific is left in code/config
 if grep -rIl -E "@lovable\.dev|integrations/lovable|lovable-error-reporting|cloud-auth-js|vite-tanstack-config|lovable\.dev/|__lovable|lovable\.app" \
-     --exclude-dir=docs --exclude=START-HERE.md --exclude=README.md --exclude=make-release.sh . ; then
+     --exclude-dir=docs --exclude=START-HERE.md --exclude=README.md . ; then
   echo "Lovable references remain (above)"; exit 1; fi
 
 cd ..; rm -f "$OUT"; zip -qr "$OUT" store
