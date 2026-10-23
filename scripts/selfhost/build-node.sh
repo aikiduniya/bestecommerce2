@@ -8,6 +8,7 @@ for v in VITE_SUPABASE_URL VITE_SUPABASE_PUBLISHABLE_KEY SUPABASE_URL SUPABASE_P
   [ -n "${!v:-}" ] || { echo "Missing $v in .env"; exit 1; }
 done
 export NITRO_PRESET="${NITRO_PRESET:-node-server}"
+export SELF_HOSTED=1   # strip Lovable-only helpers from this build
 if command -v bun >/dev/null; then bun install --frozen-lockfile || bun install; else npm ci || npm install; fi
 npx vite build
 # SMTP on Node uses nodemailer (loaded at runtime, not bundled).

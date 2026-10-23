@@ -26,6 +26,9 @@ export function MfaSettings() {
 
   async function startEnroll() {
     setBusy(true);
+    // Clear abandoned (never-verified) setups first, otherwise a retry fails with "friendly name already exists".
+    const { data: existing } = await supabase.auth.mfa.listFactors();
+    for (const f of existing?.all ?? []) if (f.status === "unverified") await supabase.auth.mfa.unenroll({ factorId: f.id });
     const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Authenticator app" });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
@@ -79,7 +82,7 @@ export function MfaSettings() {
       {enroll && (
         <div className="space-y-4 rounded border bg-card p-5">
           <p className="text-sm">1. Scan this code with your authenticator app:</p>
-          <img src={`data:image/svg+xml;utf8,${encodeURIComponent(enroll.qr)}`} alt="Authenticator QR code" className="h-44 w-44 rounded border bg-white p-2" />
+          <img src={enroll.qr.startsWith("data:") ? enroll.qr : `data:image/svg+xml;utf8,${encodeURIComponent(enroll.qr)}`} alt="Authenticator QR code" className="h-44 w-44 rounded border bg-white p-2" />
           <details className="text-xs text-muted-foreground">
             <summary>Can't scan? Enter this key manually</summary>
             <code className="mt-1 block select-all break-all rounded bg-muted p-2">{enroll.secret}</code>
