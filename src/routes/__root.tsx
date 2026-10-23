@@ -17,6 +17,8 @@ import { StoreTheme } from "@/components/store/StoreTheme";
 import { Tracking } from "@/components/store/Tracking";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/store";
+import { setSite } from "@/lib/seo-head";
+import { currentSiteUrl } from "@/lib/site-origin";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -102,7 +104,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(settingsQuery),
+  loader: async ({ context }) => {
+    const st = await context.queryClient.ensureQueryData(settingsQuery);
+    setSite(currentSiteUrl((st as { site_url?: string | null } | null)?.site_url));
+    return st;
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

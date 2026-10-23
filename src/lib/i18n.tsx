@@ -173,7 +173,6 @@ export function langUrl(path: string, lang: string | null): string {
   return `/${lang}${path === "/" ? "/" : path}`;
 }
 
-const SITE_BASE = "https://bestecommerce2.lovable.app";
 
 // hreflang alternates for a storefront path: x-default + en + every enabled language.
 export function hreflangLinks(settings: { languages?: unknown } | null | undefined, path: string) {

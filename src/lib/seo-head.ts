@@ -1,4 +1,8 @@
-export const SITE = "https://bestecommerce2.lovable.app";
+/** Active canonical origin (live binding). Set once per request by the root loader from Admin → Settings → Primary website URL. */
+export let SITE = "";
+export function setSite(origin: string) {
+  SITE = origin.replace(/\/+$/, "");
+}
 
 type Meta = Record<string, string>;
 /** Extra robots/keywords meta shared by content routes. */
