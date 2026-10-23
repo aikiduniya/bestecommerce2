@@ -7,6 +7,7 @@ import { money, myAddressesQuery, myLoyaltyQuery, optionLabel, settingsQuery, ta
 import { useCart } from "@/lib/cart";
 import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
 import { sendNotification } from "@/lib/email.functions";
+import { createStripeCheckout } from "@/lib/payments.functions";
 import { useDisplayCurrency } from "@/lib/currency";
 import { isValidLang, useLang } from "@/lib/i18n";
 import { useSessionUser } from "@/lib/auth";
@@ -52,6 +53,14 @@ function Checkout() {
   const [saveAddr, setSaveAddr] = useState(true);
   const { data: addresses = [] } = useQuery({ ...myAddressesQuery(user?.id ?? ""), enabled: !!user });
   const cur = s?.currency;
+  const { data: payOpts } = useQuery({
+    queryKey: ["payment-options"],
+    queryFn: async () => { const { data } = await supabase.rpc("public_payment_options"); return (data ?? { stripe: false }) as { stripe: boolean }; },
+  });
+  const stripeOn = !!payOpts?.stripe;
+  const codOn = !!s?.cod_enabled;
+  const [payChoice, setPayChoice] = useState<"cod" | "stripe">("cod");
+  const pay: "cod" | "stripe" | null = payChoice === "stripe" && stripeOn ? "stripe" : codOn ? "cod" : stripeOn ? "stripe" : null;
   const dc = useDisplayCurrency();
 
   useEffect(() => { if (user?.email) setF((x) => ({ ...x, email: x.email || user.email! })); }, [user]);
@@ -98,7 +107,7 @@ function Checkout() {
   // Re-check if cart changes after applying
   useEffect(() => { if (coupon) setCoupon(null); }, [cart.subtotal]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const codFee = Number(s?.cod_fee ?? 0);
+  const codFee = pay === "cod" ? Number(s?.cod_fee ?? 0) : 0;
   const pointsToRedeem = s?.loyalty_enabled && user ? Math.min(Math.max(parseInt(pointsInput) || 0, 0), pointsBalance) : 0;
   const pointsValue = Math.round(pointsToRedeem * Number(s?.loyalty_redeem_value ?? 0) * 100) / 100;
   const merchandise = Math.max(cart.subtotal - autoDiscount - discount - pointsValue, 0);
@@ -130,7 +139,7 @@ function Checkout() {
     }, { onConflict: "user_id" }).then(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, cart.items, cart.subtotal]);
-  const codIssue = !s ? null
+  const codIssue = !s || pay !== "cod" ? null
     : s.cod_countries.length && country && !s.cod_countries.includes(country) ? `Cash on Delivery is not available in ${country}.`
     : zone && s.cod_excluded_zones.includes(zone.id) ? `Cash on Delivery is not available with ${zone.name}.`
     : s.cod_min_order !== null && cart.subtotal < Number(s.cod_min_order) ? `Cash on Delivery requires a minimum order of ${money(s.cod_min_order, cur)}.`
@@ -150,10 +159,23 @@ function Checkout() {
       ...(coupon ? { _coupon: coupon.code } : {}),
       ...(gift ? { _gift_card: gift.code } : {}),
       ...(pointsToRedeem > 0 ? { _points: pointsToRedeem } : {}),
+      _payment: pay ?? "cod",
     });
+    if (error) { setPlacing(false); toast.error(error.message); return; }
+    const res = data as { id: string; order_number: number; guest_token: string | null };
+    if (pay === "stripe") {
+      try {
+        const r = await createStripeCheckout({ data: { orderId: res.id, guestToken: res.guest_token ?? undefined, origin: window.location.origin } });
+        cart.clear();
+        window.location.href = r.url;
+      } catch (err) {
+        setPlacing(false);
+        toast.error(`${(err as Error).message}. Your order #${res.order_number} is saved — you can retry payment.`);
+        navigate({ to: "/payment/cancelled", search: { order: res.id, t: res.guest_token ?? undefined } });
+      }
+      return;
+    }
     setPlacing(false);
-    if (error) { toast.error(error.message); return; }
-    const res = data as { id: string; order_number: number };
     if (user && saveAddr) {
       void supabase.from("addresses").insert({
         user_id: user.id, label: addresses.length ? `Address ${addresses.length + 1}` : "Home",
@@ -251,11 +273,17 @@ function Checkout() {
           </section>
           <section className="space-y-3">
             <h2 className="text-2xl">Payment</h2>
-            {s?.cod_enabled ? (
-              <label className="flex items-center gap-3 rounded border border-gold bg-gold-soft/40 p-4 text-sm">
-                <input type="radio" checked readOnly /> <span><span className="block font-medium">Cash on Delivery</span><span className="text-xs text-muted-foreground">Pay in cash when your order arrives.</span></span>
+            {codOn && (
+              <label className={`flex cursor-pointer items-center gap-3 rounded border p-4 text-sm ${pay === "cod" ? "border-gold bg-gold-soft/40" : ""}`}>
+                <input type="radio" name="pay" checked={pay === "cod"} onChange={() => setPayChoice("cod")} /> <span><span className="block font-medium">Cash on Delivery</span><span className="text-xs text-muted-foreground">Pay in cash when your order arrives.</span></span>
               </label>
-            ) : (
+            )}
+            {stripeOn && (
+              <label className={`flex cursor-pointer items-center gap-3 rounded border p-4 text-sm ${pay === "stripe" ? "border-gold bg-gold-soft/40" : ""}`}>
+                <input type="radio" name="pay" checked={pay === "stripe"} onChange={() => setPayChoice("stripe")} /> <span><span className="block font-medium">Credit / debit card</span><span className="text-xs text-muted-foreground">Pay securely on the next page. Your card details never touch our servers.</span></span>
+              </label>
+            )}
+            {!codOn && !stripeOn && (
               <p className="text-sm text-destructive">No payment method is currently available. Please contact the store.</p>
             )}
           </section>
@@ -307,8 +335,8 @@ function Checkout() {
             {taxInfo.tax > 0 && taxInfo.inclusive && <p className="text-xs text-muted-foreground">Includes {money(taxInfo.tax, cur)} {s?.tax_label ?? "tax"}.</p>}
             {codIssue && <p className="text-xs text-destructive">{codIssue}</p>}
           </div>
-          <Button type="submit" size="lg" className="mt-6 w-full" disabled={placing || !s?.cod_enabled || !zone || !!codIssue}>
-            {placing ? "Placing order…" : "Place order"}
+          <Button type="submit" size="lg" className="mt-6 w-full" disabled={placing || !pay || !zone || !!codIssue}>
+            {placing ? (pay === "stripe" ? "Redirecting to payment…" : "Placing order…") : pay === "stripe" ? "Continue to payment" : "Place order"}
           </Button>
           {dc && dc.code !== cur && (
             <p className="mt-3 text-center text-xs text-muted-foreground">
