@@ -20,7 +20,7 @@ PENDING=(); for f in $(ls drizzle/migrations/*.sql | sort); do grep -qxF "$(base
 if [ ${#PENDING[@]} -eq 0 ]; then echo "No pending migrations."
 else
   echo "Pending: ${PENDING[*]##*/}"
-  BREAK=$(grep -n -i -E '\b(drop[[:space:]]+(table|column|schema|view|function|type)|rename[[:space:]]+(to|column)|truncate|alter[[:space:]]+column[^;]*[[:space:]]type[[:space:]]|set[[:space:]]+not[[:space:]]+null)\b' "${PENDING[@]}" | grep -v -E ':[0-9]+:[[:space:]]*--' || true)
+  BREAK=""; [ -z "$APPLIED" ] || BREAK=$(grep -n -i -E '\b(drop[[:space:]]+(table|column|schema|view|function|type)|rename[[:space:]]+(to|column)|truncate|alter[[:space:]]+column[^;]*[[:space:]]type[[:space:]]|set[[:space:]]+not[[:space:]]+null)\b' "${PENDING[@]}" | grep -v -E ':[0-9]+:[[:space:]]*--' || true)
   if [ -n "$BREAK" ]; then
     echo "Backward-INCOMPATIBLE statements found:"; echo "$BREAK"
     [ "${ALLOW_BREAKING:-}" = "1" ] || { echo "Refusing (set ALLOW_BREAKING=1 only with a verified backup; app rollback will then need a DB restore)."; exit 3; }
