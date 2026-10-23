@@ -6,7 +6,7 @@ import { StoreLayout } from "@/components/store/StoreLayout";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/payment/success")({
-  validateSearch: (s: Record<string, unknown>) => ({ session_id: typeof s.session_id === "string" ? s.session_id : "" }),
+  validateSearch: (s: Record<string, unknown>) => ({ session_id: typeof s["session_id"] === "string" ? s["session_id"] : "" }),
   head: () => ({
     meta: [
       { title: "Payment received" },

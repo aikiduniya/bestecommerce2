@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/payment/cancelled")({
   validateSearch: (s: Record<string, unknown>) => ({
-    order: typeof s.order === "string" ? s.order : "",
-    t: typeof s.t === "string" ? s.t : undefined,
+    order: typeof s["order"] === "string" ? s["order"] : "",
+    t: typeof s["t"] === "string" ? s["t"] : undefined,
   }),
   head: () => ({
     meta: [

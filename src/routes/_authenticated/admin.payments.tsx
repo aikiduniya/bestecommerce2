@@ -76,7 +76,7 @@ function Payments() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Payments" description="Stripe card payments. Cash on Delivery is managed separately in Settings." />
+      <PageHeader title="Payments" subtitle="Stripe card payments. Cash on Delivery is managed separately in Settings." />
       <Tabs defaultValue="stripe">
         <TabsList><TabsTrigger value="stripe">Stripe</TabsTrigger><TabsTrigger value="orders">Card orders</TabsTrigger><TabsTrigger value="logs">Transaction log</TabsTrigger></TabsList>
         <TabsContent value="stripe" className="space-y-6">
@@ -187,7 +187,7 @@ function CardOrders() {
   }
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">{(["all", "pending", "paid", "failed", "refunded"] as const).map((k) => <Button key={k} size="sm" variant={filter === k ? "default" : "outline"} onClick={() => setFilter(k)}>{k[0].toUpperCase() + k.slice(1)}</Button>)}</div>
+      <div className="flex flex-wrap gap-2">{(["all", "pending", "paid", "failed", "refunded"] as const).map((k) => <Button key={k} size="sm" variant={filter === k ? "default" : "outline"} onClick={() => setFilter(k)}>{k.charAt(0).toUpperCase() + k.slice(1)}</Button>)}</div>
       <div className="overflow-x-auto rounded-lg border bg-card">
         <table className="w-full text-sm">
           <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="p-3">Order</th><th className="p-3">Customer</th><th className="p-3">Total</th><th className="p-3">Payment</th><th className="p-3">Status</th><th className="p-3" /></tr></thead>

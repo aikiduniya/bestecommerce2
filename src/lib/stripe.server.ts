@@ -57,7 +57,7 @@ export async function stripeApi<T = Record<string, unknown>>(
       "Content-Type": "application/x-www-form-urlencoded",
       ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
     },
-    body: method === "POST" && params ? encode(params) : undefined,
+    body: method === "POST" && params ? encode(params) : null,
   });
   const json = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
   if (!res.ok) throw new Error(json.error?.message ?? `Stripe request failed (${res.status})`);

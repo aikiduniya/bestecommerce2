@@ -35,7 +35,7 @@ export const savePaymentSettings = createServerFn({ method: "POST" })
     await requireAdmin(context.supabase as never, context.userId);
     const { encryptSecret } = await import("@/lib/smtp.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = {
+    const patch: { [k: string]: unknown } & Record<string, unknown> = {
       stripe_mode: data.stripe_mode,
       test_publishable_key: data.test_publishable_key || null,
       live_publishable_key: data.live_publishable_key || null,
@@ -43,14 +43,14 @@ export const savePaymentSettings = createServerFn({ method: "POST" })
       payment_methods: data.payment_methods,
       updated_at: new Date().toISOString(),
     };
-    if (data.test_secret_key) { patch.test_secret_enc = await encryptSecret(data.test_secret_key); patch.test_verified_at = null; }
-    if (data.live_secret_key) { patch.live_secret_enc = await encryptSecret(data.live_secret_key); patch.live_verified_at = null; }
-    if (data.test_webhook_secret) patch.test_webhook_enc = await encryptSecret(data.test_webhook_secret);
-    if (data.live_webhook_secret) patch.live_webhook_enc = await encryptSecret(data.live_webhook_secret);
+    if (data.test_secret_key) { patch["test_secret_enc"] = await encryptSecret(data.test_secret_key); patch["test_verified_at"] = null; }
+    if (data.live_secret_key) { patch["live_secret_enc"] = await encryptSecret(data.live_secret_key); patch["live_verified_at"] = null; }
+    if (data.test_webhook_secret) patch["test_webhook_enc"] = await encryptSecret(data.test_webhook_secret);
+    if (data.live_webhook_secret) patch["live_webhook_enc"] = await encryptSecret(data.live_webhook_secret);
     for (const c of data.clear) { patch[`${c}_enc`] = null; if (c.endsWith("secret")) patch[`${c.split("_")[0]}_verified_at`] = null; }
     const { data: cur } = await supabaseAdmin.from("payment_settings").select("stripe_mode").eq("id", 1).single();
     // Changing mode or replacing the active key turns card payments off until re-verified.
-    if (cur?.stripe_mode !== data.stripe_mode || patch[`${data.stripe_mode}_secret_enc`] !== undefined) patch.stripe_enabled = false;
+    if (cur?.stripe_mode !== data.stripe_mode || patch[`${data.stripe_mode}_secret_enc`] !== undefined) patch["stripe_enabled"] = false;
     const { error } = await supabaseAdmin.from("payment_settings").update(patch as never).eq("id", 1);
     if (error) throw new Error(error.message);
     return { ok: true };
