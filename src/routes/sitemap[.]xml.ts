@@ -9,7 +9,7 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const o = originOf(request);
+        const o = await originOf(request);
         const sb = publicClient();
         const [st, pr, pg, bp, cat, br, col] = await Promise.all([
           sb.from("store_settings").select("languages").eq("id", 1).maybeSingle(),

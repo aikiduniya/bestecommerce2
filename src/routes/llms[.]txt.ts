@@ -5,7 +5,7 @@ export const Route = createFileRoute("/llms.txt")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const o = originOf(request);
+        const o = await originOf(request);
         const sb = publicClient();
         const [s, pr, pg, bp] = await Promise.all([
           sb.from("store_settings").select("store_name, tagline, seo_description, llms_txt, support_email").eq("id", 1).maybeSingle(),
