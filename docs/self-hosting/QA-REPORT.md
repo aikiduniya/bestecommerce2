@@ -2,7 +2,7 @@
 
 Environment: separate test stack (PostgreSQL 15, Supabase Auth 2.180, PostgREST 14, Supabase Storage 1.11 with file storage, the bundled gateway, the store built with `SELF_HOSTED=1` on Node). Disposable test accounts and data only. The live store was not touched. Stripe stayed off.
 
-## Modules (113 checks)
+## Modules (about 110 automated checks)
 | Area | Result |
 |---|---|
 | All 33 Super Admin pages open with no errors (owner signed in with 2FA) | PASS |
