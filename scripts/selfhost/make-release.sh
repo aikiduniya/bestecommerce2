@@ -18,7 +18,8 @@ S=scripts/selfhost/standalone
 cp $S/vite.config.ts vite.config.ts
 # 2. No Lovable editor session broker / sign-in broker / stubs
 cp $S/previewAuthStorage.ts src/integrations/supabase/previewAuthStorage.ts
-rm -rf src/integrations/lovable src/selfhost-stubs
+rm -rf src/integrations/lovable src/selfhost-stubs src/integrations/supabase/cron-auth.ts
+sed -i 's#Connect Supabase in Lovable Cloud\.#Set them in .env (see .env.example).#' src/integrations/supabase/*.ts
 # 3. Error reporting without the Lovable editor hook
 rm -f src/lib/lovable-error-reporting.ts && cp $S/error-reporting.ts src/lib/error-reporting.ts
 sed -i 's#\.\./lib/lovable-error-reporting#../lib/error-reporting#; s#reportLovableError#reportError#g' src/routes/__root.tsx
@@ -47,9 +48,10 @@ cp docs/self-hosting/RELEASE.md README.md
 sed -i 's#Unset = Lovable broker\.#Google sign-in always uses your own auth server in this package.#' .env.example
 sed -i 's#foo\.lovable\.app#foo.other-host.app#' src/lib/site-url.test.ts
 rm -rf $S scripts/selfhost/make-release.sh
+command -v bun >/dev/null && bun install --lockfile-only >/dev/null 2>&1 || true   # fresh lockfile without Lovable packages
 
 # Fail if anything Lovable-specific is left in code/config
-if grep -rIl -E "@lovable\.dev|integrations/lovable|lovable-error-reporting|cloud-auth-js|vite-tanstack-config|lovable\.dev/|__lovable|lovable\.app" \
+if grep -rIl -E "@lovable\.dev|integrations/lovable|lovable-error-reporting|cloud-auth-js|vite-tanstack-config|lovable\.dev/|__lovable|lovable\.app|Lovable Cloud|LOVABLE_" \
      --exclude-dir=docs --exclude=START-HERE.md --exclude=README.md . ; then
   echo "Lovable references remain (above)"; exit 1; fi
 
