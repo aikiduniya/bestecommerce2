@@ -1,22 +1,43 @@
 #!/usr/bin/env bash
-# Restore a backup.sh set into an EMPTY, initialised database (auth + storage services already set up once).
-# Usage: DATABASE_URL=... STORAGE_DIR=... scripts/selfhost/restore.sh /srv/store/backups YYYYMMDD-HHMMSS
-# Never run against the live database without a fresh backup.
+# Restore a backup.sh set into an EMPTY database, all-or-nothing, then verify it against the backup MANIFEST.
+# Usage: DATABASE_URL=<superuser URL of empty target db> AGE_IDENTITY=backup.key STORAGE_DIR=<empty dir> \
+#        scripts/selfhost/restore.sh /srv/store/backups <TS>
+# Optional: CONFIG_OUT (default ./restored-config-TS, mode 700). Exits non-zero on ANY error; prints RESTORE OK only when verified.
 set -euo pipefail
-: "${DATABASE_URL:?Set DATABASE_URL (target database)}"
-DIR=${1:?backup dir}; TS=${2:?timestamp, e.g. 20261023-020000}
-cd "$DIR"; sha256sum -c "SHA256SUMS-$TS"
-psql "$DATABASE_URL" -tAq -c "select count(*) from information_schema.tables where table_schema='public' and table_name='orders'" | grep -q '^0$' \
-  || { echo "Target already has store tables — restore into an empty database."; exit 1; }
-psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -c 'create schema if not exists extensions; create extension if not exists pgcrypto with schema extensions; create extension if not exists "uuid-ossp" with schema extensions'
-# auth/storage tables already created by their services: replace their rows; public: full structure + data
-pg_restore --no-owner --clean --if-exists -d "$DATABASE_URL" "db-$TS.dump" 2> /tmp/restore-$TS.err || true
-grep -v -E "already exists|does not exist|must be owner" /tmp/restore-$TS.err || true
-psql "$DATABASE_URL" -c "select (select count(*) from public.products) products, (select count(*) from public.orders) orders, (select count(*) from auth.users) users, (select count(*) from storage.objects) files, (select count(*) from public.user_roles where role='admin') admins;"
+die() { echo "RESTORE FAILED: $*" >&2; exit 1; }
+: "${DATABASE_URL:?Set DATABASE_URL (empty target database, superuser)}"
+DIR=${1:?backup dir}; TS=${2:?backup timestamp}
+[ -f "${AGE_IDENTITY:-}" ] || die "AGE_IDENTITY must point to the private age key file"
+command -v age >/dev/null || die "install age"
+umask 077; WORK=$(mktemp -d); trap 'rm -rf "$WORK"' EXIT
+(cd "$DIR" && sha256sum --quiet -c "SHA256SUMS-$TS") || die "checksum mismatch / missing files"
+M="$DIR/MANIFEST-$TS"; want() { grep "^$1=" "$M" | cut -d= -f2; }
+dec() { age -d -i "$AGE_IDENTITY" -o "$WORK/$2" "$DIR/$1" || die "decrypting $1 (wrong key or tampered file)"; }
 
-if [ -f "storage-$TS.tgz" ]; then : "${STORAGE_DIR:?Set STORAGE_DIR to restore files}"; mkdir -p "$STORAGE_DIR"; tar -xzf "storage-$TS.tgz" -C "$STORAGE_DIR"; echo "Files restored to $STORAGE_DIR"; fi
-if [ -f "config-$TS.tgz.enc" ]; then
-  : "${BACKUP_PASSPHRASE:?Set BACKUP_PASSPHRASE}"; openssl enc -d -aes-256-cbc -pbkdf2 -pass env:BACKUP_PASSPHRASE -in "config-$TS.tgz.enc" -out "/tmp/config-$TS.tgz"; C="/tmp/config-$TS.tgz"
-else C="config-$TS.tgz"; fi
-[ -f "$C" ] && { mkdir -p "/tmp/config-$TS"; tar -xzPf "$C" --transform "s#^/#/tmp/config-$TS/#"; echo "Config extracted to /tmp/config-$TS (copy .env back; keep SMTP_ENCRYPTION_KEY identical)"; }
-echo "Restore complete."
+n=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -tAq -c "select count(*) from information_schema.tables where table_schema='public' and table_name in ('orders','products')") || die "cannot connect"
+[ "$n" = "0" ] || die "target already has store tables — use an empty database"
+
+dec "db-$TS.dump.age" db.dump
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -c 'create schema if not exists extensions; create extension if not exists pgcrypto with schema extensions; create extension if not exists "uuid-ossp" with schema extensions' || die "extensions"
+# One transaction: either everything is restored or nothing is. --clean replaces auth/storage objects
+# pre-created by the auth/storage services.
+pg_restore --no-owner --clean --if-exists --exit-on-error --single-transaction -d "$DATABASE_URL" "$WORK/db.dump" || die "pg_restore error (nothing was committed)"
+
+for k in products orders users objects user_roles migrations; do
+  case $k in products) q="public.products";; orders) q="public.orders";; users) q="auth.users";; objects) q="storage.objects";; user_roles) q="public.user_roles";; migrations) q="public._selfhost_migrations";; esac
+  got=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -tAq -c "select count(*) from $q") || die "verify $q"
+  [ "$got" = "$(want $k)" ] || die "$q has $got rows, backup had $(want $k)"
+  echo "verified $q = $got"
+done
+
+if [ "$(want storage_files)" != "external" ]; then
+  : "${STORAGE_DIR:?Set STORAGE_DIR}"; mkdir -p "$STORAGE_DIR"
+  [ -z "$(ls -A "$STORAGE_DIR")" ] || die "STORAGE_DIR not empty"
+  dec "storage-$TS.tar.age" storage.tar; tar -xf "$WORK/storage.tar" -C "$STORAGE_DIR" || die "extract files"
+  got=$(find "$STORAGE_DIR" -type f | wc -l); [ "$got" = "$(want storage_files)" ] || die "files: $got restored, backup had $(want storage_files)"
+  echo "verified files = $got"
+fi
+OUT=${CONFIG_OUT:-./restored-config-$TS}; mkdir -p "$OUT"; chmod 700 "$OUT"
+dec "config-$TS.tar.age" config.tar; tar -xPf "$WORK/config.tar" --transform "s#^/#$(realpath "$OUT")/#" || die "extract config"
+echo "config extracted to $OUT (copy .env back; SMTP_ENCRYPTION_KEY must stay identical)"
+echo "RESTORE OK ($TS)"
