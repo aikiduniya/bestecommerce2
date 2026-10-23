@@ -1,3 +1,4 @@
+import { SITE } from "@/lib/seo-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
