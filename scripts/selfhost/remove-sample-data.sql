@@ -3,7 +3,7 @@
 -- Products that already appear in an order are left untouched.
 delete from public.products p
 where p.slug in ('heritage-chronograph','cashmere-overcoat','studio-headphones','ceramic-table-lamp')
-  and not exists (select 1 from public.order_items oi where oi.product_id = p.id);
+  and not exists (select 1 from public.orders o where o.items::text like '%' || p.id::text || '%');
 delete from public.brands b
 where b.slug in ('maison-atelier','nordform','lumen')
   and not exists (select 1 from public.products p where p.brand_id = b.id);
