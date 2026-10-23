@@ -5,8 +5,29 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { fileURLToPath } from "node:url";
+import type { Plugin } from "vite";
+
+// SELF_HOSTED=1 builds swap Lovable-only helpers for empty stand-ins (src/selfhost-stubs).
+// Lovable's editor/dev builds never set it, so they keep the original helpers.
+const SELF_HOSTED = process.env.SELF_HOSTED === "1";
+const stub = (f: string) => fileURLToPath(new URL(`./src/selfhost-stubs/${f}`, import.meta.url));
+const STUBS: [RegExp, string][] = [
+  [/integrations[\\/]supabase[\\/]previewAuthStorage(\.ts)?$/, stub("preview-auth-storage.ts")],
+  [/lib[\\/]lovable-error-reporting(\.ts)?$/, stub("lovable-error-reporting.ts")],
+  [/integrations[\\/]lovable([\\/]index)?(\.ts)?$/, stub("lovable-auth.ts")],
+];
+const selfHostStubs: Plugin = {
+  name: "selfhost-stubs",
+  enforce: "pre",
+  resolveId(id) {
+    for (const [re, target] of STUBS) if (re.test(id)) return target;
+    return null;
+  },
+};
 
 export default defineConfig({
+  plugins: SELF_HOSTED ? [selfHostStubs] : [],
   // Cloudflare-only SMTP socket module stays external so self-hosted Node builds also succeed.
   vite: { build: { rollupOptions: { external: ["cloudflare:sockets"] } } },
   tanstackStart: {
