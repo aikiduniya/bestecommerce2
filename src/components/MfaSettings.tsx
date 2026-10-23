@@ -26,6 +26,9 @@ export function MfaSettings() {
 
   async function startEnroll() {
     setBusy(true);
+    // Clear abandoned (never-verified) setups first, otherwise a retry fails with "friendly name already exists".
+    const { data: existing } = await supabase.auth.mfa.listFactors();
+    for (const f of existing?.all ?? []) if (f.status === "unverified") await supabase.auth.mfa.unenroll({ factorId: f.id });
     const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Authenticator app" });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
