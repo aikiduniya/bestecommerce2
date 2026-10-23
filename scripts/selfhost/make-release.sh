@@ -53,5 +53,5 @@ if grep -rIl -E "@lovable\.dev|integrations/lovable|lovable-error-reporting|clou
      --exclude-dir=docs --exclude=START-HERE.md --exclude=README.md . ; then
   echo "Lovable references remain (above)"; exit 1; fi
 
-cd ..; rm -f "$OUT"; zip -qr "$OUT" store
+mkdir -p "$(dirname "$OUT")"; cd ..; rm -f "$OUT"; zip -qr "$OUT" store
 echo "Release: $OUT ($(unzip -l "$OUT" | tail -1 | awk '{print $2}') files)"
