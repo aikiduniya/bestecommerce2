@@ -109,10 +109,14 @@ function AuthPage() {
               Sign in to track orders, save favourites and check out faster.
             </p>
           </div>
-          <Button type="button" variant="outline" className="w-full" onClick={google}>
-            Continue with Google
-          </Button>
-          <div className="eyebrow text-center text-muted-foreground">or</div>
+          {import.meta.env.VITE_GOOGLE_LOGIN !== "off" && (
+            <>
+              <Button type="button" variant="outline" className="w-full" onClick={google}>
+                Continue with Google
+              </Button>
+              <div className="eyebrow text-center text-muted-foreground">or</div>
+            </>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
