@@ -55,8 +55,8 @@
 | Clean copy of source (no `node_modules`, no build output) built with `NITRO_PRESET=node-server` outside Lovable's build mode | PASS after a fix: the Cloudflare-only SMTP library broke Node builds; it is now externalised and Node uses `nodemailer` |
 | Built server started with plain `node .output/server/index.mjs` (port 3999, `SITE_URL=https://shop.example.com`) | PASS: `/`, `/shop`, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/api/public/merchant-feed` → 200, all absolute URLs used `https://shop.example.com`, canonical + hreflang correct |
 | Stripe webhook on Node server with unsigned body | PASS: rejected (400 Invalid signature) |
-| Fresh database install (all migrations on an empty Supabase) | **NOT TESTED** — no independent Supabase instance is available in this environment. The Node test used the existing Lovable Cloud database read-only |
+| Fresh independent stack: migrations, signup, admin, 2FA, staff, uploads, COD, order cancel | PASS — see DEPENDENCY-AUDIT.md |
 | Data export → import, media migration, admin login on new DB | **NOT TESTED** — requires your export and your own server; no live data was moved |
 | cPanel | **NOT TESTED** |
 
-Self-hosting of the **application server** is verified. A **complete independent stack** (own database + storage) is documented but not yet proven; follow MIGRATION.md on a staging server first.
+The complete independent stack (own PostgreSQL, auth, storage, API) was installed from zero and the core store flows passed. SMTP sending, Google sign-in, Stripe and Docker/cPanel variants remain unverified.

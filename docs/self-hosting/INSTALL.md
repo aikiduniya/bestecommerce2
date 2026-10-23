@@ -54,14 +54,77 @@ docker compose pull && docker compose up -d
 ```
 Put nginx + SSL in front of Kong (port 8000) at `api.yourstore.com`. Never expose port 5432 publicly.
 
-**Create the schema** (fresh install, empty database):
+
+**Option 3 — bare metal, no Docker (this exact path was tested end-to-end on 2026-10-23):**
+Components: PostgreSQL 15+, Supabase Auth (GoTrue) v2.180.0, PostgREST v14, Supabase Storage API v1.11 (Node 24, file backend), and the bundled one-file gateway.
+```bash
+# 1. Empty database + standard roles (edit the 3 passwords first)
+createdb -U postgres postgres 2>/dev/null || true
+psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f scripts/selfhost/bare-metal/00-bootstrap-roles.sql
+
+# 2. JWT secret + API keys (keep the output secret)
+export JWT_SECRET=$(openssl rand -hex 32)
+node scripts/selfhost/bare-metal/make-keys.mjs > /srv/store/keys.env   # JWT_SECRET, ANON_KEY, SERVICE_KEY
+
+# 3. Auth server (GoTrue) — binary from github.com/supabase/auth/releases, migrations from the same tag
+git clone --depth 1 --branch v2.180.0 https://github.com/supabase/auth /opt/auth-src
+export GOTRUE_DB_DRIVER=postgres GOTRUE_DB_MIGRATIONS_PATH=/opt/auth-src/migrations \
+  DATABASE_URL='postgres://supabase_auth_admin:CHANGE_ME_AUTH_ADMIN@127.0.0.1:5432/postgres?sslmode=disable' \
+  GOTRUE_JWT_SECRET=$JWT_SECRET GOTRUE_JWT_AUD=authenticated GOTRUE_JWT_DEFAULT_GROUP_NAME=authenticated \
+  GOTRUE_JWT_ADMIN_ROLES=service_role API_EXTERNAL_URL=https://api.yourstore.com/auth/v1 \
+  GOTRUE_SITE_URL=https://www.yourstore.com GOTRUE_URI_ALLOW_LIST='https://www.yourstore.com/**,https://yourstore.com/**' \
+  GOTRUE_API_HOST=127.0.0.1 PORT=9999 GOTRUE_EXTERNAL_EMAIL_ENABLED=true GOTRUE_MAILER_AUTOCONFIRM=false \
+  GOTRUE_MFA_TOTP_ENROLL_ENABLED=true GOTRUE_MFA_TOTP_VERIFY_ENABLED=true \
+  GOTRUE_SMTP_HOST=smtp.yourprovider.com GOTRUE_SMTP_PORT=587 GOTRUE_SMTP_USER=... GOTRUE_SMTP_PASS=... GOTRUE_SMTP_ADMIN_EMAIL=no-reply@yourstore.com
+auth migrate && auth serve            # run under systemd in production
+# Google (optional): GOTRUE_EXTERNAL_GOOGLE_ENABLED=true GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID=... GOTRUE_EXTERNAL_GOOGLE_SECRET=...
+#                    GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI=https://api.yourstore.com/auth/v1/callback
+
+# 4. Storage API (Node 24) — creates the storage schema on first start
+git clone --depth 1 https://github.com/supabase/storage /opt/storage && cd /opt/storage
+npm ci --ignore-scripts --engine-strict=false && npm rebuild fs-xattr && npm run build
+SERVER_HOST=127.0.0.1 SERVER_PORT=5000 TENANT_ID=stub GLOBAL_S3_BUCKET=stub REGION=local \
+AUTH_JWT_SECRET=$JWT_SECRET AUTH_JWT_ALGORITHM=HS256 ANON_KEY=... SERVICE_KEY=... \
+DATABASE_URL=postgresql://supabase_storage_admin:CHANGE_ME_STORAGE_ADMIN@127.0.0.1:5432/postgres \
+DB_INSTALL_ROLES=false DB_SUPER_USER=supabase_storage_admin STORAGE_BACKEND=file \
+STORAGE_FILE_BACKEND_PATH=/srv/store/storage UPLOAD_FILE_SIZE_LIMIT=52428800 IMAGE_TRANSFORMATION_ENABLED=false \
+node dist/start/server.js            # or STORAGE_BACKEND=s3 with your own S3/R2/MinIO bucket
+
+# 5. Store schema (37 migrations) + optional starter-data cleanup
+DATABASE_URL=postgresql://postgres:PASSWORD@127.0.0.1:5432/postgres scripts/selfhost/apply-migrations.sh
+psql "$DATABASE_URL" -f scripts/selfhost/remove-sample-data.sql      # removes 4 demo products / 3 brands
+
+# 6. Data API (PostgREST)
+cat > /etc/postgrest.conf <<CONF
+db-uri = "postgres://authenticator:CHANGE_ME_AUTHENTICATOR@127.0.0.1:5432/postgres"
+db-schemas = "public"
+db-anon-role = "anon"
+jwt-secret = "$JWT_SECRET"
+server-host = "127.0.0.1"
+server-port = 3001
+db-extra-search-path = "public,extensions"
+CONF
+postgrest /etc/postgrest.conf
+
+# 7. One URL for the browser (/auth/v1, /rest/v1, /storage/v1) — put nginx+SSL in front as api.yourstore.com
+GATEWAY_PORT=8000 node scripts/selfhost/bare-metal/gateway.mjs
+
+# 8. Media bucket
+curl -X POST https://api.yourstore.com/storage/v1/bucket -H "Authorization: Bearer $SERVICE_KEY" \
+  -H 'content-type: application/json' -d '{"id":"media","name":"media","public":false}'
+```
+Then continue with §E using `VITE_SUPABASE_URL=SUPABASE_URL=https://api.yourstore.com`, `*_PUBLISHABLE_KEY=$ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY=$SERVICE_KEY`.
+
+**Create the schema** (Options 1–2, fresh install, empty database):
 ```bash
 DATABASE_URL='postgresql://postgres:PASSWORD@db-host:5432/postgres' scripts/selfhost/apply-migrations.sh
 ```
 This runs every file in `drizzle/migrations/` in order and records them, so later updates apply only new files.
 For a migration **from Lovable**, do not run this — restore the export instead (MIGRATION.md).
 
-**Storage:** create a bucket named `media` (Storage → New bucket). The migrations contain the access rules for it.
+**Storage:** create a private bucket named `media` (dashboard, or the curl in Option 3 step 8). The migrations contain its access rules.
+
+**Starter data:** a fresh install contains 4 demo products and 3 brands; remove them with `psql "$DATABASE_URL" -f scripts/selfhost/remove-sample-data.sql`.
 
 **Auth settings:** Site URL = your primary URL; Redirect URLs: `https://www.yourstore.com/auth`, `https://yourstore.com/auth`. Disable anonymous sign-ups. Enable TOTP MFA. Google (optional): create an OAuth client in Google Cloud (redirect `https://api.yourstore.com/auth/v1/callback`), enable the Google provider in Supabase Auth, and build with `VITE_OAUTH_MODE=supabase`.
 

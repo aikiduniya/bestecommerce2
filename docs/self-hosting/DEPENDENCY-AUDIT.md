@@ -40,15 +40,34 @@
 ## Cannot run without Lovable
 Nothing in the application code. Data **export** from the current Lovable Cloud project must be started from Lovable once (Database → Export data); encrypted SMTP/Stripe secrets must be re-entered.
 
-## Verification
+## Self-hosted production build
+`SELF_HOSTED=1` (set by `scripts/selfhost/build-node.sh`) swaps `previewAuthStorage`, `lovable-error-reporting` and the Lovable OAuth module for empty stand-ins in `src/selfhost-stubs/`. Verified: the built `.output/` contains **zero** references to `lovable.app`, `lovableproject`, `__lovableEvents`, `cloud-auth-js`, or the Lovable Cloud project. Lovable editor/preview builds are unchanged (they never set the flag).
+
+## Verification — fresh independent stack (2026-10-23)
+Stack: new PostgreSQL 15.17 cluster, Supabase Auth 2.180.0, PostgREST 14.1, Supabase Storage 1.11.2 (file backend), bundled gateway, store built from a clean source copy with `SELF_HOSTED=1 NITRO_PRESET=node-server` and run with `node`. Own JWT secret, keys and encryption key. Production database not used at any point.
+
 | Test | Result |
 |---|---|
-| Clean source copy built outside Lovable build mode (Node preset, `VITE_OAUTH_MODE=supabase`) | PASS |
-| Node server: `/`, `/auth`, `/shop`, `/cart`, `/checkout`, `/pages/contact`, `/sitemap.xml`, merchant feed, `/admin` | PASS (HTTP 200) |
-| Built browser code contacts no Lovable service when self-hosted | PASS (only inert hostname checks remain) |
-| Fresh install of all migrations on an empty independent Supabase | **NOT TESTED** (no independent database available) |
-| Sign-up, login, 2FA, upload, COD order on an independent database | **NOT TESTED** (the test server used the existing Lovable Cloud database) |
-| Google login with own client | **NOT TESTED** |
+| All 37 store migrations on the empty database | PASS (0 errors) |
+| Sign-up of 3 accounts → all get `customer` | PASS |
+| Super Admin creation with the documented SQL | PASS |
+| 2FA: enrol with authenticator code, admin dashboard demands code on next login, correct code opens it | PASS (after 2 fixes below) |
+| Staff: grant via Admin → Staff; no role → cannot edit products/settings; "Catalog manager" → can edit products, cannot edit orders; staff cannot make itself admin; shopper cannot read payment secrets | PASS |
+| Product created in admin with image upload to own storage; image shown on product page | PASS |
+| COD checkout as shopper → order #1, stock 5 → 4 | PASS |
+| Admin cancels order → stock back to 5, restore flag set | PASS |
+| Sitemap / robots.txt use the configured site URL | PASS |
+| Starter-data cleanup script | PASS |
+| SMTP sending via nodemailer | **NOT TESTED** (no SMTP server/credentials) |
+| Google sign-in with own Google client | **NOT TESTED** (no Google credentials) |
+| Stripe | Not tested — kept disabled as instructed |
+| Docker / supabase.com variants, cPanel, real domain + SSL | **NOT TESTED** (bare-metal stack on localhost only) |
+| Restoring a real Lovable export / media migration script | **NOT TESTED** (no production data moved, by instruction) |
+
+### Issues found and fixed
+1. 2FA QR code image was broken with current Supabase Auth (it already returns a data URL) — fixed; also affected the Lovable-hosted site.
+2. An abandoned 2FA setup blocked any retry ("friendly name already exists") — unverified factors are now cleared before enrolling.
+3. Fresh installs contain 4 demo products — `scripts/selfhost/remove-sample-data.sql` added.
 
 ## Final answer
-**NO — not yet verified.** The code has no required Lovable dependency, and the app server runs outside Lovable, but a full fresh installation on an independent database/storage with functional tests has not been performed.
+**YES for the tested core** — a new user can download the source and run the store (sign-up, admin, 2FA, staff, products, image uploads, inventory, COD checkout, order management) on their own server, database and storage with no Lovable account or service. **Not yet verified:** live SMTP sending, Google sign-in, Stripe, and Docker/cPanel/real-domain deployments.
