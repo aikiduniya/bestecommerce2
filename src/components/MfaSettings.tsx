@@ -82,7 +82,7 @@ export function MfaSettings() {
       {enroll && (
         <div className="space-y-4 rounded border bg-card p-5">
           <p className="text-sm">1. Scan this code with your authenticator app:</p>
-          <img src={`data:image/svg+xml;utf8,${encodeURIComponent(enroll.qr)}`} alt="Authenticator QR code" className="h-44 w-44 rounded border bg-white p-2" />
+          <img src={enroll.qr.startsWith("data:") ? enroll.qr : `data:image/svg+xml;utf8,${encodeURIComponent(enroll.qr)}`} alt="Authenticator QR code" className="h-44 w-44 rounded border bg-white p-2" />
           <details className="text-xs text-muted-foreground">
             <summary>Can't scan? Enter this key manually</summary>
             <code className="mt-1 block select-all break-all rounded bg-muted p-2">{enroll.secret}</code>
