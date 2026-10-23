@@ -1,5 +1,5 @@
 // Standalone (self-hosted) build config — uses only standard open-source Vite plugins.
-// Replaces the Lovable editor config in the release package. Default target: Node server
+// Default target: Node server
 // (override with NITRO_PRESET, e.g. cloudflare-module).
 import { defineConfig } from "vite";
 import { fileURLToPath } from "node:url";
