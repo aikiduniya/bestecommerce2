@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { requestOrigin, resolveSiteUrl } from "./site-url";
 
 /** Read-only publishable-key client for server code. Call only inside server handlers. */
 export function publicClient() {
