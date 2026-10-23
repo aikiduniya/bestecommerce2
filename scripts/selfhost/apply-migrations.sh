@@ -17,4 +17,5 @@ for f in $(ls drizzle/migrations/*.sql | sort); do
   echo "Applying $n"
   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q --single-transaction -f "$f" -c "insert into public._selfhost_migrations(name) values ('$n')"
 done
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f scripts/selfhost/seed-defaults.sql   # idempotent default content
 echo "Schema up to date."
