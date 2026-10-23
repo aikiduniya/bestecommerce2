@@ -190,7 +190,13 @@ Optional: `curl -fsS https://yourstore.com/sitemap.xml >/dev/null` hourly as an 
 
 ## L. Backups
 
-`scripts/selfhost/backup.sh` creates a compressed `pg_dump` (custom format, includes `auth` users) + storage tarball, keeps 14 days, optional off-site copy with `rclone`. Test a restore monthly on a staging DB with `scripts/selfhost/db-import.sh`.
+`scripts/selfhost/backup.sh` writes one complete, checksummed set per run (keeps `KEEP_DAYS`=14, optional off-site copy with `RCLONE_REMOTE`):
+* `db-*.dump` — `public` (store data, settings, roles, migration log), `auth` (accounts, password hashes, 2FA, Google identities) and `storage` (file records). The store uses no other schemas.
+* `storage-*.tgz` — uploaded files from `STORAGE_DIR` (S3/R2 users back up the bucket instead).
+* `config-*.tgz(.enc)` — `.env` (incl. `SMTP_ENCRYPTION_KEY`, without which saved SMTP/Stripe secrets can't be decrypted) plus any `CONFIG_FILES` (e.g. auth/storage service env files). Set `BACKUP_PASSPHRASE` to encrypt it.
+* `SHA256SUMS-*`.
+
+Restore into an empty database: `DATABASE_URL=... STORAGE_DIR=... BACKUP_PASSPHRASE=... scripts/selfhost/restore.sh /srv/store/backups <timestamp>` (verifies checksums, restores all three schemas, files and config, prints counts). Test a restore monthly on a staging database.
 
 ## M. Security
 

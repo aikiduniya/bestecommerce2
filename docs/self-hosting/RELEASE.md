@@ -22,6 +22,9 @@ You need no Lovable account or service. Everything runs on your own server, data
 | `.env.example` | Every setting, with an explanation |
 | `docs/self-hosting/` | INSTALL, MIGRATION, CHECKLIST, DEPENDENCY-AUDIT, FEATURE-PARITY, QA-REPORT |
 
+### Standalone build (no Lovable packages)
+This package contains no Lovable package, SDK or service: a standard Vite config (`vite.config.ts`), Supabase-only Google sign-in, normal browser session storage. Install with `bun install` or `npm install --legacy-peer-deps` (plain `npm install` hits an npm 10 bug with an optional test dependency).
+
 ## 2. Server specifications
 | Part | Minimum | Recommended |
 |---|---|---|

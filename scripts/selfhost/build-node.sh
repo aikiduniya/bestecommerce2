@@ -9,7 +9,7 @@ for v in VITE_SUPABASE_URL VITE_SUPABASE_PUBLISHABLE_KEY SUPABASE_URL SUPABASE_P
 done
 export NITRO_PRESET="${NITRO_PRESET:-node-server}"
 export SELF_HOSTED=1   # strip Lovable-only helpers from this build
-if command -v bun >/dev/null; then bun install --frozen-lockfile || bun install; else npm ci || npm install; fi
+if command -v bun >/dev/null; then bun install --frozen-lockfile || bun install; else npm install --legacy-peer-deps; fi
 npx vite build
 # SMTP on Node uses nodemailer (loaded at runtime, not bundled).
 if [ "$NITRO_PRESET" = "node-server" ]; then [ -f .output/server/package.json ] || echo '{"private":true}' > .output/server/package.json; (cd .output/server && npm install --prefix . --no-save --omit=dev nodemailer@6 >/dev/null); fi
