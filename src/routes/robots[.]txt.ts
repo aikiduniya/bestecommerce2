@@ -7,7 +7,7 @@ export const Route = createFileRoute("/robots.txt")({
     handlers: {
       GET: async ({ request }) => {
         const { data } = await publicClient().from("store_settings").select("robots_txt").eq("id", 1).maybeSingle();
-        return new Response(buildRobots(data?.robots_txt, originOf(request)), {
+        return new Response(buildRobots(data?.robots_txt, await originOf(request)), {
           headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=600" },
         });
       },

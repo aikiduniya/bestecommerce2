@@ -1,0 +1,19 @@
+[Unit]
+Description=Ecommerce store (Node.js SSR)
+After=network-online.target
+
+[Service]
+User=store
+Group=store
+WorkingDirectory=/srv/store/current
+EnvironmentFile=/srv/store/current/.env
+ExecStart=/usr/bin/node /srv/store/current/.output/server/index.mjs
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

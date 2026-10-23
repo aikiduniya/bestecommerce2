@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/public/merchant-feed")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const o = originOf(request);
+        const o = await originOf(request);
         const sb = publicClient();
         const [{ data: s }, { data: products }, { data: brands }] = await Promise.all([
           sb.from("store_settings").select("store_name, tagline, currency").eq("id", 1).maybeSingle(),

@@ -1,3 +1,4 @@
+import { SITE } from "@/lib/seo-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/admin/seo")({ component: S
 
 type Redirect = { id: string; from_path: string; to_path: string; status_code: number; is_active: boolean };
 
-const SITE_ORIGIN = () => (typeof window !== "undefined" ? window.location.origin : "https://bestecommerce2.lovable.app");
+const SITE_ORIGIN = () => SITE || (typeof window !== "undefined" ? window.location.origin : "");
 
 function SeoAdmin() {
   const qc = useQueryClient();
@@ -111,7 +112,7 @@ function SeoAdmin() {
     ];
   }, [products, pages, posts, media, redirects, brokenLinks, s, f.google_site_verification, f.bing_site_verification]);
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const origin = SITE_ORIGIN();
 
   return (
     <>

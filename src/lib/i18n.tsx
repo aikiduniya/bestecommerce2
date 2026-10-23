@@ -1,3 +1,4 @@
+import { SITE } from "./seo-head";
 // Storefront languages & translations.
 // The store's base language is English ("en"). Extra languages are managed in
 // Admin → Settings → Languages and stored in store_settings.languages
@@ -173,16 +174,15 @@ export function langUrl(path: string, lang: string | null): string {
   return `/${lang}${path === "/" ? "/" : path}`;
 }
 
-const SITE_BASE = "https://bestecommerce2.lovable.app";
 
 // hreflang alternates for a storefront path: x-default + en + every enabled language.
 export function hreflangLinks(settings: { languages?: unknown } | null | undefined, path: string) {
   const langs = extraLanguages(settings?.languages);
   const links = [
-    { rel: "alternate", hrefLang: "x-default", href: `${SITE_BASE}${path}` },
-    { rel: "alternate", hrefLang: "en", href: `${SITE_BASE}${path}` },
+    { rel: "alternate", hrefLang: "x-default", href: `${SITE}${path}` },
+    { rel: "alternate", hrefLang: "en", href: `${SITE}${path}` },
   ];
-  for (const l of langs) links.push({ rel: "alternate", hrefLang: l.code, href: `${SITE_BASE}${langUrl(path, l.code)}` });
+  for (const l of langs) links.push({ rel: "alternate", hrefLang: l.code, href: `${SITE}${langUrl(path, l.code)}` });
   return links;
 }
 

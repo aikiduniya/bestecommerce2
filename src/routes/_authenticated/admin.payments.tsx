@@ -1,3 +1,4 @@
+import { SITE } from "@/lib/seo-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -71,7 +72,7 @@ function Payments() {
     catch (e) { toast.error((e as Error).message); }
   }
 
-  const webhookUrl = typeof window !== "undefined" ? `${window.location.origin.includes("id-preview") ? "https://bestecommerce2.lovable.app" : window.location.origin}/api/public/stripe-webhook` : "";
+  const webhookUrl = typeof window !== "undefined" ? `${SITE || window.location.origin}/api/public/stripe-webhook` : "";
   const keyState = (set: boolean | null, verified: string | null) => !set ? <span className="text-muted-foreground">Not saved</span> : verified ? <span className="text-success">Saved · verified</span> : <span className="text-gold">Saved · not tested</span>;
 
   return (

@@ -28,6 +28,18 @@ export async function smtpSend(p: SmtpRow, to: string, subject: string, text: st
   if (!p.host || !p.sender_email) return { ok: false, error: "Host and sender email are required" };
   try {
     const password = p.password_encrypted ? await decryptSecret(p.password_encrypted) : "";
+    const isWorkerd = typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
+    if (!isWorkerd && typeof process !== "undefined" && process.versions?.node) {
+      // Self-hosted Node.js: use nodemailer (installed on the server, never bundled for Cloudflare).
+      const spec = "nodemailer";
+      const nm = (await import(/* @vite-ignore */ spec)) as { createTransport: (o: unknown) => { sendMail: (m: unknown) => Promise<unknown> } };
+      await nm.createTransport({
+        host: p.host, port: p.port, secure: p.encryption === "ssl", requireTLS: p.encryption === "starttls",
+        ...(p.username ? { auth: { user: p.username, pass: password } } : {}),
+        connectionTimeout: 15000, socketTimeout: 15000,
+      }).sendMail({ from: p.sender_name ? { name: p.sender_name, address: p.sender_email } : p.sender_email, to, subject, text });
+      return { ok: true };
+    }
     const { WorkerMailer } = await import("worker-mailer");
     await WorkerMailer.send(
       {

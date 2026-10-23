@@ -253,6 +253,13 @@
       "when": 1792752036845,
       "tag": "0035_payments_tighten_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792752375300,
+      "tag": "0036_store_site_url",
+      "breakpoints": true
     }
   ]
 }

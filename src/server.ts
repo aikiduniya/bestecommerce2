@@ -59,9 +59,36 @@ async function findRedirect(request: Request): Promise<Response | null> {
   }
 }
 
+let primaryCache: { at: number; url: string | null; enforce: boolean } | null = null;
+/** 301 www/non-www twin hosts and plain-HTTP requests on the primary host to the Admin primary URL (opt-in). */
+async function primaryHostRedirect(request: Request): Promise<Response | null> {
+  try {
+    if (!primaryCache || Date.now() - primaryCache.at > 60_000) {
+      const { publicClient } = await import("./lib/public-db");
+      const { data } = await publicClient().from("store_settings").select("site_url, enforce_primary_host").eq("id", 1).maybeSingle();
+      primaryCache = { at: Date.now(), url: data?.site_url ?? null, enforce: !!data?.enforce_primary_host };
+    }
+    if (!primaryCache.enforce || !primaryCache.url) return null;
+    const { isHostTwin, requestOrigin } = await import("./lib/site-url");
+    const primary = new URL(primaryCache.url);
+    const cur = new URL(requestOrigin(request));
+    const twin = isHostTwin(cur.host, primary.host);
+    const insecure = cur.host === primary.host && cur.protocol === "http:" && primary.protocol === "https:";
+    if (!twin && !insecure) return null;
+    const u = new URL(request.url);
+    return new Response(null, { status: 301, headers: { Location: `${primary.origin}${u.pathname}${u.search}` } });
+  } catch {
+    return null;
+  }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      if (request.method === "GET" || request.method === "HEAD") {
+        const hostRedirect = await primaryHostRedirect(request);
+        if (hostRedirect) return hostRedirect;
+      }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       if (response.status === 404 && request.method === "GET") {

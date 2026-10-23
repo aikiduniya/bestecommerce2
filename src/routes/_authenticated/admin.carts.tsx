@@ -1,3 +1,4 @@
+import { SITE } from "@/lib/seo-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -32,7 +33,7 @@ function Carts() {
             store_name: s?.store_name ?? "our store",
             items_list: items.map((i) => `${i.qty} × ${i.name}`).join(", "),
             cart_total: money(subtotal, s?.currency),
-            cart_url: window.location.origin + "/cart",
+            cart_url: (SITE || window.location.origin) + "/cart",
             footer_text: "",
           },
         },

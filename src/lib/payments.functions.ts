@@ -133,7 +133,10 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         if (s.status === "open" && s.url) return { url: s.url };
       } catch (e) { if ((e as Error).message.includes("already paid")) throw e; }
     }
-    const origin = new URL(data.origin).origin;
+    // Return URLs use the admin primary domain when set (never trust an arbitrary browser-sent host for it).
+    const { data: st } = await db.from("store_settings").select("site_url").eq("id", 1).maybeSingle();
+    const { resolveSiteUrl } = await import("@/lib/site-url");
+    const origin = resolveSiteUrl(st?.site_url, process.env["SITE_URL"], new URL(data.origin).origin);
     const tokenQs = o.guest_token ? `&t=${encodeURIComponent(o.guest_token)}` : "";
     const attempt = Date.now();
     const session = await stripeApi<{ id: string; url: string }>(cfg.secretKey, "POST", "checkout/sessions", {

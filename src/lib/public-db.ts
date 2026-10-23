@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { requestOrigin, resolveSiteUrl } from "./site-url";
 
 /** Read-only publishable-key client for server code. Call only inside server handlers. */
 export function publicClient() {
@@ -18,8 +19,12 @@ export function publicClient() {
 }
 
 export const xmlEscape = (s: string) => s.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[c]!);
-export const originOf = (req: Request) => {
-  const u = new URL(req.url);
-  const fh = u.hostname === "localhost" ? req.headers.get("x-forwarded-host") : null;
-  return fh ? `https://${fh}` : u.origin;
-};
+/** Canonical origin for server output: Admin primary URL → SITE_URL env → active request domain. */
+export async function originOf(req: Request): Promise<string> {
+  let admin: string | null = null;
+  try {
+    const { data } = await publicClient().from("store_settings").select("site_url").eq("id", 1).maybeSingle();
+    admin = data?.site_url ?? null;
+  } catch { /* fall back */ }
+  return resolveSiteUrl(admin, process.env["SITE_URL"], requestOrigin(req));
+}
