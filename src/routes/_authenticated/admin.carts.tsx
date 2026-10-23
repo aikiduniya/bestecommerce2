@@ -32,7 +32,7 @@ function Carts() {
             store_name: s?.store_name ?? "our store",
             items_list: items.map((i) => `${i.qty} × ${i.name}`).join(", "),
             cart_total: money(subtotal, s?.currency),
-            cart_url: window.location.origin + "/cart",
+            cart_url: (SITE || window.location.origin) + "/cart",
             footer_text: "",
           },
         },
