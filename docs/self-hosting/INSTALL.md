@@ -63,7 +63,7 @@ For a migration **from Lovable**, do not run this — restore the export instead
 
 **Storage:** create a bucket named `media` (Storage → New bucket). The migrations contain the access rules for it.
 
-**Auth settings:** Site URL = your primary URL; Redirect URLs: `https://www.yourstore.com/auth`, `https://yourstore.com/auth`. Disable anonymous sign-ups. Enable TOTP MFA.
+**Auth settings:** Site URL = your primary URL; Redirect URLs: `https://www.yourstore.com/auth`, `https://yourstore.com/auth`. Disable anonymous sign-ups. Enable TOTP MFA. Google (optional): create an OAuth client in Google Cloud (redirect `https://api.yourstore.com/auth/v1/callback`), enable the Google provider in Supabase Auth, and build with `VITE_OAUTH_MODE=supabase`.
 
 ## E. Application deployment
 

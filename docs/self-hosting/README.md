@@ -4,6 +4,7 @@
 |---|---|
 | [INSTALL.md](./INSTALL.md) | A-to-Z installation on a VPS (and cPanel compatibility notes) |
 | [MIGRATION.md](./MIGRATION.md) | Move from Lovable hosting + Lovable Cloud to your own domain, server and database without data loss |
+| [DEPENDENCY-AUDIT.md](./DEPENDENCY-AUDIT.md) | Full Lovable dependency audit + verdict |
 | [CHECKLIST.md](./CHECKLIST.md) | Production deployment checklist |
 | [`../../.env.example`](../../.env.example) | Example environment (no real credentials) |
 | [`../../scripts/selfhost/`](../../scripts/selfhost/) | Build, deploy, backup, restore, migration and media scripts |
@@ -36,7 +37,7 @@
 
 | Item | Why | What to do |
 |---|---|---|
-| Google sign-in button | Uses `@lovable.dev/cloud-auth-js` (Lovable OAuth broker) | Create your own Google OAuth client, enable Google in your Supabase Auth, replace `lovable.auth.signInWithOAuth` in `src/routes/auth.tsx` with `supabase.auth.signInWithOAuth({ provider: "google" })`. Email/password works without changes |
+| Google sign-in button | Lovable broker only when `VITE_OAUTH_MODE` is unset | Set `VITE_OAUTH_MODE=supabase`, create a Google OAuth client and enable Google in your Supabase Auth — or `VITE_GOOGLE_LOGIN=off` |
 | Build config package | `@lovable.dev/vite-tanstack-config` (npm, open package) | Works outside Lovable; it only pins Cloudflare **inside** Lovable's sandbox. No action |
 | Error reporting helper | `src/lib/lovable-error-reporting.ts` posts to the Lovable editor only when embedded | Harmless when self-hosted |
 | Database export | Lovable Cloud has no direct DB password | Use **Database → Export data** in Lovable (compressed `pg_dump` archive incl. auth users + password hashes) |

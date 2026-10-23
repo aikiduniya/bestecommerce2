@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,6 +77,14 @@ function AuthPage() {
   }
 
   async function google() {
+    // Self-hosted (VITE_OAUTH_MODE=supabase): standard Supabase Auth Google provider with the owner's own Google client.
+    if (import.meta.env["VITE_OAUTH_MODE"] === "supabase") {
+      const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + "/auth" } });
+      if (error) toast.error(error.message);
+      return;
+    }
+    // Lovable hosting: managed Google broker (loaded only in this mode).
+    const { lovable } = await import("@/integrations/lovable/index");
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
     if (r.error) { toast.error(r.error.message); return; }
     if (r.redirected) return;
@@ -102,10 +109,14 @@ function AuthPage() {
               Sign in to track orders, save favourites and check out faster.
             </p>
           </div>
-          <Button type="button" variant="outline" className="w-full" onClick={google}>
-            Continue with Google
-          </Button>
-          <div className="eyebrow text-center text-muted-foreground">or</div>
+          {import.meta.env["VITE_GOOGLE_LOGIN"] !== "off" && (
+            <>
+              <Button type="button" variant="outline" className="w-full" onClick={google}>
+                Continue with Google
+              </Button>
+              <div className="eyebrow text-center text-muted-foreground">or</div>
+            </>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
