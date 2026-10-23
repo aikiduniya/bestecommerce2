@@ -118,6 +118,15 @@ function SettingsPage() {
     if (rest.contact_notify_email && !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(rest.contact_notify_email)) { setSaving(false); toast.error("Contact notification email is not valid"); return; }
     rest.social_links = (Array.isArray(rest.social_links) ? rest.social_links : []).filter((l) => l && typeof l === "object" && /^https:\/\//.test(String((l as { url?: string }).url ?? ""))) as never;
     if (Number(rest.cod_fee) < 0) { setSaving(false); toast.error("COD fee cannot be negative"); return; }
+    {
+      const r = rest as { site_url?: string | null; enforce_primary_host?: boolean };
+      if (r.site_url) {
+        const n = normalizeSiteUrl(r.site_url);
+        if (!n) { setSaving(false); toast.error("Primary website URL is not valid (e.g. https://www.yourstore.com)"); return; }
+        r.site_url = n;
+      } else r.site_url = null;
+      if (r.enforce_primary_host && !r.site_url) { setSaving(false); toast.error("Set the primary website URL before enabling the redirect"); return; }
+    }
     const { error } = await supabase.from("store_settings").update(rest).eq("id", 1);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
@@ -252,6 +261,12 @@ function SettingsPage() {
         </TabsContent>
         <TabsContent value="store">
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">Primary website URL (used for sitemap, robots.txt, canonical links, emails, feeds and payment return pages)</Label>
+              <Input aria-label="Primary website URL" placeholder="https://www.yourstore.com" value={(s as { site_url?: string | null }).site_url ?? ""} onChange={(e) => setS({ ...s, site_url: e.target.value } as never)} />
+              <p className="text-xs text-muted-foreground">Leave blank to use whichever domain the visitor opened. Always saved as HTTPS without a trailing slash.</p>
+            </div>
+            {toggle("enforce_primary_host" as never, "Redirect www / non-www to the primary URL", "Sends visitors on the other variant (and plain http) to the primary domain. Turn on only after the domain is live.")}
             {text("support_email", "Support email", "email")}
             {text("support_phone", "Support phone")}
             {text("currency", "Store currency code (e.g. USD, EUR, PKR) — orders are charged in this currency")}
