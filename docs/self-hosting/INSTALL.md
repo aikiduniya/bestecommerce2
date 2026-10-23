@@ -92,6 +92,7 @@ node dist/start/server.js            # or STORAGE_BACKEND=s3 with your own S3/R2
 
 # 5. Store schema (37 migrations) + optional starter-data cleanup
 DATABASE_URL=postgresql://postgres:PASSWORD@127.0.0.1:5432/postgres scripts/selfhost/apply-migrations.sh
+# apply-migrations.sh also loads scripts/selfhost/seed-defaults.sql (legal pages, FAQs, contact email template; safe to re-run)
 psql "$DATABASE_URL" -f scripts/selfhost/remove-sample-data.sql      # removes 4 demo products / 3 brands
 
 # 6. Data API (PostgREST)
@@ -227,3 +228,25 @@ Always back up before applying migrations. Migrations are additive (no drops/ren
 * **App:** `deploy-vps.sh` keeps the last 5 releases in `/srv/store/releases`. `scripts/selfhost/rollback.sh` points `current` to the previous release and restarts.
 * **Database:** restore the pre-deploy dump: `scripts/selfhost/db-import.sh backups/<file>.dump` (onto a fresh DB, then switch `SUPABASE_URL`) — never restore over a live DB without a fresh backup.
 * **Domain migration:** while Lovable hosting is still published, switching DNS back to Lovable's records restores the old site within the TTL.
+
+
+## Updating an existing installation (tested 2026-10-23)
+```bash
+cd /srv/store/app
+# .env must contain DATABASE_URL (plus optional BACKUP_DIR, STORAGE_DIR, PORT)
+scripts/selfhost/deploy-vps.sh
+# non-systemd hosts / no git:  RESTART_CMD=/path/restart.sh NO_PULL=1 scripts/selfhost/deploy-vps.sh
+```
+Order of steps: git pull → build → **database + files backup** → apply only new files in `drizzle/migrations/` (each in its own transaction) → new release folder → restart → health check → automatic switch back to the previous release if the check fails.
+Migrations only add (no dropped or renamed columns), so an app rollback works with the newer database.
+
+**Restore a backup** (use PostgreSQL client tools of the same major version as the server):
+```bash
+createdb -U postgres store_restore
+psql -U postgres -d store_restore -c 'create schema if not exists extensions; create extension if not exists pgcrypto with schema extensions; create extension if not exists "uuid-ossp" with schema extensions'
+pg_restore -U postgres -d store_restore --no-owner /srv/store/backups/db-YYYYMMDD-HHMMSS.dump
+tar -xzf /srv/store/backups/storage-YYYYMMDD-HHMMSS.tgz -C /path/to/storage
+```
+Then point `DATABASE_URL` (and the auth/API/storage services) at the restored database, or rename databases during a maintenance window.
+
+**Moved from Lovable?** After importing the export, run once: `BASELINE=1 scripts/selfhost/apply-migrations.sh`.

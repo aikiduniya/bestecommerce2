@@ -33,7 +33,10 @@ The self-hosted build is the **same source code and the same 37 database migrati
 - `apply-migrations.sh` records each applied file and runs **only new files**, each in its own transaction. A failed file stops the update and changes nothing.
 - `deploy-vps.sh` now runs: git pull → build → **database backup → new migrations** → switch release → health check → automatic rollback of the app on failure. Restore the database with `rollback.sh` if needed.
 - Sites moved from Lovable: run `BASELINE=1 apply-migrations.sh` once after the import, so future updates apply only newer files.
-- Status: the incremental runner was tested on a fresh install (37 files). The new backup step in the deploy script and the baseline mode were syntax-checked only, **not run**.
+- Status: update, backup, incremental migration, automatic rollback and restore were all run for real (QA-REPORT.md). Baseline mode was not run.
+
+## Full QA
+All modules and update/backup/restore/rollback/media operations were tested on the separate stack. See [QA-REPORT.md](QA-REPORT.md).
 
 ## Verdict
-**Feature parity: complete by code.** Nothing is missing or disabled. **Proven by running it outside Lovable:** only the core flows above. **Updates:** ready, using versioned migrations that only add, plus a backup before each update.
+**Feature parity: complete by code.** Nothing is missing or disabled. **Proven by running it outside Lovable:** all modules (QA-REPORT.md), except services needing owner credentials. **Updates:** ready, using versioned migrations that only add, plus a backup before each update.
