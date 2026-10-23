@@ -10,7 +10,7 @@ import type { Plugin } from "vite";
 
 // SELF_HOSTED=1 builds swap Lovable-only helpers for empty stand-ins (src/selfhost-stubs).
 // Lovable's editor/dev builds never set it, so they keep the original helpers.
-const SELF_HOSTED = process.env.SELF_HOSTED === "1";
+const SELF_HOSTED = process.env["SELF_HOSTED"] === "1";
 const stub = (f: string) => fileURLToPath(new URL(`./src/selfhost-stubs/${f}`, import.meta.url));
 const STUBS: [RegExp, string][] = [
   [/integrations[\\/]supabase[\\/]previewAuthStorage(\.ts)?$/, stub("preview-auth-storage.ts")],

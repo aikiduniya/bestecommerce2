@@ -12,5 +12,5 @@ export SELF_HOSTED=1   # strip Lovable-only helpers from this build
 if command -v bun >/dev/null; then bun install --frozen-lockfile || bun install; else npm ci || npm install; fi
 npx vite build
 # SMTP on Node uses nodemailer (loaded at runtime, not bundled).
-if [ "$NITRO_PRESET" = "node-server" ]; then (cd .output/server && npm install --no-save --omit=dev nodemailer@6 >/dev/null); fi
+if [ "$NITRO_PRESET" = "node-server" ]; then [ -f .output/server/package.json ] || echo '{"private":true}' > .output/server/package.json; (cd .output/server && npm install --prefix . --no-save --omit=dev nodemailer@6 >/dev/null); fi
 echo "Built .output/ (preset: $NITRO_PRESET). Start with: node .output/server/index.mjs"
