@@ -16,6 +16,8 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as PaymentCancelledRouteImport } from './routes/payment.cancelled'
+import { Route as PaymentSuccessRouteImport } from './routes/payment.success'
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
 import { Route as Char123LangChar125CartRouteImport } from './routes/{-$lang}/cart'
 import { Route as Char123LangChar125CheckoutRouteImport } from './routes/{-$lang}/checkout'
@@ -42,6 +44,7 @@ import { Route as AuthenticatedAdminMediaRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminNavigationRouteImport } from './routes/_authenticated/admin.navigation'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as AuthenticatedAdminPagesRouteImport } from './routes/_authenticated/admin.pages'
+import { Route as AuthenticatedAdminPaymentsRouteImport } from './routes/_authenticated/admin.payments'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin.products'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as AuthenticatedAdminReturnsRouteImport } from './routes/_authenticated/admin.returns'
@@ -56,6 +59,7 @@ import { Route as AuthenticatedAdminTicketsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminTranslationsRouteImport } from './routes/_authenticated/admin.translations'
 import { Route as AuthenticatedOrderIdRouteImport } from './routes/_authenticated/order.$id'
 import { Route as ApiPublicMerchantFeedRouteImport } from './routes/api/public/merchant-feed'
+import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as Char123LangChar125BlogIndexRouteImport } from './routes/{-$lang}/blog.index'
 import { Route as Char123LangChar125BlogSlugRouteImport } from './routes/{-$lang}/blog.$slug'
 import { Route as Char123LangChar125PagesSlugRouteImport } from './routes/{-$lang}/pages.$slug'
@@ -96,6 +100,16 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const PaymentCancelledRoute = PaymentCancelledRouteImport.update({
+  id: '/payment/cancelled',
+  path: '/payment/cancelled',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
+  id: '/payment/success',
+  path: '/payment/success',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const Char123LangChar125IndexRoute = Char123LangChar125IndexRouteImport.update({
   id: '/{-$lang}/',
@@ -242,6 +256,12 @@ const AuthenticatedAdminPagesRoute = AuthenticatedAdminPagesRouteImport.update({
   path: '/pages',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminPaymentsRoute =
+  AuthenticatedAdminPaymentsRouteImport.update({
+    id: '/payments',
+    path: '/payments',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminProductsRoute =
   AuthenticatedAdminProductsRouteImport.update({
     id: '/products',
@@ -321,6 +341,11 @@ const ApiPublicMerchantFeedRoute = ApiPublicMerchantFeedRouteImport.update({
   path: '/api/public/merchant-feed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe-webhook',
+  path: '/api/public/stripe-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char123LangChar125BlogIndexRoute =
   Char123LangChar125BlogIndexRouteImport.update({
     id: '/{-$lang}/blog/',
@@ -366,6 +391,8 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/payment/cancelled': typeof PaymentCancelledRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
   '/{-$lang}/compare': typeof Char123LangChar125CompareRoute
@@ -391,6 +418,7 @@ export interface FileRoutesByFullPath {
   '/admin/navigation': typeof AuthenticatedAdminNavigationRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/pages': typeof AuthenticatedAdminPagesRoute
+  '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/returns': typeof AuthenticatedAdminReturnsRoute
@@ -405,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/{-$lang}/blog/$slug': typeof Char123LangChar125BlogSlugRoute
   '/{-$lang}/pages/$slug': typeof Char123LangChar125PagesSlugRoute
   '/{-$lang}/product/$slug': typeof Char123LangChar125ProductSlugRoute
@@ -420,6 +449,8 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/payment/cancelled': typeof PaymentCancelledRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
   '/{-$lang}/compare': typeof Char123LangChar125CompareRoute
@@ -445,6 +476,7 @@ export interface FileRoutesByTo {
   '/admin/navigation': typeof AuthenticatedAdminNavigationRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/pages': typeof AuthenticatedAdminPagesRoute
+  '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/returns': typeof AuthenticatedAdminReturnsRoute
@@ -459,6 +491,7 @@ export interface FileRoutesByTo {
   '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/{-$lang}/blog/$slug': typeof Char123LangChar125BlogSlugRoute
   '/{-$lang}/pages/$slug': typeof Char123LangChar125PagesSlugRoute
   '/{-$lang}/product/$slug': typeof Char123LangChar125ProductSlugRoute
@@ -476,6 +509,8 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/payment/cancelled': typeof PaymentCancelledRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/{-$lang}/cart': typeof Char123LangChar125CartRoute
   '/{-$lang}/checkout': typeof Char123LangChar125CheckoutRoute
   '/{-$lang}/compare': typeof Char123LangChar125CompareRoute
@@ -501,6 +536,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/navigation': typeof AuthenticatedAdminNavigationRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/pages': typeof AuthenticatedAdminPagesRoute
+  '/_authenticated/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/returns': typeof AuthenticatedAdminReturnsRoute
@@ -515,6 +551,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/_authenticated/order/$id': typeof AuthenticatedOrderIdRoute
   '/api/public/merchant-feed': typeof ApiPublicMerchantFeedRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/{-$lang}/blog/$slug': typeof Char123LangChar125BlogSlugRoute
   '/{-$lang}/pages/$slug': typeof Char123LangChar125PagesSlugRoute
   '/{-$lang}/product/$slug': typeof Char123LangChar125ProductSlugRoute
@@ -533,6 +570,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/account'
     | '/admin'
+    | '/payment/cancelled'
+    | '/payment/success'
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
     | '/{-$lang}/compare'
@@ -558,6 +597,7 @@ export interface FileRouteTypes {
     | '/admin/navigation'
     | '/admin/orders'
     | '/admin/pages'
+    | '/admin/payments'
     | '/admin/products'
     | '/admin/reports'
     | '/admin/returns'
@@ -572,6 +612,7 @@ export interface FileRouteTypes {
     | '/admin/translations'
     | '/order/$id'
     | '/api/public/merchant-feed'
+    | '/api/public/stripe-webhook'
     | '/{-$lang}/blog/$slug'
     | '/{-$lang}/pages/$slug'
     | '/{-$lang}/product/$slug'
@@ -587,6 +628,8 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/account'
+    | '/payment/cancelled'
+    | '/payment/success'
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
     | '/{-$lang}/compare'
@@ -612,6 +655,7 @@ export interface FileRouteTypes {
     | '/admin/navigation'
     | '/admin/orders'
     | '/admin/pages'
+    | '/admin/payments'
     | '/admin/products'
     | '/admin/reports'
     | '/admin/returns'
@@ -626,6 +670,7 @@ export interface FileRouteTypes {
     | '/admin/translations'
     | '/order/$id'
     | '/api/public/merchant-feed'
+    | '/api/public/stripe-webhook'
     | '/{-$lang}/blog/$slug'
     | '/{-$lang}/pages/$slug'
     | '/{-$lang}/product/$slug'
@@ -642,6 +687,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/account'
     | '/_authenticated/admin'
+    | '/payment/cancelled'
+    | '/payment/success'
     | '/{-$lang}/cart'
     | '/{-$lang}/checkout'
     | '/{-$lang}/compare'
@@ -667,6 +714,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/navigation'
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/pages'
+    | '/_authenticated/admin/payments'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/reports'
     | '/_authenticated/admin/returns'
@@ -681,6 +729,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/translations'
     | '/_authenticated/order/$id'
     | '/api/public/merchant-feed'
+    | '/api/public/stripe-webhook'
     | '/{-$lang}/blog/$slug'
     | '/{-$lang}/pages/$slug'
     | '/{-$lang}/product/$slug'
@@ -696,6 +745,8 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PaymentCancelledRoute: typeof PaymentCancelledRoute
+  PaymentSuccessRoute: typeof PaymentSuccessRoute
   Char123LangChar125CartRoute: typeof Char123LangChar125CartRoute
   Char123LangChar125CheckoutRoute: typeof Char123LangChar125CheckoutRoute
   Char123LangChar125CompareRoute: typeof Char123LangChar125CompareRoute
@@ -703,6 +754,7 @@ export interface RootRouteChildren {
   Char123LangChar125TrackRoute: typeof Char123LangChar125TrackRoute
   Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
   ApiPublicMerchantFeedRoute: typeof ApiPublicMerchantFeedRoute
+  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   Char123LangChar125BlogSlugRoute: typeof Char123LangChar125BlogSlugRoute
   Char123LangChar125PagesSlugRoute: typeof Char123LangChar125PagesSlugRoute
   Char123LangChar125ProductSlugRoute: typeof Char123LangChar125ProductSlugRoute
@@ -759,6 +811,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/payment/cancelled': {
+      id: '/payment/cancelled'
+      path: '/payment/cancelled'
+      fullPath: '/payment/cancelled'
+      preLoaderRoute: typeof PaymentCancelledRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment/success': {
+      id: '/payment/success'
+      path: '/payment/success'
+      fullPath: '/payment/success'
+      preLoaderRoute: typeof PaymentSuccessRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/{-$lang}/': {
       id: '/{-$lang}/'
@@ -942,6 +1008,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPagesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/payments': {
+      id: '/_authenticated/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AuthenticatedAdminPaymentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/products': {
       id: '/_authenticated/admin/products'
       path: '/products'
@@ -1040,6 +1113,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMerchantFeedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/stripe-webhook': {
+      id: '/api/public/stripe-webhook'
+      path: '/api/public/stripe-webhook'
+      fullPath: '/api/public/stripe-webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/{-$lang}/blog/': {
       id: '/{-$lang}/blog/'
       path: '/{-$lang}/blog'
@@ -1105,6 +1185,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminNavigationRoute: typeof AuthenticatedAdminNavigationRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminPagesRoute: typeof AuthenticatedAdminPagesRoute
+  AuthenticatedAdminPaymentsRoute: typeof AuthenticatedAdminPaymentsRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminReturnsRoute: typeof AuthenticatedAdminReturnsRoute
@@ -1142,6 +1223,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminNavigationRoute: AuthenticatedAdminNavigationRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminPagesRoute: AuthenticatedAdminPagesRoute,
+  AuthenticatedAdminPaymentsRoute: AuthenticatedAdminPaymentsRoute,
   AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
   AuthenticatedAdminReturnsRoute: AuthenticatedAdminReturnsRoute,
@@ -1183,6 +1265,8 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PaymentCancelledRoute: PaymentCancelledRoute,
+  PaymentSuccessRoute: PaymentSuccessRoute,
   Char123LangChar125CartRoute: Char123LangChar125CartRoute,
   Char123LangChar125CheckoutRoute: Char123LangChar125CheckoutRoute,
   Char123LangChar125CompareRoute: Char123LangChar125CompareRoute,
@@ -1190,6 +1274,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char123LangChar125TrackRoute: Char123LangChar125TrackRoute,
   Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
   ApiPublicMerchantFeedRoute: ApiPublicMerchantFeedRoute,
+  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   Char123LangChar125BlogSlugRoute: Char123LangChar125BlogSlugRoute,
   Char123LangChar125PagesSlugRoute: Char123LangChar125PagesSlugRoute,
   Char123LangChar125ProductSlugRoute: Char123LangChar125ProductSlugRoute,

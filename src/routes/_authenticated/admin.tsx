@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tansta
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail, RotateCcw, BellRing, LifeBuoy, Gift, Star, ShoppingCart, Inbox, HelpCircle, ServerCog,
+  LayoutDashboard, Package, FolderTree, Tag, ShoppingBag, Settings, LogOut, Store, Layers, Image, Truck, Users, ShieldCheck, History, BarChart3, TicketPercent, MessageSquareText, FileText, Newspaper, LayoutTemplate, MenuSquare, BadgePercent, PanelLeftClose, PanelLeftOpen, Globe, Mail, RotateCcw, BellRing, LifeBuoy, Gift, Star, ShoppingCart, Inbox, HelpCircle, ServerCog, CreditCard,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/store";
@@ -79,6 +79,7 @@ const groups = [
       { perm: "admin", to: "/admin/activity", label: "Activity log", icon: History },
       { perm: "admin", to: "/admin/emails", label: "Emails", icon: Mail },
       { perm: "admin", to: "/admin/smtp", label: "Email settings (SMTP)", icon: ServerCog },
+      { perm: "orders", to: "/admin/payments", label: "Payments (Stripe)", icon: CreditCard },
       { perm: "admin", to: "/admin/settings", label: "Settings", icon: Settings },
     ],
   },

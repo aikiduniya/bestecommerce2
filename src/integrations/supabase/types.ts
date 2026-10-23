@@ -1005,16 +1005,20 @@ export type Database = {
           items: Json
           notes: string | null
           order_number: number
+          paid_at: string | null
           payment_fee: number
           payment_method: string
           payment_status: string
           points_discount: number
           points_redeemed: number
+          refunded_total: number
           shipping_address: Json
           shipping_total: number
           shipping_zone_id: string | null
           status: string
           stock_restored: boolean
+          stripe_payment_intent: string | null
+          stripe_session_id: string | null
           subtotal: number
           tax_total: number
           total: number
@@ -1043,16 +1047,20 @@ export type Database = {
           items?: Json
           notes?: string | null
           order_number?: never
+          paid_at?: string | null
           payment_fee?: number
           payment_method?: string
           payment_status?: string
           points_discount?: number
           points_redeemed?: number
+          refunded_total?: number
           shipping_address?: Json
           shipping_total?: number
           shipping_zone_id?: string | null
           status?: string
           stock_restored?: boolean
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
           subtotal?: number
           tax_total?: number
           total?: number
@@ -1081,16 +1089,20 @@ export type Database = {
           items?: Json
           notes?: string | null
           order_number?: never
+          paid_at?: string | null
           payment_fee?: number
           payment_method?: string
           payment_status?: string
           points_discount?: number
           points_redeemed?: number
+          refunded_total?: number
           shipping_address?: Json
           shipping_total?: number
           shipping_zone_id?: string | null
           status?: string
           stock_restored?: boolean
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
           subtotal?: number
           tax_total?: number
           total?: number
@@ -1171,6 +1183,131 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      payment_settings: {
+        Row: {
+          currencies: string[]
+          id: number
+          live_publishable_key: string | null
+          live_secret_enc: string | null
+          live_secret_set: boolean | null
+          live_verified_at: string | null
+          live_webhook_enc: string | null
+          live_webhook_set: boolean | null
+          payment_methods: string[]
+          stripe_enabled: boolean
+          stripe_mode: string
+          test_publishable_key: string | null
+          test_secret_enc: string | null
+          test_secret_set: boolean | null
+          test_verified_at: string | null
+          test_webhook_enc: string | null
+          test_webhook_set: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          currencies?: string[]
+          id?: number
+          live_publishable_key?: string | null
+          live_secret_enc?: string | null
+          live_secret_set?: boolean | null
+          live_verified_at?: string | null
+          live_webhook_enc?: string | null
+          live_webhook_set?: boolean | null
+          payment_methods?: string[]
+          stripe_enabled?: boolean
+          stripe_mode?: string
+          test_publishable_key?: string | null
+          test_secret_enc?: string | null
+          test_secret_set?: boolean | null
+          test_verified_at?: string | null
+          test_webhook_enc?: string | null
+          test_webhook_set?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          currencies?: string[]
+          id?: number
+          live_publishable_key?: string | null
+          live_secret_enc?: string | null
+          live_secret_set?: boolean | null
+          live_verified_at?: string | null
+          live_webhook_enc?: string | null
+          live_webhook_set?: boolean | null
+          payment_methods?: string[]
+          stripe_enabled?: boolean
+          stripe_mode?: string
+          test_publishable_key?: string | null
+          test_secret_enc?: string | null
+          test_secret_set?: boolean | null
+          test_verified_at?: string | null
+          test_webhook_enc?: string | null
+          test_webhook_set?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          id: string
+          kind: string
+          message: string | null
+          mode: string
+          order_id: string | null
+          provider: string
+          status: string
+          stripe_event_id: string | null
+          stripe_payment_intent: string | null
+          stripe_refund_id: string | null
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          kind: string
+          message?: string | null
+          mode?: string
+          order_id?: string | null
+          provider?: string
+          status: string
+          stripe_event_id?: string | null
+          stripe_payment_intent?: string | null
+          stripe_refund_id?: string | null
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          kind?: string
+          message?: string | null
+          mode?: string
+          order_id?: string | null
+          provider?: string
+          status?: string
+          stripe_event_id?: string | null
+          stripe_payment_intent?: string | null
+          stripe_refund_id?: string | null
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_collections: {
         Row: {
@@ -2065,6 +2202,24 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
       support_tickets: {
         Row: {
           created_at: string
@@ -2280,6 +2435,7 @@ export type Database = {
           _gift_card?: string
           _items: Json
           _notes?: string
+          _payment?: string
           _points?: number
           _zone_id: string
         }
@@ -2289,6 +2445,7 @@ export type Database = {
         Args: { _action: string; _id: string; _note: string; _restock: boolean }
         Returns: Json
       }
+      public_payment_options: { Args: never; Returns: Json }
       submit_contact: {
         Args: {
           _email: string
