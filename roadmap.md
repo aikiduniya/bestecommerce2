@@ -1,5 +1,8 @@
 # Roadmap
 
+## Current task
+- Connect confirmed Stripe payments to customer/admin email notifications; verify logs, concurrent duplicate prevention and delivery failure isolation without credential changes.
+
 ## Done
 - Phases 1–2: storefront, auth, admin CRUD, variants, collections, media, categories, wishlist, recently viewed, shipping zones, search/filter/sort, cart, account, COD checkout (place_order server-validated).
 - Phase 3: COD rules + fee + confirm/collect, staff roles/permissions (has_permission), activity log, admin Payments tab.
