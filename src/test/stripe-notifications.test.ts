@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
-  rows: {} as Record<string, Record<string, unknown>[]>,
+  rows: {} as Record<string, any[]>,
   smtp: vi.fn(), failLogReservation: false, failUpdate: false, cancelOnUpdate: false,
 }));
 
 // Stateful database double: filters are applied when awaited, including atomic updates.
 // Concurrent confirmations therefore exercise the same compare-and-set contract as PostgreSQL.
 class Query implements PromiseLike<{ data: any; error: any }> {
-  private filters: ((r: Record<string, unknown>) => boolean)[] = [];
+  private filters: ((r: any) => boolean)[] = [];
   private operation = "select";
   private payload: any;
   private one = false;
@@ -26,7 +26,7 @@ class Query implements PromiseLike<{ data: any; error: any }> {
     onrejected?: ((e: any) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
     return Promise.resolve().then(() => {
-      const rows = state.rows[this.table] ?? [];
+      const rows: any[] = state.rows[this.table] ?? [];
       if (this.operation === "insert" && this.table === "email_logs" && state.failLogReservation) return { data: null, error: { message: "offline" } };
       if (this.operation === "update" && this.table === "orders" && state.failUpdate) return { data: null, error: { message: "offline" } };
       if (this.operation === "update" && this.table === "orders" && state.cancelOnUpdate && rows[0]) rows[0].status = "cancelled";
@@ -53,8 +53,13 @@ const session = {
   id: "cs_test_paid", payment_status: "paid", status: "complete", amount_total: 12000,
   currency: "usd", payment_intent: "pi_test", metadata: { order_id: "qa-order" },
 };
-const order = () => state.rows.orders[0];
-const logs = () => state.rows.email_logs;
+const tableRows = (table: string): any[] => {
+  const rows = state.rows[table];
+  if (!rows) throw new Error(`Missing test table ${table}`);
+  return rows;
+};
+const order = (): any => tableRows("orders")[0];
+const logs = (): any[] => tableRows("email_logs");
 
 beforeEach(() => {
   state.failLogReservation = false; state.failUpdate = false; state.cancelOnUpdate = false;
@@ -81,7 +86,7 @@ describe("confirmed Stripe payment notification flow (isolated transports)", () 
       ["order_placed", "customer@example.test", "sent", 1, "orders"],
       ["order_placed_admin", "support@example.test", "sent", 1, "orders"],
     ]);
-    expect(state.smtp.mock.calls[0].slice(1)).toEqual([
+    expect(state.smtp.mock.calls[0]?.slice(1)).toEqual([
       "customer@example.test", "Order #42 — QA Store", "QA Customer customer@example.test $120.00 USD Stripe 2 × QA Item",
     ]);
     expect(logs()[0].payload).toMatchObject({ order_id: "qa-order", total: "120", currency: "USD", payment_method: "Stripe" });
@@ -139,20 +144,20 @@ describe("confirmed Stripe payment notification flow (isolated transports)", () 
     expect(state.smtp).not.toHaveBeenCalled(); expect(logs()).toHaveLength(0);
   });
   it("honors the live-delivery switch and records disabled attempts", async () => {
-    state.rows.email_settings[0].delivery_enabled = false;
+    tableRows("email_settings")[0].delivery_enabled = false;
     await applyPaidSession(session, "test");
     expect(logs().map((l) => l.status)).toEqual(["queued_disabled", "queued_disabled"]);
     expect(state.smtp).not.toHaveBeenCalled();
   });
   it("honors disabled rules/templates with visible skipped logs", async () => {
-    state.rows.notification_rules[0].is_enabled = false;
-    state.rows.email_templates[1].is_enabled = false;
+    tableRows("notification_rules")[0].is_enabled = false;
+    tableRows("email_templates")[1].is_enabled = false;
     await applyPaidSession(session, "test");
     expect(logs().map((l) => l.status)).toEqual(["skipped_rule_disabled", "skipped_template_disabled"]);
     expect(state.smtp).not.toHaveBeenCalled();
   });
   it("records missing support recipient without blocking customer confirmation", async () => {
-    state.rows.store_settings[0].support_email = "";
+    tableRows("store_settings")[0].support_email = "";
     await applyPaidSession(session, "test");
     expect(logs().map((l) => l.status)).toEqual(["sent", "failed"]);
     expect(state.smtp).toHaveBeenCalledTimes(1);
