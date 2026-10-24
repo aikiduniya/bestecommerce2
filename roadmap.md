@@ -1,7 +1,8 @@
 # Roadmap
 
 ## Current task
-- Connect confirmed Stripe payments to customer/admin email notifications; verify logs, concurrent duplicate prevention and delivery failure isolation without credential changes.
+- [x] Connect confirmed Stripe payments to customer/admin email notifications; reserve existing logs, prevent concurrent duplicates and isolate delivery failures. 25 automated tests PASS; build OK. No schema, credentials, COD checkout or UI changes.
+- [ ] Real Stripe → SMTP → delivery-log verification on the owner's configured installation: blocked here because the connected database has no Stripe orders, delivery disabled, untested/disabled SMTP profiles and no support email. Tests used isolated database/SMTP doubles, not a real card charge or inbox delivery.
 
 ## Done
 - Phases 1–2: storefront, auth, admin CRUD, variants, collections, media, categories, wishlist, recently viewed, shipping zones, search/filter/sort, cart, account, COD checkout (place_order server-validated).
@@ -19,7 +20,7 @@
 
 ## Open / blocked
 - Stripe: ON HOLD per owner — never ask for onboarding until requested; live card payments disabled.
-- Email delivery: blocked until a verified provider is configured (module built, logs as queued_disabled).
+- Email delivery: owner reports SMTP working on their installation; connected database still has delivery disabled and no tested/enabled profiles (read-only check 2026-10-24). Do not change credentials/settings; live delivery verification remains pending there.
 - Print-to-PDF for invoices untested; tracking events not verified against real GA4/Meta dashboards.
 
 ## Phase 5 log
