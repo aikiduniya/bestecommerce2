@@ -57,11 +57,18 @@ export async function processSend(
   admin: AdminClient,
   input: { event: string; recipientEmail: string; vars: Record<string, string>; logId?: number },
 ): Promise<{ status: string; error?: string }> {
+  const skip = async (status: string) => {
+    if (input.logId) {
+      const { error } = await admin.from("email_logs").update({ status, last_attempt_at: new Date().toISOString() }).eq("id", input.logId);
+      if (error) throw new Error("Could not record skipped email notification");
+    }
+    return { status };
+  };
   const { data: settings } = await admin.from("email_settings").select("*").eq("id", 1).single();
   const { data: rule } = await admin.from("notification_rules").select("*").eq("event", input.event).maybeSingle();
-  if (!rule?.is_enabled || !rule.template_key) return { status: "skipped_rule_disabled" };
+  if (!rule?.is_enabled || !rule.template_key) return skip("skipped_rule_disabled");
   const { data: tpl } = await admin.from("email_templates").select("*").eq("key", rule.template_key).maybeSingle();
-  if (!tpl || !tpl.is_enabled) return { status: "skipped_template_disabled" };
+  if (!tpl || !tpl.is_enabled) return skip("skipped_template_disabled");
 
   const { data: store } = await admin.from("store_settings").select("store_name").eq("id", 1).single();
   const vars = { store_name: store?.store_name ?? "", ...input.vars };
@@ -87,14 +94,17 @@ export async function processSend(
 
   if (input.logId) {
     const { data: log } = await admin.from("email_logs").select("attempts").eq("id", input.logId).single();
-    await admin.from("email_logs").update({
-      status, error, attempts: (log?.attempts ?? 0) + 1, last_attempt_at: new Date().toISOString(),
+    const { error: logError } = await admin.from("email_logs").update({
+      status, error, subject, template_key: tpl.key, payload: vars, smtp_profile: profileKey,
+      attempts: (log?.attempts ?? 0) + 1, last_attempt_at: new Date().toISOString(),
     }).eq("id", input.logId);
+    if (logError) throw new Error("Could not record email delivery result");
   } else {
-    await admin.from("email_logs").insert({
+    const { error: logError } = await admin.from("email_logs").insert({
       template_key: tpl.key, event: input.event, recipient_email: input.recipientEmail,
       subject, status, error, attempts: 1, payload: vars, last_attempt_at: new Date().toISOString(), smtp_profile: profileKey,
     });
+    if (logError) throw new Error("Could not record email delivery result");
   }
   return error ? { status, error } : { status };
 }
