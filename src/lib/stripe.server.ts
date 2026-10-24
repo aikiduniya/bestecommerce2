@@ -1,5 +1,6 @@
 // Server-only Stripe helpers. Talks to the Stripe REST API with fetch (Worker-safe, no SDK).
 import { decryptSecret } from "@/lib/smtp.server";
+import { notifyPaidStripeOrder } from "@/lib/stripe-notifications.server";
 
 export type StripeMode = "test" | "live";
 const ZERO_DECIMAL = new Set(["BIF", "CLP", "DJF", "GNF", "JPY", "KMF", "KRW", "MGA", "PYG", "RWF", "UGX", "VND", "VUV", "XAF", "XOF", "XPF"]);
@@ -89,7 +90,7 @@ export async function applyPaidSession(session: Session, mode: StripeMode, event
   const db = await admin();
   const orderId = session.metadata?.["order_id"];
   if (!orderId) return { ok: false, reason: "no order" };
-  const { data: o } = await db.from("orders").select("id, total, currency, payment_status, status, stripe_session_id, order_number").eq("id", orderId).maybeSingle();
+  const { data: o } = await db.from("orders").select("id, total, currency, payment_method, payment_status, status, stripe_session_id, order_number, customer_name, customer_email, items").eq("id", orderId).maybeSingle();
   if (!o) return { ok: false, reason: "order not found" };
   const log = (status: string, message: string) => db.from("payment_transactions").insert({
     order_id: o.id, mode, kind: "payment", status, amount: fromMinor(session.amount_total ?? 0, session.currency ?? o.currency),
@@ -97,7 +98,7 @@ export async function applyPaidSession(session: Session, mode: StripeMode, event
     stripe_payment_intent: session.payment_intent, stripe_event_id: eventId ?? null, message,
   });
   if (session.payment_status !== "paid") return { ok: false, reason: "not paid" };
-  if (o.payment_status === "paid" || o.payment_status === "refunded") return { ok: true, already: true, order: o };
+  if (o.payment_method !== "stripe" || o.stripe_session_id !== session.id) return { ok: false, reason: "session mismatch" };
   const expected = toMinor(Number(o.total), o.currency);
   if (session.amount_total !== expected || (session.currency ?? "").toUpperCase() !== o.currency.toUpperCase()) {
     await log("mismatch", `Amount/currency mismatch: expected ${expected} ${o.currency}`);
@@ -107,9 +108,19 @@ export async function applyPaidSession(session: Session, mode: StripeMode, event
     await log("needs_refund", "Payment received for a cancelled order — refund it from Payments");
     return { ok: false, reason: "cancelled" };
   }
-  const { data: upd } = await db.from("orders")
+  if (o.payment_status === "paid" || o.payment_status === "refunded") return { ok: true, already: true, order: o };
+  const { data: upd, error: updateError } = await db.from("orders")
     .update({ payment_status: "paid", paid_at: new Date().toISOString(), stripe_payment_intent: session.payment_intent, stripe_session_id: session.id })
-    .eq("id", o.id).in("payment_status", ["pending", "failed"]).select("id").maybeSingle();
-  if (upd) await log("succeeded", "Payment confirmed");
-  return { ok: true, order: o };
+    .eq("id", o.id).eq("stripe_session_id", session.id).neq("status", "cancelled")
+    .in("payment_status", ["pending", "failed"]).select("id").maybeSingle();
+  if (updateError) throw new Error("Could not confirm order payment");
+  if (upd) {
+    // The database compare-and-set chooses one sender even when webhook and success page race.
+    // SMTP failures are contained by this helper and cannot undo payment or trigger webhook retries.
+    await notifyPaidStripeOrder(db, o);
+    await log("succeeded", "Payment confirmed");
+    return { ok: true, order: o };
+  }
+  const { data: current } = await db.from("orders").select("payment_status, status").eq("id", o.id).maybeSingle();
+  return { ok: current?.payment_status === "paid" && current.status !== "cancelled", already: true, order: o };
 }
