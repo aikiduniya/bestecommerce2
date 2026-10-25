@@ -79,7 +79,7 @@ describe("COD order-placed notifications (guest-capable)", () => {
       ["order_placed_admin", "support@example.test", "sent"],
     ]);
     expect(state.smtp).toHaveBeenCalledTimes(2);
-    expect(state.smtp.mock.calls[0]?.[2]).toBe("Cash on Delivery $50.00");
+    expect(state.smtp.mock.calls[0]?.[3]).toBe("Cash on Delivery $50.00");
   });
   it("rejects a guest without the matching token", async () => {
     await expect(notifyOrderPlacedCore(supabaseAdmin, { orderId: "cod-order", guestToken: "wrong" })).rejects.toThrow("Order not found");
