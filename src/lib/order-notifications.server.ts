@@ -9,6 +9,30 @@ type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server"
 export type OrderForNotification = Pick<Database["public"]["Tables"]["orders"]["Row"],
   "id" | "customer_name" | "customer_email" | "order_number" | "total" | "currency" | "items">;
 
+// Authorize + dedupe + dispatch for a just-placed non-card order. The caller
+// must own the order (signed-in user id) or present its guest token. All
+// template variables come from the stored order — nothing from the browser.
+export async function notifyOrderPlacedCore(
+  db: AdminClient,
+  input: { orderId: string; guestToken?: string; userId?: string | null },
+): Promise<{ status: string }> {
+  const { data: o } = await db.from("orders")
+    .select("id, user_id, guest_token, payment_method, customer_name, customer_email, order_number, total, currency, items")
+    .eq("id", input.orderId).maybeSingle();
+  if (!o) throw new Error("Order not found");
+  const allowed = (o.user_id && input.userId === o.user_id) || (!o.user_id && o.guest_token && input.guestToken === o.guest_token);
+  if (!allowed) throw new Error("Order not found");
+  if (o.payment_method === "stripe") return { status: "skipped_card_order" };
+  // Idempotent: a repeat call (page reload, double submit) must not resend.
+  const { data: existing } = await db.from("email_logs").select("id")
+    .eq("event", "order_placed").filter("payload->>order_id", "eq", o.id)
+    .neq("status", "failed").limit(1);
+  if (existing?.length) return { status: "already_notified" };
+  const label = o.payment_method === "cod" ? "Cash on Delivery" : o.payment_method;
+  await notifyOrderPlacedEmail(db, o, label);
+  return { status: "ok" };
+}
+
 export async function notifyOrderPlacedEmail(db: AdminClient, order: OrderForNotification, paymentLabel: string): Promise<void> {
   try {
     const { data: store, error: storeError } = await db.from("store_settings").select("support_email").eq("id", 1).single();

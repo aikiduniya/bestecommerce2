@@ -25,23 +25,8 @@ export const notifyOrderPlaced = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ orderId: z.string().uuid(), guestToken: z.string().max(100).optional() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-    const { data: o } = await db.from("orders")
-      .select("id, user_id, guest_token, payment_method, customer_name, customer_email, order_number, total, currency, items")
-      .eq("id", data.orderId).maybeSingle();
-    if (!o) throw new Error("Order not found");
-    const uid = await callerUserId();
-    const allowed = (o.user_id && uid === o.user_id) || (!o.user_id && o.guest_token && data.guestToken === o.guest_token);
-    if (!allowed) throw new Error("Order not found");
-    if (o.payment_method === "stripe") return { status: "skipped_card_order" };
-    // Idempotent: a repeat call (page reload, double submit) must not resend.
-    const { data: existing } = await db.from("email_logs").select("id")
-      .eq("event", "order_placed").filter("payload->>order_id", "eq", o.id)
-      .neq("status", "failed").limit(1);
-    if (existing?.length) return { status: "already_notified" };
-    const { notifyOrderPlacedEmail } = await import("@/lib/order-notifications.server");
-    const label = o.payment_method === "cod" ? "Cash on Delivery" : o.payment_method;
-    await notifyOrderPlacedEmail(db, o, label);
-    return { status: "ok" };
+    const { notifyOrderPlacedCore } = await import("@/lib/order-notifications.server");
+    return notifyOrderPlacedCore(db, { orderId: data.orderId, guestToken: data.guestToken, userId: await callerUserId() });
   });
 
 // Retry a queued/failed log entry. Admin only.
