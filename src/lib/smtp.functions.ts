@@ -40,8 +40,13 @@ export const saveSmtpProfile = createServerFn({ method: "POST" })
     const { encryptSecret } = await import("@/lib/smtp.server");
     if (data.password) patch["password_encrypted"] = await encryptSecret(data.password);
     if (data.clearPassword) patch["password_encrypted"] = null;
-    const { data: cur } = await supabaseAdmin.from("smtp_profiles").select("last_test_ok, password_encrypted").eq("purpose", data.purpose).single();
-    const credsChanged = !!data.password || !!data.clearPassword;
+    const { data: cur } = await supabaseAdmin.from("smtp_profiles").select("host, port, encryption, username, sender_email, last_test_ok, password_encrypted").eq("purpose", data.purpose).single();
+    // Any connection or sender change invalidates the previous successful test.
+    const connChanged = !!cur && (
+      (cur.host ?? null) !== (data.host || null) || cur.port !== data.port ||
+      cur.encryption !== data.encryption || (cur.username ?? null) !== (data.username || null) ||
+      (cur.sender_email ?? null) !== (data.sender_email || null));
+    const credsChanged = !!data.password || !!data.clearPassword || connChanged;
     if (credsChanged) { patch["last_test_ok"] = null; patch["last_test_at"] = null; patch["last_test_error"] = null; }
     // A profile can only be switched on after a successful test with the current credentials.
     const tested = credsChanged ? false : !!cur?.last_test_ok;
@@ -86,13 +91,15 @@ export const notifyContactInquiry = createServerFn({ method: "POST" })
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Check the recipient BEFORE claiming the message, so a missing recipient
+    // does not permanently burn the one notification attempt.
+    const { data: st } = await supabaseAdmin.from("store_settings").select("contact_notify_email, support_email").eq("id", 1).single();
+    const to = st?.contact_notify_email || st?.support_email;
+    if (!to) return { status: "no_recipient" };
     const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: claimed } = await supabaseAdmin.from("contact_messages").update({ notified_at: new Date().toISOString() })
       .eq("id", data.id).is("notified_at", null).gte("created_at", since).select("*").maybeSingle();
     if (!claimed) return { status: "skipped" };
-    const { data: st } = await supabaseAdmin.from("store_settings").select("contact_notify_email, support_email").eq("id", 1).single();
-    const to = st?.contact_notify_email || st?.support_email;
-    if (!to) return { status: "no_recipient" };
     const { processSend } = await import("@/lib/email-pipeline.server");
     return processSend(supabaseAdmin, {
       event: "contact_received", recipientEmail: to,

@@ -151,8 +151,14 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/payment/cancelled?order=${o.id}${tokenQs}`,
     }, `checkout-${o.id}-${Math.floor(attempt / 60000)}`);
-    await db.from("orders").update({ stripe_session_id: session.id }).eq("id", o.id);
-    await db.from("payment_transactions").insert({ order_id: o.id, mode: cfg.mode, kind: "checkout", status: "created", amount: o.total, currency: o.currency, stripe_session_id: session.id, message: "Checkout session created" });
+    // The webhook matches payments by this stored session id — if saving it fails,
+    // the order must not be left pointing at nothing while a payable session exists.
+    const { data: linked, error: linkError } = await db.from("orders").update({ stripe_session_id: session.id })
+      .eq("id", o.id).in("payment_status", ["pending", "failed"]).select("id").maybeSingle();
+    if (linkError) throw new Error("Could not link the checkout session to your order — please retry");
+    if (!linked) throw new Error("This order is no longer awaiting payment");
+    const { error: txError } = await db.from("payment_transactions").insert({ order_id: o.id, mode: cfg.mode, kind: "checkout", status: "created", amount: o.total, currency: o.currency, stripe_session_id: session.id, message: "Checkout session created" });
+    if (txError) console.error("Could not record checkout transaction", { orderId: o.id, error: txError.message });
     return { url: session.url };
   });
 

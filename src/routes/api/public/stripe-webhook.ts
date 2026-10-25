@@ -48,9 +48,14 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
                 const { data: o } = await db.from("orders").select("id, payment_status, status, stripe_session_id").eq("id", orderId).maybeSingle();
                 // Only cancel if this is still the order's current session and nothing was paid; cancelling restores stock.
                 if (o && o.stripe_session_id === obj.id && o.payment_status !== "paid" && o.payment_status !== "refunded" && o.status === "pending") {
-                  const { error: cancelErr } = await db.from("orders").update({ status: "cancelled", payment_status: "failed" }).eq("id", o.id);
+                  // Guard the update itself: a payment confirmed between our read and this
+                  // write must not be overwritten back to cancelled/failed.
+                  const { data: cancelled, error: cancelErr } = await db.from("orders")
+                    .update({ status: "cancelled", payment_status: "failed" })
+                    .eq("id", o.id).eq("status", "pending").eq("payment_status", "pending")
+                    .select("id").maybeSingle();
                   if (cancelErr) throw new Error("Could not cancel the expired order");
-                  await log("expired", "Checkout expired — order cancelled and stock restored", { stripe_session_id: obj.id });
+                  if (cancelled) await log("expired", "Checkout expired — order cancelled and stock restored", { stripe_session_id: obj.id });
                 }
               }
               break;

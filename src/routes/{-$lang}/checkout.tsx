@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { money, myAddressesQuery, myLoyaltyQuery, optionLabel, settingsQuery, taxPreview, taxRatesQuery, zonesQuery } from "@/lib/store";
 import { useCart } from "@/lib/cart";
 import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
-import { sendNotification } from "@/lib/email.functions";
+import { notifyOrderPlaced } from "@/lib/email.functions";
 import { createStripeCheckout } from "@/lib/payments.functions";
 import { useDisplayCurrency } from "@/lib/currency";
 import { isValidLang, useLang } from "@/lib/i18n";
