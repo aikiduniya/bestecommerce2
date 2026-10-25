@@ -45,6 +45,17 @@ export async function notifyPaidStripeOrder(db: AdminClient, order: Order): Prom
       }
     }));
   } catch {
+    // Preparation failed before any delivery log was reserved. Leave a visible,
+    // retryable record instead of disappearing silently into the server log.
     console.error("Stripe payment confirmed but notification preparation failed", { orderId: order.id });
+    try {
+      await db.from("email_logs").insert({
+        event: "order_placed", recipient_email: order.customer_email, subject: "",
+        status: "failed", error: "Notification preparation failed after payment confirmation; retry from the delivery log",
+        attempts: 0, payload: { order_id: order.id, order_number: String(order.order_number) },
+      });
+    } catch (fallbackError) {
+      console.error("Could not record the Stripe notification failure", { orderId: order.id, fallbackError });
+    }
   }
 }
