@@ -185,17 +185,9 @@ function Checkout() {
     }
     trackPurchase(res.id, trackItems, grandTotal, cur);
     // Queue order emails (logged only until live delivery is enabled by the owner).
-    const emailVars = {
-      customer_name: f.name, customer_email: f.email,
-      order_number: String(res.order_number),
-      order_total: money(grandTotal, cur),
-      payment_method: "Cash on Delivery",
-      items_list: cart.items.map((i) => `${i.qty} × ${i.name}`).join(", "),
-    };
-    void sendNotification({ data: { event: "order_placed", recipientEmail: f.email, vars: emailVars, orderId: res.id } }).catch(() => {});
-    if (s?.support_email) {
-      void sendNotification({ data: { event: "order_placed_admin", recipientEmail: s.support_email, vars: emailVars, orderId: res.id } }).catch(() => {});
-    }
+    // The server builds the email content from the stored order; guests use their order token.
+    void notifyOrderPlaced({ data: { orderId: res.id, guestToken: res.guest_token ?? undefined } })
+      .catch((err) => console.error("Order notification request failed", err));
     cart.clear();
     qc.invalidateQueries();
     if (user) {
