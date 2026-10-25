@@ -1,8 +1,38 @@
 // Server-only email pipeline shared by notifications, retries and contact inquiries.
 // While delivery is disabled every send is logged as "queued_disabled" and nothing leaves the system.
-import { renderTemplate } from "@/lib/email";
+import { buildOrderVars, renderEmailText } from "@/lib/email-render";
 import { smtpSend } from "@/lib/smtp.server";
 import type { SmtpRow } from "@/lib/smtp-types";
+
+type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
+
+// Final template variables for one send or retry. Order fields are rebuilt from
+// the stored order whenever the payload identifies one, so a retry of an old log
+// (whose payload may hold only order_id/order_number) still renders real data.
+// Store name always comes from Store settings; footer from Email settings.
+export async function resolveVars(
+  admin: Admin,
+  payload: Record<string, string>,
+  footerText: string | null,
+): Promise<Record<string, string>> {
+  const { data: store } = await admin.from("store_settings").select("store_name").eq("id", 1).single();
+  const vars: Record<string, string> = { ...payload };
+  const orderId = payload["order_id"];
+  const orderNumber = Number(payload["order_number"]);
+  if (orderId || (Number.isInteger(orderNumber) && orderNumber > 0)) {
+    const cols = "id, order_number, customer_name, customer_email, customer_phone, total, subtotal, shipping_total, tax_total, discount_total, currency, payment_method, status, tracking_number, tracking_url, items";
+    const q = admin.from("orders").select(cols);
+    const { data: order } = await (orderId ? q.eq("id", orderId) : q.eq("order_number", orderNumber)).maybeSingle();
+    if (order) {
+      // Keep an explicit label chosen at send time (e.g. "Stripe"); otherwise derive it.
+      const label = payload["payment_method"] || undefined;
+      Object.assign(vars, buildOrderVars(order as never, label));
+    }
+  }
+  if (store?.store_name) vars["store_name"] = store.store_name;
+  if (!vars["footer_text"]) vars["footer_text"] = footerText ?? "";
+  return vars;
+}
 
 async function deliverViaProvider(
   settings: { provider: string; provider_config: Record<string, unknown>; sender_email: string; sender_name: string },
@@ -77,10 +107,9 @@ export async function processSend(
   const { data: tpl } = await admin.from("email_templates").select("*").eq("key", rule.template_key).maybeSingle();
   if (!tpl || !tpl.is_enabled) return skip("skipped_template_disabled");
 
-  const { data: store } = await admin.from("store_settings").select("store_name").eq("id", 1).single();
-  const vars = { store_name: store?.store_name ?? "", ...input.vars };
-  const subject = renderTemplate(tpl.subject, vars);
-  const body = renderTemplate(tpl.body, vars);
+  const vars = await resolveVars(admin, input.vars, settings?.footer_text ?? null);
+  const subject = renderEmailText(tpl.subject, vars, { singleLine: true });
+  const body = renderEmailText(tpl.body, vars);
 
   let status: "queued_disabled" | "sent" | "failed" = "queued_disabled";
   let error: string | null = null;
