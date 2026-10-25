@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
   rows: {} as Record<string, any[]>,
-  smtp: vi.fn(), failLogReservation: false, failUpdate: false, cancelOnUpdate: false,
+  smtp: vi.fn(), failLogReservation: false, failLogReservationOnce: false, failUpdate: false, cancelOnUpdate: false,
 }));
 
 // Stateful database double: filters are applied when awaited, including atomic updates.
@@ -27,7 +27,10 @@ class Query implements PromiseLike<{ data: any; error: any }> {
   ): PromiseLike<TResult1 | TResult2> {
     return Promise.resolve().then(() => {
       const rows: any[] = state.rows[this.table] ?? [];
-      if (this.operation === "insert" && this.table === "email_logs" && state.failLogReservation) return { data: null, error: { message: "offline" } };
+      if (this.operation === "insert" && this.table === "email_logs" && (state.failLogReservation || state.failLogReservationOnce)) {
+        state.failLogReservationOnce = false;
+        return { data: null, error: { message: "offline" } };
+      }
       if (this.operation === "update" && this.table === "orders" && state.failUpdate) return { data: null, error: { message: "offline" } };
       if (this.operation === "update" && this.table === "orders" && state.cancelOnUpdate && rows[0]) rows[0].status = "cancelled";
       let matches = rows.filter((r) => this.filters.every((f) => f(r)));
@@ -62,7 +65,7 @@ const order = (): any => tableRows("orders")[0];
 const logs = (): any[] => tableRows("email_logs");
 
 beforeEach(() => {
-  state.failLogReservation = false; state.failUpdate = false; state.cancelOnUpdate = false;
+  state.failLogReservation = false; state.failLogReservationOnce = false; state.failUpdate = false; state.cancelOnUpdate = false;
   state.smtp.mockReset().mockResolvedValue({ ok: true });
   state.rows = {
     orders: [{ id: "qa-order", customer_name: "QA Customer", customer_email: "customer@example.test",
@@ -137,6 +140,29 @@ describe("confirmed Stripe payment notification flow (isolated transports)", () 
     expect((await applyPaidSession(session, "test")).ok).toBe(true);
     expect(order().payment_status).toBe("paid"); expect(state.smtp).not.toHaveBeenCalled();
     error.mockRestore();
+  });
+  it("leaves a visible, retryable failed log when only the reservation insert fails", async () => {
+    state.failLogReservationOnce = true;
+    expect((await applyPaidSession(session, "test")).ok).toBe(true);
+    expect(order().payment_status).toBe("paid");
+    expect(logs()).toHaveLength(1);
+    expect(logs()[0]).toMatchObject({ event: "order_placed", status: "failed", recipient_email: "customer@example.test" });
+    expect(state.smtp).not.toHaveBeenCalled();
+  });
+  it("records a visible skipped log when a fresh send hits a disabled rule", async () => {
+    tableRows("notification_rules")[0].is_enabled = false;
+    const r = await processSend(supabaseAdmin, { event: "order_placed", recipientEmail: "customer@example.test", vars: {} });
+    expect(r.status).toBe("skipped_rule_disabled");
+    expect(logs()).toHaveLength(1);
+    expect(logs()[0]).toMatchObject({ event: "order_placed", status: "skipped_rule_disabled" });
+  });
+  it("fails loudly when live delivery is on but no tested profile or provider exists", async () => {
+    tableRows("smtp_profiles")[0].is_enabled = false;
+    tableRows("email_settings")[0].provider = "none";
+    const r = await processSend(supabaseAdmin, { event: "order_placed", recipientEmail: "customer@example.test", vars: {} });
+    expect(r.status).toBe("failed");
+    expect(logs()[0].error).toContain("not enabled and tested");
+    expect(state.smtp).not.toHaveBeenCalled();
   });
   it("does not send before the paid database update succeeds", async () => {
     state.failUpdate = true;
