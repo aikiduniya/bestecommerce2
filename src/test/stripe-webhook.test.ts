@@ -25,7 +25,7 @@ vi.mock("@/lib/stripe.server", () => ({
 
 import { Route } from "@/routes/api/public/stripe-webhook";
 
-const POST = (Route.options.server?.handlers as Record<string, (ctx: { request: Request }) => Promise<Response>>)["POST"];
+const POST = (Route.options.server?.handlers as Record<string, (ctx: { request: Request }) => Promise<Response>>)["POST"]!;
 const event = { id: "evt_1", type: "checkout.session.completed", livemode: false, data: { object: { id: "cs_test_1", metadata: { order_id: "o1" } } } };
 const call = () => POST({ request: new Request("http://x/api/public/stripe-webhook", { method: "POST", body: JSON.stringify(event), headers: { "stripe-signature": "t=1,v1=x" } }) });
 

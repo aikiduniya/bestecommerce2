@@ -86,17 +86,17 @@ describe("COD order-placed notifications (guest-capable)", () => {
     expect(logs()).toHaveLength(0);
   });
   it("allows the signed-in owner without a token", async () => {
-    state.rows["orders"][0].user_id = "user-1";
+    state.rows["orders"]![0].user_id = "user-1";
     const r = await notifyOrderPlacedCore(supabaseAdmin, { orderId: "cod-order", userId: "user-1" });
     expect(r.status).toBe("ok");
     expect(logs()).toHaveLength(2);
   });
   it("rejects a different signed-in user", async () => {
-    state.rows["orders"][0].user_id = "user-1";
+    state.rows["orders"]![0].user_id = "user-1";
     await expect(notifyOrderPlacedCore(supabaseAdmin, { orderId: "cod-order", userId: "user-2" })).rejects.toThrow("Order not found");
   });
   it("never notifies for a card order (Stripe notifies on payment confirmation)", async () => {
-    state.rows["orders"][0].payment_method = "stripe";
+    state.rows["orders"]![0].payment_method = "stripe";
     const r = await notifyOrderPlacedCore(supabaseAdmin, { orderId: "cod-order", guestToken: "gtok" });
     expect(r.status).toBe("skipped_card_order");
     expect(logs()).toHaveLength(0);
