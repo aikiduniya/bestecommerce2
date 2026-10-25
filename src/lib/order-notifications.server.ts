@@ -3,6 +3,7 @@
 // checkout notification endpoint. Reserves both delivery logs before sending;
 // email errors never escape to the caller, so they cannot undo an order or payment.
 import { processSend } from "@/lib/email-pipeline.server";
+import { buildOrderVars } from "@/lib/email-render";
 import type { Database } from "@/integrations/supabase/types";
 
 type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
@@ -37,17 +38,7 @@ export async function notifyOrderPlacedEmail(db: AdminClient, order: OrderForNot
   try {
     const { data: store, error: storeError } = await db.from("store_settings").select("support_email").eq("id", 1).single();
     if (storeError) throw new Error("Could not load store notification recipient");
-    const total = new Intl.NumberFormat("en-US", { style: "currency", currency: order.currency }).format(Number(order.total));
-    const items = Array.isArray(order.items) ? order.items : [];
-    const vars = {
-      order_id: order.id, customer_name: order.customer_name, customer_email: order.customer_email,
-      order_number: String(order.order_number), order_total: total, total: String(order.total),
-      currency: order.currency, payment_method: paymentLabel,
-      items_list: items.flatMap((item) => {
-        if (!item || typeof item !== "object" || Array.isArray(item)) return [];
-        return [`${item["qty"] ?? 0} × ${item["name"] ?? ""}`];
-      }).join(", "),
-    };
+    const vars = buildOrderVars(order, paymentLabel);
     const notifications = [
       { event: "order_placed", recipientEmail: order.customer_email },
       { event: "order_placed_admin", recipientEmail: store?.support_email ?? "" },
