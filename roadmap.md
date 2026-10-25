@@ -55,3 +55,16 @@
 - [ ] S8 Banner slider (multiple slides, desktop/mobile images) — reference image not uploaded
 - [ ] S9 Product gallery lightbox/zoom
 - [ ] S10 Testing
+
+## Engineering audit & remediation (Oct 25 brief)
+- [x] Webhook idempotency: only unique-violation = duplicate; other insert errors → 500 retry
+- [x] Notification reservation failure leaves visible retryable log (was silent)
+- [x] Guest COD notifications: new public notifyOrderPlaced (guest-token/owner verified, DB-built vars, idempotent)
+- [x] sendNotification restricted to staff (was any signed-in user)
+- [x] Webhook expiry cancel guarded against paid race; checkout session-link errors checked
+- [x] Skipped sends now logged; delivery-on-without-transport fails loudly
+- [x] SMTP profile connection changes invalidate last test; contact claim after recipient check
+- [x] "SMTP (coming soon)" label corrected
+- [x] Tests: 43/43 (stripe, webhook idempotency, notifications, COD guest flow)
+- [ ] Production deploy of this build to cPanel (owner action; old restored build is the likely root cause of missing Stripe emails)
+- [ ] Real Stripe test-mode payment + SMTP delivery verification on production

@@ -61,6 +61,13 @@ export async function processSend(
     if (input.logId) {
       const { error } = await admin.from("email_logs").update({ status, last_attempt_at: new Date().toISOString() }).eq("id", input.logId);
       if (error) throw new Error("Could not record skipped email notification");
+    } else {
+      // A skipped send must still be visible in the delivery log, not vanish silently.
+      const { error } = await admin.from("email_logs").insert({
+        event: input.event, recipient_email: input.recipientEmail, subject: "", status,
+        attempts: 0, payload: input.vars, last_attempt_at: new Date().toISOString(),
+      });
+      if (error) throw new Error("Could not record skipped email notification");
     }
     return { status };
   };
@@ -89,6 +96,10 @@ export async function processSend(
       const r = await deliverViaProvider(settings as never, input.recipientEmail, subject, body);
       status = r.ok ? "sent" : "failed";
       error = r.error ?? null;
+    } else {
+      // Delivery is on but nothing can send: say so plainly instead of a misleading "queued".
+      status = "failed";
+      error = `Live delivery is on but the "${profileKey}" SMTP profile is not enabled and tested, and no email provider is configured`;
     }
   }
 

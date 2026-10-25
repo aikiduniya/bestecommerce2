@@ -92,11 +92,14 @@ export async function applyPaidSession(session: Session, mode: StripeMode, event
   if (!orderId) return { ok: false, reason: "no order" };
   const { data: o } = await db.from("orders").select("id, total, currency, payment_method, payment_status, status, stripe_session_id, order_number, customer_name, customer_email, items").eq("id", orderId).maybeSingle();
   if (!o) return { ok: false, reason: "order not found" };
-  const log = (status: string, message: string) => db.from("payment_transactions").insert({
-    order_id: o.id, mode, kind: "payment", status, amount: fromMinor(session.amount_total ?? 0, session.currency ?? o.currency),
-    currency: (session.currency ?? o.currency).toUpperCase(), stripe_session_id: session.id,
-    stripe_payment_intent: session.payment_intent, stripe_event_id: eventId ?? null, message,
-  });
+  const log = async (status: string, message: string) => {
+    const { error } = await db.from("payment_transactions").insert({
+      order_id: o.id, mode, kind: "payment", status, amount: fromMinor(session.amount_total ?? 0, session.currency ?? o.currency),
+      currency: (session.currency ?? o.currency).toUpperCase(), stripe_session_id: session.id,
+      stripe_payment_intent: session.payment_intent, stripe_event_id: eventId ?? null, message,
+    });
+    if (error) console.error("Could not record payment transaction", { orderId: o.id, status, error: error.message });
+  };
   if (session.payment_status !== "paid") return { ok: false, reason: "not paid" };
   if (o.payment_method !== "stripe" || o.stripe_session_id !== session.id) return { ok: false, reason: "session mismatch" };
   const expected = toMinor(Number(o.total), o.currency);

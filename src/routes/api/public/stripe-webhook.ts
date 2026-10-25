@@ -20,15 +20,23 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
         if (typeof event?.id !== "string" || !event.data?.object) return new Response("Bad payload", { status: 400 });
 
         const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-        // Idempotency: each Stripe event is processed once.
+        // Idempotency: each Stripe event is processed once. Only a unique-violation is a
+        // genuine duplicate — any other insert error (permissions, connectivity) means the
+        // event was NOT processed, so return a retryable error instead of a false 200.
         const { error: dupErr } = await db.from("stripe_events").insert({ event_id: event.id, type: event.type });
-        if (dupErr) return new Response("duplicate", { status: 200 });
+        if (dupErr) {
+          if (dupErr.code === "23505") return new Response("duplicate", { status: 200 });
+          console.error("stripe webhook: could not record event", event.id, dupErr.message);
+          return new Response("error", { status: 500 });
+        }
 
         try {
           const obj = event.data.object;
           const orderId = obj.metadata?.["order_id"];
-          const log = (status: string, message: string, extra: Record<string, unknown> = {}) =>
-            db.from("payment_transactions").insert({ order_id: orderId ?? null, mode: mode!, kind: "webhook", status, message, stripe_event_id: event.id, ...extra });
+          const log = async (status: string, message: string, extra: Record<string, unknown> = {}) => {
+            const { error } = await db.from("payment_transactions").insert({ order_id: orderId ?? null, mode: mode!, kind: "webhook", status, message, stripe_event_id: event.id, ...extra });
+            if (error) console.error("stripe webhook: could not write transaction log", event.id, status, error.message);
+          };
 
           switch (event.type) {
             case "checkout.session.completed":
@@ -40,8 +48,14 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
                 const { data: o } = await db.from("orders").select("id, payment_status, status, stripe_session_id").eq("id", orderId).maybeSingle();
                 // Only cancel if this is still the order's current session and nothing was paid; cancelling restores stock.
                 if (o && o.stripe_session_id === obj.id && o.payment_status !== "paid" && o.payment_status !== "refunded" && o.status === "pending") {
-                  await db.from("orders").update({ status: "cancelled", payment_status: "failed" }).eq("id", o.id);
-                  await log("expired", "Checkout expired — order cancelled and stock restored", { stripe_session_id: obj.id });
+                  // Guard the update itself: a payment confirmed between our read and this
+                  // write must not be overwritten back to cancelled/failed.
+                  const { data: cancelled, error: cancelErr } = await db.from("orders")
+                    .update({ status: "cancelled", payment_status: "failed" })
+                    .eq("id", o.id).eq("status", "pending").eq("payment_status", "pending")
+                    .select("id").maybeSingle();
+                  if (cancelErr) throw new Error("Could not cancel the expired order");
+                  if (cancelled) await log("expired", "Checkout expired — order cancelled and stock restored", { stripe_session_id: obj.id });
                 }
               }
               break;

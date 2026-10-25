@@ -182,7 +182,7 @@ function EmailsPage() {
                   <option value="none">None (delivery disabled)</option>
                   <option value="resend">Resend</option>
                   <option value="sendgrid">SendGrid</option>
-                  <option value="smtp">SMTP (coming soon)</option>
+                  <option value="smtp">SMTP (uses your SMTP profiles)</option>
                 </select></div>
               {es.provider !== "none" && es.provider !== "smtp" && (
                 <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Provider API key (stored securely, never shown to customers)</Label>
