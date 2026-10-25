@@ -68,7 +68,7 @@ beforeEach(() => {
     email_logs: [],
   };
 });
-const logs = (): any[] => state.rows["email_logs"];
+const logs = (): any[] => state.rows["email_logs"] ?? [];
 
 describe("COD order-placed notifications (guest-capable)", () => {
   it("sends customer and admin notifications for a guest with the order token", async () => {

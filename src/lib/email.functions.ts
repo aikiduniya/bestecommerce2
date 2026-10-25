@@ -29,6 +29,28 @@ export const notifyOrderPlaced = createServerFn({ method: "POST" })
     return notifyOrderPlacedCore(db, { orderId: data.orderId, guestToken: data.guestToken, userId: await callerUserId() });
   });
 
+const sendInput = z.object({
+  event: z.string().max(60),
+  recipientEmail: z.string().email(),
+  vars: z.record(z.string(), z.string()).default({}),
+  orderId: z.string().uuid().optional(),
+});
+
+// Fire a notification for a store event (e.g. abandoned-cart reminders).
+// Staff only — customers must not drive the template pipeline with arbitrary
+// events, recipients and variables.
+export const sendNotification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => sendInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: staff } = await (supabase.rpc as unknown as (f: string, a: object) => Promise<{ data: boolean | null }>)("is_staff", { _user_id: userId });
+    if (!staff) throw new Error("Staff only");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { processSend } = await import("@/lib/email-pipeline.server");
+    return processSend(supabaseAdmin, data);
+  });
+
 // Retry a queued/failed log entry. Admin only.
 export const retryEmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

@@ -14,7 +14,7 @@ export type OrderForNotification = Pick<Database["public"]["Tables"]["orders"]["
 // template variables come from the stored order — nothing from the browser.
 export async function notifyOrderPlacedCore(
   db: AdminClient,
-  input: { orderId: string; guestToken?: string; userId?: string | null },
+  input: { orderId: string; guestToken?: string | undefined; userId?: string | null | undefined },
 ): Promise<{ status: string }> {
   const { data: o } = await db.from("orders")
     .select("id, user_id, guest_token, payment_method, customer_name, customer_email, order_number, total, currency, items")
