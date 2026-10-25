@@ -90,7 +90,7 @@ describe("confirmed Stripe payment notification flow (isolated transports)", () 
       ["order_placed_admin", "support@example.test", "sent", 1, "orders"],
     ]);
     expect(state.smtp.mock.calls[0]?.slice(1)).toEqual([
-      "customer@example.test", "Order #42 — QA Store", "QA Customer customer@example.test $120.00 USD Stripe 2 × QA Item",
+      "customer@example.test", "Order #42 — QA Store", "QA Customer customer@example.test $120.00 USD Stripe • 2 × QA Item — $120.00",
     ]);
     expect(logs()[0].payload).toMatchObject({ order_id: "qa-order", total: "120", currency: "USD", payment_method: "Stripe" });
   });

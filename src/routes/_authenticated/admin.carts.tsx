@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { cartSnapshotsQuery, money, settingsQuery } from "@/lib/store";
 import { sendNotification } from "@/lib/email.functions";
+import { formatItemsList } from "@/lib/email-render";
 import { PageHeader, StatusPill } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +32,7 @@ function Carts() {
           vars: {
             customer_name: email.split("@")[0],
             store_name: s?.store_name ?? "our store",
-            items_list: items.map((i) => `${i.qty} × ${i.name}`).join(", "),
+            items_list: formatItemsList(items, s?.currency),
             cart_total: money(subtotal, s?.currency),
             cart_url: (SITE || window.location.origin) + "/cart",
             footer_text: "",

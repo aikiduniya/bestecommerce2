@@ -4,6 +4,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { renderEmailText } from "@/lib/email-render";
 
 export type EmailTemplate = Database["public"]["Tables"]["email_templates"]["Row"];
 export type EmailSettings = Database["public"]["Tables"]["email_settings"]["Row"];
@@ -46,10 +47,10 @@ export const emailLogsQuery = queryOptions({
   },
 });
 
-// Replace {{placeholder}} tokens with values; unknown tokens are left visible
-// so mistakes are obvious in previews and logs.
+// Admin preview renderer: same matching rules as real sends (src/lib/email-render.ts),
+// but unknown tokens are left visible so mistakes are obvious while editing.
 export function renderTemplate(text: string, vars: Record<string, string>): string {
-  return text.replace(/\{\{\s*([a-z0-9_]+)\s*\}\}/gi, (m, k) => vars[k] ?? m);
+  return renderEmailText(text, vars, { keepUnknown: true });
 }
 
 // Sample data used for the admin live preview.
