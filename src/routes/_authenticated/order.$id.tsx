@@ -42,7 +42,11 @@ function OrderPage() {
         )}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div><p className="eyebrow text-gold">Order</p><h1 className="mt-2 text-6xl">{o.order_code ?? `#${o.order_number}`}</h1><p className="text-sm text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p></div>
-          <div className="flex gap-2"><StatusPill value={o.status} /><StatusPill value={o.payment_status} /></div>
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            <span className="flex items-center gap-1.5 text-muted-foreground">Order <StatusPill value={o.status} /></span>
+            <span className="flex items-center gap-1.5 text-muted-foreground">Payment <StatusPill value={o.payment_status} /></span>
+            <Link to="/{-$lang}/track" params={{ lang: undefined }} search={{ n: o.order_code ?? o.order_number, e: o.customer_email }} className="rounded border border-gold px-3 py-1.5 text-gold hover:bg-gold-soft/40">Track order</Link>
+          </div>
         </div>
         <div className="mt-10 divide-y rounded border bg-card">
           {(o.items as Line[]).map((l, i) => (

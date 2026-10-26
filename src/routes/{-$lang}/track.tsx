@@ -92,7 +92,7 @@ function TrackOrder() {
         <form onSubmit={lookup} className="mt-6 space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Order number</Label>
-            <Input inputMode="numeric" value={num} onChange={(e) => setNum(e.target.value)} placeholder="e.g. 1001" required />
+            <Input value={num} onChange={(e) => setNum(e.target.value)} placeholder="e.g. AWA-261026-0966" required />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Email</Label>

@@ -8,7 +8,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 export type OrderForNotification = Pick<Database["public"]["Tables"]["orders"]["Row"],
-  "id" | "customer_name" | "customer_email" | "order_number" | "total"> & Partial<Pick<Database["public"]["Tables"]["orders"]["Row"], "order_code" | "currency" | "items">;
+  "id" | "customer_name" | "customer_email" | "order_number" | "total" | "currency" | "items"> & Partial<Pick<Database["public"]["Tables"]["orders"]["Row"], "order_code">>;
 
 // Authorize + dedupe + dispatch for a just-placed non-card order. The caller
 // must own the order (signed-in user id) or present its guest token. All
