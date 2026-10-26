@@ -45,7 +45,7 @@ function OrderPage() {
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <span className="flex items-center gap-1.5 text-muted-foreground">Order <StatusPill value={o.status} /></span>
             <span className="flex items-center gap-1.5 text-muted-foreground">Payment <StatusPill value={o.payment_status} /></span>
-            <Link to="/{-$lang}/track" params={{ lang: undefined }} search={{ n: o.order_code ?? o.order_number, e: o.customer_email }} className="rounded border border-gold px-3 py-1.5 text-gold hover:bg-gold-soft/40">Track order</Link>
+            <Link to="/{-$lang}/track" params={{ lang: undefined }} search={{ n: o.order_code ?? o.order_number, e: o.customer_email, placed: undefined }} className="rounded border border-gold px-3 py-1.5 text-gold hover:bg-gold-soft/40">Track order</Link>
           </div>
         </div>
         <div className="mt-10 divide-y rounded border bg-card">
