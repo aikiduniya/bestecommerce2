@@ -1977,7 +1977,10 @@ export type Database = {
           hero_height: string
           hero_image_alt: string | null
           hero_image_url: string | null
+          hero_images: string[]
+          hero_media: string
           hero_overlay: number
+          hero_video_url: string | null
           id: number
           languages: Json
           llms_txt: string | null
@@ -2068,7 +2071,10 @@ export type Database = {
           hero_height?: string
           hero_image_alt?: string | null
           hero_image_url?: string | null
+          hero_images?: string[]
+          hero_media?: string
           hero_overlay?: number
+          hero_video_url?: string | null
           id?: number
           languages?: Json
           llms_txt?: string | null
@@ -2159,7 +2165,10 @@ export type Database = {
           hero_height?: string
           hero_image_alt?: string | null
           hero_image_url?: string | null
+          hero_images?: string[]
+          hero_media?: string
           hero_overlay?: number
+          hero_video_url?: string | null
           id?: number
           languages?: Json
           llms_txt?: string | null

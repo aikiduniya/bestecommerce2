@@ -1,0 +1,2 @@
+ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS hero_media text NOT NULL DEFAULT 'images', ADD COLUMN IF NOT EXISTS hero_images text[] NOT NULL DEFAULT '{}', ADD COLUMN IF NOT EXISTS hero_video_url text;
+UPDATE public.store_settings SET hero_images = ARRAY[hero_image_url] WHERE hero_image_url IS NOT NULL AND hero_image_url <> '' AND cardinality(hero_images) = 0;
