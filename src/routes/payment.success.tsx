@@ -39,7 +39,7 @@ function Success() {
         {state === "error" && <><AlertCircle className="mx-auto size-10 text-destructive" /><h1 className="mt-6 text-4xl">We couldn't confirm this payment</h1><p className="mt-4 text-muted-foreground">If you were charged, your order will update automatically. Contact us if you need help.</p></>}
         {num && state !== "loading" && <p className="mt-6 font-display text-3xl">{num}</p>}
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          {num && email && state !== "loading" && <Button asChild variant="gold"><Link to="/{-$lang}/track" params={{ lang: undefined }} search={{ n: num, e: email }}>View order details</Link></Button>}
+          {num && email && state !== "loading" && <Button asChild variant="gold"><Link to="/{-$lang}/track" params={{ lang: undefined }} search={{ n: num, e: email, placed: undefined }}>View order details</Link></Button>}
           <Button asChild variant="outline"><Link to="/">Continue shopping</Link></Button>
         </div>
       </div>
