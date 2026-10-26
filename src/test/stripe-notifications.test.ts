@@ -31,6 +31,12 @@ class Query implements PromiseLike<{ data: any; error: any }> {
         state.failLogReservationOnce = false;
         return { data: null, error: { message: "offline" } };
       }
+      // Mirror the real email_logs status CHECK constraint so an invalid status fails like production.
+      const ALLOWED = ["queued_disabled", "sent", "failed", "retrying", "skipped_rule_disabled", "skipped_template_disabled"];
+      if (this.table === "email_logs" && (this.operation === "insert" || this.operation === "update")) {
+        const ps = Array.isArray(this.payload) ? this.payload : [this.payload];
+        if (ps.some((p: any) => p.status !== undefined && !ALLOWED.includes(p.status))) return { data: null, error: { code: "23514", message: "email_logs_status_check" } };
+      }
       if (this.operation === "update" && this.table === "orders" && state.failUpdate) return { data: null, error: { message: "offline" } };
       if (this.operation === "update" && this.table === "orders" && state.cancelOnUpdate && rows[0]) rows[0].status = "cancelled";
       let matches = rows.filter((r) => this.filters.every((f) => f(r)));
