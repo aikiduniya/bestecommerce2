@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 
 type GuestOrder = {
   order_number: number;
+  order_code?: string | null;
   tracking_number?: string | null;
   tracking_url?: string | null;
   status: string;
@@ -32,7 +33,7 @@ type GuestOrder = {
 export const Route = createFileRoute("/{-$lang}/track")({
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
   validateSearch: (s: Record<string, unknown>) => ({
-    n: typeof s["n"] === "number" ? s["n"] : typeof s["n"] === "string" && /^\d+$/.test(s["n"]) ? Number(s["n"]) : undefined,
+    n: typeof s["n"] === "number" ? s["n"] : typeof s["n"] === "string" && /^\d+$/.test(s["n"]) ? Number(s["n"]) : typeof s["n"] === "string" && /^[A-Za-z0-9-]{4,40}$/.test(s["n"]) ? s["n"] : undefined,
     e: typeof s["e"] === "string" ? s["e"] : undefined,
     placed: s["placed"] === 1 || s["placed"] === "1" ? 1 : undefined,
   }),
@@ -64,7 +65,10 @@ function TrackOrder() {
     e?.preventDefault();
     if (!num.trim() || !email.trim()) return;
     setBusy(true);
-    const { data, error } = await supabase.rpc("track_guest_order", { _order_number: Number(num), _email: email });
+    const ref = num.trim().replace(/^#/, "");
+    const { data, error } = /^\d+$/.test(ref)
+      ? await supabase.rpc("track_guest_order", { _order_number: Number(ref), _email: email })
+      : await supabase.rpc("track_guest_order_code", { _code: ref, _email: email });
     setBusy(false);
     setSearched(true);
     if (error) { toast.error(error.message); return; }

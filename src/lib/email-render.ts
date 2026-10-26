@@ -7,6 +7,7 @@
 export type OrderLike = {
   id?: string | null;
   order_number?: number | string | null;
+  order_code?: string | null;
   customer_name?: string | null;
   customer_email?: string | null;
   customer_phone?: string | null;
@@ -76,7 +77,7 @@ export function formatItemsList(items: unknown, currency: string | null | undefi
 export function buildOrderVars(order: OrderLike, label?: string): Record<string, string> {
   const cur = order.currency || "USD";
   const vars: Record<string, string> = {
-    order_number: order.order_number === null || order.order_number === undefined ? "" : String(order.order_number),
+    order_number: order.order_code ? order.order_code : order.order_number === null || order.order_number === undefined ? "" : String(order.order_number),
     customer_name: order.customer_name ?? "",
     customer_email: order.customer_email ?? "",
     order_total: formatMoney(order.total, cur),
