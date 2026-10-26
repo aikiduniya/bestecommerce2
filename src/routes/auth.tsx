@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { requestPasswordReset } from "@/lib/password-reset.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,7 +47,7 @@ function AuthPage() {
     return () => data.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<"in" | "up" | "forgot">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,7 +56,11 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === "in") {
+      if (mode === "forgot") {
+        await requestPasswordReset({ data: { email } });
+        toast.success("If an account exists for this email, a reset link is on its way.");
+        setMode("in");
+      } else if (mode === "in") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         await go();
@@ -104,12 +109,12 @@ function AuthPage() {
       <div className="flex items-center justify-center p-8">
         <form onSubmit={submit} className="w-full max-w-sm space-y-5">
           <div>
-            <h2 className="text-4xl">{mode === "in" ? "Welcome back" : "Create account"}</h2>
+            <h2 className="text-4xl">{mode === "in" ? "Welcome back" : mode === "up" ? "Create account" : "Reset password"}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Sign in to track orders, save favourites and check out faster.
             </p>
           </div>
-          {import.meta.env["VITE_GOOGLE_LOGIN"] !== "off" && (
+          {mode !== "forgot" && import.meta.env["VITE_GOOGLE_LOGIN"] !== "off" && (
             <>
               <Button type="button" variant="outline" className="w-full" onClick={google}>
                 Continue with Google
@@ -121,15 +126,18 @@ function AuthPage() {
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="pw">Password</Label>
+          {mode !== "forgot" && <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="pw">Password</Label>
+              {mode === "in" && <button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setMode("forgot")}>Forgot password?</button>}
+            </div>
             <Input id="pw" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
+          </div>}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Please wait…" : mode === "in" ? "Sign in" : "Sign up"}
+            {loading ? "Please wait…" : mode === "in" ? "Sign in" : mode === "up" ? "Sign up" : "Send reset link"}
           </Button>
           <button type="button" className="w-full text-sm text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
-            {mode === "in" ? "No account? Sign up" : "Have an account? Sign in"}
+            {mode === "in" ? "No account? Sign up" : mode === "up" ? "Have an account? Sign in" : "Back to sign in"}
           </button>
         </form>
       </div>
