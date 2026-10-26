@@ -169,10 +169,21 @@ export const verifyStripeSession = createServerFn({ method: "POST" })
     const { loadStripeConfig, stripeApi, applyPaidSession } = await import("@/lib/stripe.server");
     const mode = data.sessionId.startsWith("cs_live_") ? "live" : "test";
     const cfg = await loadStripeConfig(mode);
-    if (!cfg.secretKey) return { paid: false, orderNumber: null };
+    if (!cfg.secretKey) return { paid: false, orderNumber: null, orderCode: null as string | null, email: null as string | null };
     const session = await stripeApi<Parameters<typeof applyPaidSession>[0]>(cfg.secretKey, "GET", `checkout/sessions/${data.sessionId}`);
     const r = await applyPaidSession(session, mode);
-    return { paid: r.ok, orderNumber: session.metadata?.["order_number"] ?? null };
+    const orderNumber = session.metadata?.["order_number"] ?? null;
+    let orderCode: string | null = null; let email: string | null = null;
+    if (orderNumber && /^\d+$/.test(orderNumber)) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: o } = await supabaseAdmin.from("orders").select("order_code, customer_email, stripe_session_id").eq("order_number", Number(orderNumber)).maybeSingle();
+      // Only reveal details when this session is the one linked to the order.
+      if (o && (o as { stripe_session_id?: string | null }).stripe_session_id === data.sessionId) {
+        orderCode = (o as { order_code?: string | null }).order_code ?? null;
+        email = (o as { customer_email?: string | null }).customer_email ?? null;
+      }
+    }
+    return { paid: r.ok, orderNumber, orderCode, email };
   });
 
 /** Full or partial refund of a paid card order. */
