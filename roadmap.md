@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Current task
+- [ ] Fix public-code checkout redirects, tracking and Stripe success; run regression tests and safely verify the checkout flow without changing credentials or existing orders.
 - [x] Connect confirmed Stripe payments to customer/admin email notifications; reserve existing logs, prevent concurrent duplicates and isolate delivery failures. 25 automated tests PASS; build OK. No schema, credentials, COD checkout or UI changes.
 - [ ] Real Stripe → SMTP → delivery-log verification on the owner's configured installation: blocked here because the connected database has no Stripe orders, delivery disabled, untested/disabled SMTP profiles and no support email. Tests used isolated database/SMTP doubles, not a real card charge or inbox delivery.
 

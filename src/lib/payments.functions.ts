@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { publicOrderCode } from "@/lib/order-reference";
 
 const METHODS = ["card", "link", "paypal", "klarna", "afterpay_clearpay", "us_bank_account", "sepa_debit", "ideal", "bancontact", "alipay", "wechat_pay"] as const;
 
@@ -113,7 +114,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
     const { loadStripeConfig, stripeApi, toMinor } = await import("@/lib/stripe.server");
-    const { data: o } = await db.from("orders").select("id, order_number, user_id, guest_token, customer_email, total, currency, payment_method, payment_status, status, stripe_session_id").eq("id", data.orderId).maybeSingle();
+    const { data: o } = await db.from("orders").select("id, order_number, order_code, user_id, guest_token, customer_email, total, currency, payment_method, payment_status, status, stripe_session_id").eq("id", data.orderId).maybeSingle();
     if (!o) throw new Error("Order not found");
     const uid = await callerUserId();
     const owner = (o.user_id && uid === o.user_id) || (!o.user_id && o.guest_token && data.guestToken === o.guest_token);
@@ -144,7 +145,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       customer_email: o.customer_email,
       client_reference_id: o.id,
       payment_method_types: cfg.settings.payment_methods,
-      line_items: [{ quantity: 1, price_data: { currency: o.currency.toLowerCase(), unit_amount: toMinor(Number(o.total), o.currency), product_data: { name: `Order #${o.order_number}` } } }],
+      line_items: [{ quantity: 1, price_data: { currency: o.currency.toLowerCase(), unit_amount: toMinor(Number(o.total), o.currency), product_data: { name: publicOrderCode(o) ? `Order ${publicOrderCode(o)}` : "Store order" } } }],
       metadata: { order_id: o.id, order_number: String(o.order_number) },
       payment_intent_data: { metadata: { order_id: o.id } },
       expires_at: Math.floor(attempt / 1000) + 60 * 60,
@@ -172,18 +173,12 @@ export const verifyStripeSession = createServerFn({ method: "POST" })
     if (!cfg.secretKey) return { paid: false, orderNumber: null, orderCode: null as string | null, email: null as string | null };
     const session = await stripeApi<Parameters<typeof applyPaidSession>[0]>(cfg.secretKey, "GET", `checkout/sessions/${data.sessionId}`);
     const r = await applyPaidSession(session, mode);
-    const orderNumber = session.metadata?.["order_number"] ?? null;
-    let orderCode: string | null = null; let email: string | null = null;
-    if (orderNumber && /^\d+$/.test(orderNumber)) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: o } = await supabaseAdmin.from("orders").select("order_code, customer_email, stripe_session_id").eq("order_number", Number(orderNumber)).maybeSingle();
-      // Only reveal details when this session is the one linked to the order.
-      if (o && (o as { stripe_session_id?: string | null }).stripe_session_id === data.sessionId) {
-        orderCode = (o as { order_code?: string | null }).order_code ?? null;
-        email = (o as { customer_email?: string | null }).customer_email ?? null;
-      }
-    }
-    return { paid: r.ok, orderNumber, orderCode, email };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // The stored session link is authoritative, even for sessions without numeric metadata.
+    const { data: o, error } = await supabaseAdmin.from("orders")
+      .select("order_number, order_code, customer_email").eq("stripe_session_id", data.sessionId).maybeSingle();
+    if (error) throw new Error("Could not load the confirmed order — please retry");
+    return { paid: r.ok, orderNumber: o ? String(o.order_number) : null, orderCode: o ? publicOrderCode(o) : null, email: o?.customer_email ?? null };
   });
 
 /** Full or partial refund of a paid card order. */

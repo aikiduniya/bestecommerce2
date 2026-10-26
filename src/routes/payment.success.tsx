@@ -9,7 +9,9 @@ export const Route = createFileRoute("/payment/success")({
   validateSearch: (s: Record<string, unknown>) => ({ session_id: typeof s["session_id"] === "string" ? s["session_id"] : "" }),
   head: () => ({
     meta: [
-      { title: "Payment received" },
+      { title: "Card payment confirmation — Store orders" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Your card payment is being confirmed." },
       { property: "og:title", content: "Payment received" },
@@ -27,7 +29,7 @@ function Success() {
   useEffect(() => {
     if (!session_id) { setState("error"); return; }
     verifyStripeSession({ data: { sessionId: session_id } })
-      .then((r) => { setNum(r.orderCode ?? (r.orderNumber ? `#${r.orderNumber}` : null)); setEmail(r.email); setState(r.paid ? "paid" : "pending"); })
+      .then((r) => { setNum(r.orderCode); setEmail(r.email); setState(r.paid ? "paid" : "pending"); })
       .catch(() => setState("error"));
   }, [session_id]);
   return (

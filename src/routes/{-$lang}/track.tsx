@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { money } from "@/lib/store";
+import { publicOrderCode } from "@/lib/order-reference";
 import { isValidLang } from "@/lib/i18n";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ReturnRequestForm } from "@/components/store/ReturnRequestForm";
@@ -39,7 +40,9 @@ export const Route = createFileRoute("/{-$lang}/track")({
   }),
   head: () => ({
     meta: [
-      { title: "Track your order" },
+      { title: "Order tracking — Store orders" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "description", content: "Check the status of your guest order." },
       { property: "og:title", content: "Track your order" },
       { property: "og:description", content: "Check the status of your guest order." },
@@ -72,7 +75,10 @@ function TrackOrder() {
     setBusy(false);
     setSearched(true);
     if (error) { toast.error(error.message); return; }
-    setOrder((data as GuestOrder | null) ?? null);
+    const found = (data as GuestOrder | null) ?? null;
+    setOrder(found);
+    const code = found && publicOrderCode(found);
+    if (code) setNum(code);
   }
 
   // Auto-lookup when arriving from checkout.
@@ -84,7 +90,7 @@ function TrackOrder() {
         {search.placed === 1 && order && (
           <div className="mb-8 rounded border border-gold bg-gold-soft/40 p-5 text-center">
             <p className="font-display text-3xl">Thank you, {order.customer_name.split(" ")[0]}.</p>
-            <p className="mt-2 text-sm text-muted-foreground">Your order has been placed. Save your order number — you'll need it to track your order.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Your order{publicOrderCode(order) ? ` ${publicOrderCode(order)}` : ""} has been placed. Save your order number — you'll need it to track your order.</p>
           </div>
         )}
         <h1 className="text-5xl">Track your order</h1>
@@ -112,7 +118,7 @@ function TrackOrder() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Order</p>
-                <p className="font-display text-3xl">{order.order_code ?? `#${order.order_number}`}</p>
+                <p className="font-display text-3xl">{publicOrderCode(order) ?? "Order details"}</p>
               </div>
               <div className="text-right text-sm">
                 <p><span className="text-muted-foreground">Status:</span> {STATUS_LABEL[order.status] ?? order.status}</p>
