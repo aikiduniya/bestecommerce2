@@ -12,9 +12,10 @@ import { MfaSettings } from "@/components/MfaSettings";
 import { AddressesTab } from "@/components/AddressesTab";
 import { SupportTab } from "@/components/SupportTab";
 import { RewardsTab } from "@/components/RewardsTab";
+import { publicOrderCode } from "@/lib/order-reference";
 
 export const Route = createFileRoute("/_authenticated/account")({
-  head: () => ({ meta: [{ title: "My account" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Customer account — Store orders and rewards" }, { name: "description", content: "Your orders, addresses, rewards and account settings." }, { property: "og:title", content: "Customer account" }, { property: "og:description", content: "Your orders, addresses, rewards and account settings." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: Account,
 });
 
@@ -70,7 +71,7 @@ function Account() {
               <div className="divide-y rounded border bg-card">
                 {orders.map((o) => (
                   <Link key={o.id} to="/order/$id" params={{ id: o.id }} className="flex flex-wrap items-center justify-between gap-4 p-5 hover:bg-muted">
-                    <div><p className="font-medium">Order {o.order_code ?? `#${o.order_number}`}</p><p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()} · {(o.items as unknown[]).length} items</p></div>
+                    <div><p className="font-medium">Order {publicOrderCode(o) ?? "details"}</p><p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()} · {(o.items as unknown[]).length} items</p></div>
                     <div className="flex items-center gap-4"><StatusPill value={o.status} /><span>{money(o.total, o.currency)}</span></div>
                   </Link>
                 ))}

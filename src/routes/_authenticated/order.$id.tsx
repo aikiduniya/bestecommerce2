@@ -7,9 +7,10 @@ import { ReturnRequestForm, type ReturnLine } from "@/components/store/ReturnReq
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { StatusPill } from "@/components/admin/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
+import { publicOrderCode } from "@/lib/order-reference";
 
 export const Route = createFileRoute("/_authenticated/order/$id")({
-  head: () => ({ meta: [{ title: "Order details" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Customer order details — Store orders" }, { name: "description", content: "Your order items, payment and delivery status." }, { property: "og:title", content: "Customer order details" }, { property: "og:description", content: "Your order items, payment and delivery status." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: OrderPage,
 });
 
@@ -41,11 +42,11 @@ function OrderPage() {
           </div>
         )}
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div><p className="eyebrow text-gold">Order</p><h1 className="mt-2 text-6xl">{o.order_code ?? `#${o.order_number}`}</h1><p className="text-sm text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p></div>
+          <div><p className="eyebrow text-gold">Order</p><h1 className="mt-2 text-6xl">{publicOrderCode(o) ?? "Order details"}</h1><p className="text-sm text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p></div>
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <span className="flex items-center gap-1.5 text-muted-foreground">Order <StatusPill value={o.status} /></span>
             <span className="flex items-center gap-1.5 text-muted-foreground">Payment <StatusPill value={o.payment_status} /></span>
-            <Link to="/{-$lang}/track" params={{ lang: undefined }} search={{ n: o.order_code ?? o.order_number, e: o.customer_email, placed: undefined }} className="rounded border border-gold px-3 py-1.5 text-gold hover:bg-gold-soft/40">Track order</Link>
+            <Link to="/{-$lang}/track" params={{ lang: undefined }} search={{ n: publicOrderCode(o) ?? undefined, e: o.customer_email, placed: undefined }} className="rounded border border-gold px-3 py-1.5 text-gold hover:bg-gold-soft/40">Track order</Link>
           </div>
         </div>
         <div className="mt-10 divide-y rounded border bg-card">

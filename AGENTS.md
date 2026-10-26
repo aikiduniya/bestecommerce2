@@ -10,7 +10,8 @@
 <!-- LOVABLE:END -->
 
 ## Project rules
-- All store branding/content/config lives in `store_settings` and related tables; never hardcode business content (admin must control it).
+- Store content/config lives in `store_settings` and related tables; admin controls it, never hardcode.
+- Use stored public codes for customer references; owner/token-checked readback handles legacy checkout responses. Keep numeric tracking/returns internal. Why: confirmations must agree without schema changes.
 - Roles live in `user_roles` (admin/staff/customer) with `has_role`/`is_staff` security-definer checks; every signup gets `customer` via trigger — admin/staff can only be granted by an existing admin (RLS on user_roles).
 - Admin pages live under `src/routes/_authenticated/admin.*` and read/write via the browser client protected by RLS.
 - Admin write access is enforced by RLS via `has_permission(uid, perm)` (perms: catalog, orders, customers; admin has all); settings/shipping/staff/activity are admin-only. Staff are managed only through the `admin_set_staff` RPC. Why: permissions must hold server-side, not just in the menu.
@@ -33,6 +34,6 @@
 - Email placeholders render only via `src/lib/email-render.ts`; processSend rebuilds order vars from the stored order (order_id/order_number). Why: retries must never send raw `{{...}}`.
 - Absolute URLs always come from the site origin resolver (`src/lib/site-url.ts`: Admin `store_settings.site_url` → `SITE_URL` env → request origin); SSR heads use the live `SITE` binding set in the root loader, server routes use `originOf(req)`. Why: the store must work on any domain/host; never hardcode a hosting domain.
 - Self-hosting docs/scripts live in `docs/self-hosting/` and `scripts/selfhost/`; Node builds use `NITRO_PRESET=node-server`, and Node SMTP uses runtime-loaded `nodemailer` while `cloudflare:sockets` stays external. Why: the same source must build for Cloudflare and plain Node.
-- Self-hosted builds set `SELF_HOSTED=1`, which aliases Lovable-only helpers to `src/selfhost-stubs/` via a Vite plugin in `vite.config.ts`; Lovable builds never set it. Why: production self-hosted bundles must contain no Lovable code while the editor keeps working.
+- `SELF_HOSTED=1` aliases Lovable helpers to `src/selfhost-stubs/` in Vite; editor builds never set it. Why: independent bundles keep no Lovable code.
 - Standalone release ZIPs are produced only by `scripts/selfhost/make-release.sh`, which swaps in `scripts/selfhost/standalone/` files and strips all Lovable packages/helpers from the staged copy. Why: the editor project keeps Lovable tooling while the download has none.
 - Self-hosted migrations follow expand/contract: all pending files apply in one transaction and destructive statements are refused by `apply-migrations.sh` unless ALLOW_BREAKING=1. Why: app rollback must stay safe without a database restore.

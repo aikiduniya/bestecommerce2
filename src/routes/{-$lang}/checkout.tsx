@@ -8,6 +8,8 @@ import { useCart } from "@/lib/cart";
 import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
 import { notifyOrderPlaced } from "@/lib/email.functions";
 import { createStripeCheckout } from "@/lib/payments.functions";
+import { publicOrderCode } from "@/lib/order-reference";
+import { getPlacedOrderCode } from "@/lib/order-reference.functions";
 import { useDisplayCurrency } from "@/lib/currency";
 import { isValidLang, useLang } from "@/lib/i18n";
 import { useSessionUser } from "@/lib/auth";
@@ -22,7 +24,9 @@ export const Route = createFileRoute("/{-$lang}/checkout")({
   head: () => ({
     meta: [
       { name: "robots", content: "noindex, follow" },
-      { title: "Checkout" },
+      { title: "Store checkout — Secure order" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "description", content: "Complete your order securely." },
       { property: "og:title", content: "Checkout" },
       { property: "og:description", content: "Complete your order securely." },
@@ -162,7 +166,16 @@ function Checkout() {
       _payment: pay ?? "cod",
     });
     if (error) { setPlacing(false); toast.error(error.message); return; }
-    const res = data as { id: string; order_number: number; guest_token: string | null };
+    const res = data as { id: string; order_number: number; order_code?: string | null; guest_token: string | null };
+    let orderCode = publicOrderCode(res);
+    if (!orderCode) {
+      try {
+        orderCode = (await getPlacedOrderCode({ data: { orderId: res.id, guestToken: res.guest_token ?? undefined } })).orderCode;
+      } catch (err) {
+        // The order already exists: do not offer a second placement or suppress notifications.
+        console.error("Could not read the placed order code", err);
+      }
+    }
     if (pay === "stripe") {
       try {
         const r = await createStripeCheckout({ data: { orderId: res.id, guestToken: res.guest_token ?? undefined, origin: window.location.origin } });
@@ -170,7 +183,7 @@ function Checkout() {
         window.location.href = r.url;
       } catch (err) {
         setPlacing(false);
-        toast.error(`${(err as Error).message}. Your order #${res.order_number} is saved — you can retry payment.`);
+        toast.error(`${(err as Error).message}. Your order${orderCode ? ` ${orderCode}` : ""} is saved — you can retry payment.`);
         navigate({ to: "/payment/cancelled", search: { order: res.id, t: res.guest_token ?? undefined } });
       }
       return;
@@ -193,7 +206,7 @@ function Checkout() {
     if (user) {
       navigate({ to: "/order/$id", params: { id: res.id } });
     } else {
-      navigate({ to: "/{-$lang}/track", params: { lang: lang ?? undefined }, search: { n: res.order_number, e: f.email, placed: 1 } });
+      navigate({ to: "/{-$lang}/track", params: { lang: lang ?? undefined }, search: { n: orderCode ?? undefined, e: f.email, placed: 1 } });
     }
   }
 
