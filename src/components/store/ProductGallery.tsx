@@ -11,6 +11,12 @@ export function ProductGallery({ images, fallback, index, onIndex }: { images: I
   const touch = useRef<number | null>(null);
   const go = useCallback((d: number) => n && onIndex((index + d + n) % n), [index, n, onIndex]);
   const cur = images[index];
+  // Auto-advance every 5 seconds; pauses while zooming (hover) or in fullscreen. Timer restarts after manual changes.
+  useEffect(() => {
+    if (n < 2 || hover || open) return;
+    const t = setTimeout(() => onIndex((index + 1) % n), 5000);
+    return () => clearTimeout(t);
+  }, [index, n, hover, open, onIndex]);
 
   return (
     <div>
