@@ -3,7 +3,10 @@ import { publicOrderCode } from "@/lib/order-reference";
 import { buildOrderVars } from "@/lib/email-render";
 
 const state = vi.hoisted(() => ({ order: null as any, header: undefined as string | undefined, user: null as any, filters: [] as unknown[], session: {} as any }));
-vi.mock("@tanstack/react-start", () => ({ createServerFn: () => ({ inputValidator: () => ({ handler: (fn: any) => fn }) }) }));
+vi.mock("@tanstack/react-start", () => ({ createServerFn: () => {
+  const builder = { middleware: (_value: any) => builder, inputValidator: (_value: any) => builder, handler: (fn: any) => fn };
+  return builder;
+} }));
 vi.mock("@tanstack/react-start/server", () => ({ getRequestHeader: () => state.header }));
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: {
