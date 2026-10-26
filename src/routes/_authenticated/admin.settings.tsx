@@ -253,6 +253,9 @@ function SettingsPage() {
         </TabsContent>
         <TabsContent value="home">
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
+            <div className="rounded border border-gold bg-gold-soft/40 p-4 text-sm sm:col-span-2">
+              <strong>Multiple banner images or videos?</strong> Your homepage uses the Homepage builder. Go to <a href="/admin/homepage" className="text-gold underline">Admin → Homepage</a>, open the <strong>Banner (Hero)</strong> section and use <strong>"Add slide"</strong> — each slide can have its own image or video link. The fields below are only used when the Homepage builder is empty.
+            </div>
             {text("hero_eyebrow", "Hero small label")}
             {text("hero_cta", "Hero button text")}
             {text("hero_image_alt" as never, "Hero image alt text (describes the photo for search engines)")}
