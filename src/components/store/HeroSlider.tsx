@@ -13,7 +13,7 @@ export type Slide = {
 /** Embed URL for YouTube/Vimeo links (muted autoplay loop), or null for direct video files. */
 export function videoEmbed(url: string): string | null {
   const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
-  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}?autoplay=1&mute=1&loop=1&playlist=${yt[1]}&controls=0&playsinline=1&rel=0`;
+  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}?autoplay=1&mute=1&loop=1&playlist=${yt[1]}&controls=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&showinfo=0`;
   const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   if (vm) return `https://player.vimeo.com/video/${vm[1]}?background=1&autoplay=1&muted=1&loop=1`;
   return null;
@@ -67,7 +67,7 @@ export function HeroSlider({ slides, layout = "split", height = "tall", autoplay
         const embed = video ? videoEmbed(video) : null;
         const img = video ? (
           embed
-            ? <iframe src={k === i ? embed : undefined} title={s.image_alt || s.title || "Banner video"} allow="autoplay; encrypted-media" className="pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2 border-0" style={s.image_url ? { backgroundImage: `url(${s.image_url})`, backgroundSize: "cover" } : undefined} />
+            ? <BgEmbed src={k === i ? embed : undefined} title={s.image_alt || s.title || "Banner video"} poster={s.image_url} />
             : <video src={video} poster={s.image_url || undefined} autoPlay muted loop playsInline preload={k === 0 ? "auto" : "metadata"} className="size-full object-cover" aria-label={s.image_alt || undefined} />
         ) : s.image_url ? (
           <picture>
@@ -116,4 +116,15 @@ export function settingsSlides(s: { hero_media?: string | null; hero_images?: st
   const imgs = (s?.hero_images ?? []).filter(Boolean);
   const list = imgs.length ? imgs : s?.hero_image_url ? [s.hero_image_url] : [""];
   return list.map((u) => ({ ...base, image_url: u }));
+}
+
+/** YouTube/Vimeo background: hidden for the first seconds (when YouTube flashes its buttons/title), oversized so edge chrome is cropped, never clickable. */
+function BgEmbed({ src, title, poster }: { src: string | undefined; title: string; poster?: string | undefined }) {
+  const [show, setShow] = useState(false);
+  useEffect(() => { setShow(false); if (!src) return; const t = setTimeout(() => setShow(true), 3500); return () => clearTimeout(t); }, [src]);
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" style={poster ? { backgroundImage: `url(${poster})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
+      <iframe src={src} title={title} tabIndex={-1} allow="autoplay; encrypted-media" className={`pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-[120%] w-[177.78vh] min-w-[120%] -translate-x-1/2 -translate-y-1/2 scale-125 border-0 transition-opacity duration-1000 ${show ? "opacity-100" : "opacity-0"}`} />
+    </div>
+  );
 }
