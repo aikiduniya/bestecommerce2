@@ -20,15 +20,18 @@ function MediaPage() {
   const { data = [] } = useQuery(mediaQuery);
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [pct, setPct] = useState<string | null>(null);
 
   async function onFiles(files: FileList | null) {
     if (!files?.length) return;
     setBusy(true);
     let ok = 0;
-    for (const f of Array.from(files)) {
-      try { await uploadMedia(f); ok++; } catch (e) { toast.error((e as Error).message); }
+    const list = Array.from(files);
+    for (const [i, f] of list.entries()) {
+      try { await uploadMedia(f, (p) => setPct(`${list.length > 1 ? `${i + 1}/${list.length} · ` : ""}${p}%`)); ok++; } catch (e) { toast.error((e as Error).message); }
     }
     setBusy(false);
+    setPct(null);
     if (ok) toast.success(`${ok} file(s) uploaded`);
     qc.invalidateQueries({ queryKey: ["media"] });
   }

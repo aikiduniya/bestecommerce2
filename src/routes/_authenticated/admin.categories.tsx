@@ -65,7 +65,7 @@ function CategoriesPage() {
           {ordered.map((c) => (
             <div key={c.id} className={`flex flex-wrap items-center gap-4 py-4 ${c.parent_id ? "pl-8" : ""}`}>
               {c.parent_id && <CornerDownRight className="size-4 text-muted-foreground" />}
-              <ImagePicker multiple={false} value={c.image_url ? [c.image_url] : []} onChange={(v) => update(c.id, { image_url: v[0] ?? null })} />
+              <ImagePicker multiple={false} value={c.image_url ? [c.image_url] : []} onChange={(v) => update(c.id, { image_url: v[0] ?? null })} hint="Recommended: 800 × 800 px (square), JPG/WebP, under 500 KB" />
               <div className="min-w-48 flex-1 space-y-1">
                 <Input defaultValue={c.name} onBlur={(e) => e.target.value !== c.name && update(c.id, { name: e.target.value })} />
                 <p className="text-xs text-muted-foreground">/{c.slug} · {products.filter((p) => p.category_id === c.id).length} products</p>

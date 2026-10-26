@@ -48,7 +48,7 @@ export function SimpleTaxonomy({ table, rows, noun }: { table: "categories" | "b
       <div className="divide-y">
         {rows.map((r) => (
           <div key={r.id} className="flex flex-wrap items-center gap-4 py-3">
-            {table === "brands" && <ImagePicker multiple={false} value={r.logo_url ? [r.logo_url] : []} onChange={(v) => update(r.id, { logo_url: v[0] ?? null })} />}
+            {table === "brands" && <ImagePicker multiple={false} value={r.logo_url ? [r.logo_url] : []} onChange={(v) => update(r.id, { logo_url: v[0] ?? null })} hint="Recommended: 400 × 200 px logo, transparent PNG/SVG/WebP, under 300 KB" />}
             <Input
               defaultValue={r.name}
               className="max-w-xs"
