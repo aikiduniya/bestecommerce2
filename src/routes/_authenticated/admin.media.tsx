@@ -20,15 +20,18 @@ function MediaPage() {
   const { data = [] } = useQuery(mediaQuery);
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [pct, setPct] = useState<string | null>(null);
 
   async function onFiles(files: FileList | null) {
     if (!files?.length) return;
     setBusy(true);
     let ok = 0;
-    for (const f of Array.from(files)) {
-      try { await uploadMedia(f); ok++; } catch (e) { toast.error((e as Error).message); }
+    const list = Array.from(files);
+    for (const [i, f] of list.entries()) {
+      try { await uploadMedia(f, (p) => setPct(`${list.length > 1 ? `${i + 1}/${list.length} · ` : ""}${p}%`)); ok++; } catch (e) { toast.error((e as Error).message); }
     }
     setBusy(false);
+    setPct(null);
     if (ok) toast.success(`${ok} file(s) uploaded`);
     qc.invalidateQueries({ queryKey: ["media"] });
   }
@@ -45,7 +48,7 @@ function MediaPage() {
   return (
     <>
       <PageHeader title="Media library" subtitle={`${data.length} files · images up to 10MB (JPG, PNG, WEBP, GIF, AVIF, SVG)`}>
-        <Button variant="gold" onClick={() => ref.current?.click()} disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <Upload />} Upload images</Button>
+        <Button variant="gold" onClick={() => ref.current?.click()} disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <Upload />} {busy && pct ? `Uploading ${pct}` : "Upload images"}</Button>
         <input ref={ref} type="file" multiple accept="image/*" hidden onChange={(e) => onFiles(e.target.files)} />
       </PageHeader>
       <Card className="p-5">

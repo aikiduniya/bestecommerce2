@@ -20,7 +20,7 @@ export async function resolveVars(
   const orderId = payload["order_id"];
   const orderNumber = Number(payload["order_number"]);
   if (orderId || (Number.isInteger(orderNumber) && orderNumber > 0)) {
-    const cols = "id, order_number, customer_name, customer_email, customer_phone, total, subtotal, shipping_total, tax_total, discount_total, currency, payment_method, status, tracking_number, tracking_url, items";
+    const cols = "id, order_number, order_code, customer_name, customer_email, customer_phone, total, subtotal, shipping_total, tax_total, discount_total, currency, payment_method, status, tracking_number, tracking_url, items";
     const q = admin.from("orders").select(cols);
     const { data: order } = await (orderId ? q.eq("id", orderId) : q.eq("order_number", orderNumber)).maybeSingle();
     if (order) {

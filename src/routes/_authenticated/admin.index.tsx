@@ -134,7 +134,7 @@ function Dashboard() {
           <div className="mt-4 divide-y">
             {orders.slice(0, 5).map((o) => (
               <div key={o.id} className="flex items-center justify-between py-3 text-sm">
-                <span>#{o.order_number} · {o.customer_name}</span>
+                <span>{o.order_code ?? `#${o.order_number}`} · {o.customer_name}</span>
                 <span className="flex items-center gap-3"><StatusPill value={o.status} />{money(o.total, o.currency)}</span>
               </div>
             ))}

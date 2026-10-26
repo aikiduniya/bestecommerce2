@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 
 type GuestOrder = {
   order_number: number;
+  order_code?: string | null;
   tracking_number?: string | null;
   tracking_url?: string | null;
   status: string;
@@ -32,7 +33,7 @@ type GuestOrder = {
 export const Route = createFileRoute("/{-$lang}/track")({
   beforeLoad: ({ params }) => { if (!isValidLang(params.lang)) throw notFound(); },
   validateSearch: (s: Record<string, unknown>) => ({
-    n: typeof s["n"] === "number" ? s["n"] : typeof s["n"] === "string" && /^\d+$/.test(s["n"]) ? Number(s["n"]) : undefined,
+    n: typeof s["n"] === "number" ? s["n"] : typeof s["n"] === "string" && /^\d+$/.test(s["n"]) ? Number(s["n"]) : typeof s["n"] === "string" && /^[A-Za-z0-9-]{4,40}$/.test(s["n"]) ? s["n"] : undefined,
     e: typeof s["e"] === "string" ? s["e"] : undefined,
     placed: s["placed"] === 1 || s["placed"] === "1" ? 1 : undefined,
   }),
@@ -64,7 +65,10 @@ function TrackOrder() {
     e?.preventDefault();
     if (!num.trim() || !email.trim()) return;
     setBusy(true);
-    const { data, error } = await supabase.rpc("track_guest_order", { _order_number: Number(num), _email: email });
+    const ref = num.trim().replace(/^#/, "");
+    const { data, error } = /^\d+$/.test(ref)
+      ? await supabase.rpc("track_guest_order", { _order_number: Number(ref), _email: email })
+      : await supabase.rpc("track_guest_order_code", { _code: ref, _email: email });
     setBusy(false);
     setSearched(true);
     if (error) { toast.error(error.message); return; }
@@ -88,7 +92,7 @@ function TrackOrder() {
         <form onSubmit={lookup} className="mt-6 space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Order number</Label>
-            <Input inputMode="numeric" value={num} onChange={(e) => setNum(e.target.value)} placeholder="e.g. 1001" required />
+            <Input value={num} onChange={(e) => setNum(e.target.value)} placeholder="e.g. AWA-261026-0966" required />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Email</Label>
@@ -108,7 +112,7 @@ function TrackOrder() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Order</p>
-                <p className="font-display text-3xl">#{order.order_number}</p>
+                <p className="font-display text-3xl">{order.order_code ?? `#${order.order_number}`}</p>
               </div>
               <div className="text-right text-sm">
                 <p><span className="text-muted-foreground">Status:</span> {STATUS_LABEL[order.status] ?? order.status}</p>

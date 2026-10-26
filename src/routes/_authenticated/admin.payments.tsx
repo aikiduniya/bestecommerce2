@@ -168,7 +168,7 @@ function CardOrders() {
   const { data = [] } = useQuery({
     queryKey: ["card-orders", filter],
     queryFn: async () => {
-      let q = supabase.from("orders").select("id, order_number, customer_name, total, refunded_total, currency, payment_status, status, created_at").eq("payment_method", "stripe").order("created_at", { ascending: false }).limit(200);
+      let q = supabase.from("orders").select("id, order_number, order_code, customer_name, total, refunded_total, currency, payment_status, status, created_at").eq("payment_method", "stripe").order("created_at", { ascending: false }).limit(200);
       if (filter !== "all") q = q.eq("payment_status", filter);
       const { data, error } = await q;
       if (error) throw error;
@@ -196,7 +196,7 @@ function CardOrders() {
             {data.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No card orders yet.</td></tr>}
             {data.map((o) => (
               <tr key={o.id} className="border-b last:border-0">
-                <td className="p-3">#{o.order_number}</td><td className="p-3">{o.customer_name}</td>
+                <td className="p-3">{o.order_code ?? `#${o.order_number}`}</td><td className="p-3">{o.customer_name}</td>
                 <td className="p-3">{money(o.total, o.currency)}{Number(o.refunded_total) > 0 && <span className="block text-xs text-muted-foreground">Refunded {money(o.refunded_total, o.currency)}</span>}</td>
                 <td className="p-3 capitalize">{o.payment_status}</td><td className="p-3 capitalize">{o.status}</td>
                 <td className="p-3 text-right space-x-2">

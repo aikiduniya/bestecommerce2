@@ -8,24 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 /** Multi-image field: upload new files or pick from the media library. */
-export function ImagePicker({ value, onChange, multiple = true }: { value: string[]; onChange: (v: string[]) => void; multiple?: boolean }) {
+export function ImagePicker({ value, onChange, multiple = true, hint }: { value: string[]; onChange: (v: string[]) => void; multiple?: boolean; hint?: string }) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [lib, setLib] = useState(false);
+  const [progress, setProgress] = useState<{ pct: number; label: string } | null>(null);
   const qc = useQueryClient();
 
   async function onFiles(files: FileList | null) {
     if (!files?.length) return;
     setBusy(true);
     const urls: string[] = [];
-    for (const f of Array.from(files)) {
+    const list = Array.from(files);
+    for (const [i, f] of list.entries()) {
       try {
-        urls.push(await uploadMedia(f));
+        const label = list.length > 1 ? `${i + 1}/${list.length}` : "";
+        setProgress({ pct: 0, label });
+        urls.push(await uploadMedia(f, (pct) => setProgress({ pct, label })));
       } catch (e) {
         toast.error((e as Error).message);
       }
     }
     setBusy(false);
+    setProgress(null);
     qc.invalidateQueries({ queryKey: ["media"] });
     if (urls.length) onChange(multiple ? [...value, ...urls] : [urls[0]!]);
     if (ref.current) ref.current.value = "";
@@ -54,7 +59,7 @@ export function ImagePicker({ value, onChange, multiple = true }: { value: strin
         {(multiple || value.length === 0) && (
           <>
             <button type="button" onClick={() => ref.current?.click()} disabled={busy} className="flex size-20 flex-col items-center justify-center gap-1 rounded border border-dashed text-xs text-muted-foreground hover:border-gold hover:text-foreground">
-              {busy ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5" />}Upload
+              {busy ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5" />}{busy && progress ? `${progress.pct}%` : "Upload"}
             </button>
             <button type="button" onClick={() => setLib(true)} className="flex size-20 flex-col items-center justify-center gap-1 rounded border border-dashed text-xs text-muted-foreground hover:border-gold hover:text-foreground">
               <Library className="size-5" />Library
@@ -62,6 +67,13 @@ export function ImagePicker({ value, onChange, multiple = true }: { value: strin
           </>
         )}
       </div>
+      {progress && (
+        <div className="mt-2 w-full max-w-xs" role="progressbar" aria-valuenow={progress.pct} aria-valuemin={0} aria-valuemax={100}>
+          <div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-gold transition-all" style={{ width: `${progress.pct}%` }} /></div>
+          <p className="mt-1 text-[11px] text-muted-foreground">Uploading {progress.label} · {progress.pct}%</p>
+        </div>
+      )}
+      {hint && <p className="mt-1.5 text-[11px] text-muted-foreground">{hint}</p>}
       <input ref={ref} type="file" accept="image/*" multiple={multiple} hidden onChange={(e) => onFiles(e.target.files)} />
       <LibraryDialog open={lib} onClose={() => setLib(false)} onPick={(u) => { onChange(multiple ? [...value, u] : [u]); setLib(false); }} />
     </div>

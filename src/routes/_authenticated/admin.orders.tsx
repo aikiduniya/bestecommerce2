@@ -28,7 +28,7 @@ function OrdersPage() {
   const [view, setView] = useState<Order | null>(null);
   const [payFilter, setPayFilter] = useState("all");
   const list = orders.filter((o) => (filter === "all" || o.status === filter) && (payFilter === "all" || o.payment_method === payFilter || (payFilter === "cod-pending" && o.payment_method === "cod" && !o.cod_collected_at && o.status !== "cancelled")) &&
-    `${o.order_number} ${o.customer_name} ${o.customer_email}`.toLowerCase().includes(q.toLowerCase()));
+    `${o.order_number} ${o.order_code ?? ""} ${o.customer_name} ${o.customer_email}`.toLowerCase().includes(q.toLowerCase()));
 
   async function update(id: string, patch: { status?: string; payment_status?: string; fulfillment_status?: string; cod_confirmed_at?: string; cod_collected_at?: string }) {
     const { error } = await supabase.from("orders").update(patch).eq("id", id);
@@ -78,7 +78,7 @@ function OrdersPage() {
             {list.map((o) => (
               <TableRow key={o.id}>
                 <TableCell>
-                  <p className="font-medium">#{o.order_number}</p>
+                  <p className="font-medium">{o.order_code ?? `#${o.order_number}`}</p>
                   <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p>
                 </TableCell>
                 <TableCell>
@@ -116,7 +116,7 @@ function OrdersPage() {
             <>
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
-                  <DialogTitle className="font-display text-3xl">Order #{view.order_number}</DialogTitle>
+                  <DialogTitle className="font-display text-3xl">Order {view.order_code ?? `#${view.order_number}`}</DialogTitle>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" asChild><Link to="/admin/invoice/$id" params={{ id: view.id }} target="_blank"><Printer className="size-4" /> Invoice</Link></Button>
                     <Button size="sm" variant="outline" asChild><Link to="/admin/packing/$id" params={{ id: view.id }} target="_blank"><Printer className="size-4" /> Packing slip</Link></Button>

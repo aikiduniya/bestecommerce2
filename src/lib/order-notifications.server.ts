@@ -8,7 +8,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 export type OrderForNotification = Pick<Database["public"]["Tables"]["orders"]["Row"],
-  "id" | "customer_name" | "customer_email" | "order_number" | "total" | "currency" | "items">;
+  "id" | "customer_name" | "customer_email" | "order_number" | "total" | "currency" | "items"> & Partial<Pick<Database["public"]["Tables"]["orders"]["Row"], "order_code">>;
 
 // Authorize + dedupe + dispatch for a just-placed non-card order. The caller
 // must own the order (signed-in user id) or present its guest token. All
@@ -18,7 +18,7 @@ export async function notifyOrderPlacedCore(
   input: { orderId: string; guestToken?: string | undefined; userId?: string | null | undefined },
 ): Promise<{ status: string }> {
   const { data: o } = await db.from("orders")
-    .select("id, user_id, guest_token, payment_method, customer_name, customer_email, order_number, total, currency, items")
+    .select("id, user_id, guest_token, payment_method, customer_name, customer_email, order_number, order_code, total, currency, items")
     .eq("id", input.orderId).maybeSingle();
   if (!o) throw new Error("Order not found");
   const allowed = (o.user_id && input.userId === o.user_id) || (!o.user_id && o.guest_token && input.guestToken === o.guest_token);
@@ -44,7 +44,7 @@ export async function notifyOrderPlacedEmail(db: AdminClient, order: OrderForNot
       { event: "order_placed_admin", recipientEmail: store?.support_email ?? "" },
     ];
     const { data: logs, error } = await db.from("email_logs").insert(notifications.map((n) => ({
-      event: n.event, recipient_email: n.recipientEmail, subject: "", status: "processing",
+      event: n.event, recipient_email: n.recipientEmail, subject: "", status: "retrying",
       attempts: 0, payload: vars,
     }))).select("id, event, recipient_email");
     if (error || !logs || logs.length !== 2) throw new Error("Could not reserve order notification logs");

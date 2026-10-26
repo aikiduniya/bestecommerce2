@@ -267,6 +267,20 @@
       "when": 1792754884352,
       "tag": "0037_selfhost_missing_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793008107667,
+      "tag": "0038_order_codes",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793008217240,
+      "tag": "0039_email_log_statuses",
+      "breakpoints": true
     }
   ]
 }
