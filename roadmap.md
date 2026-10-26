@@ -1,7 +1,8 @@
 # Roadmap
 
 ## Current task
-- [ ] Fix public-code checkout redirects, tracking and Stripe success; run regression tests and safely verify the checkout flow without changing credentials or existing orders.
+- [x] Fix public-code checkout redirects, tracking and Stripe success. 59 tests PASS (7 files, isolated transports); preview build OK; browser tracking prefill PASS with no runtime errors. No migrations/data/credential changes.
+- [ ] Actual COD placement → delivered email → database-backed tracking verification on owner installation: no independent disposable backend available here; mocked flow tested, not a live order. Real card charge also untested; no Stripe settings changed.
 - [x] Connect confirmed Stripe payments to customer/admin email notifications; reserve existing logs, prevent concurrent duplicates and isolate delivery failures. 25 automated tests PASS; build OK. No schema, credentials, COD checkout or UI changes.
 - [ ] Real Stripe → SMTP → delivery-log verification on the owner's configured installation: blocked here because the connected database has no Stripe orders, delivery disabled, untested/disabled SMTP profiles and no support email. Tests used isolated database/SMTP doubles, not a real card charge or inbox delivery.
 
