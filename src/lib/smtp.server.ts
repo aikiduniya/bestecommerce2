@@ -52,7 +52,8 @@ export async function smtpSend(p: SmtpRow, to: string, subject: string, text: st
     return { ok: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    if (/cloudflare:sockets|Cannot find (package|module)/i.test(msg)) return { ok: false, error: "SMTP test only runs on the published site (not in the editor preview)" };
+    if (/nodemailer/i.test(msg) && /Cannot find (package|module)/i.test(msg)) return { ok: false, error: "Email sending package 'nodemailer' is missing on this server. On the server run: cd .output/server && npm install nodemailer — then restart the app." };
+    if (/cloudflare:sockets/i.test(msg)) return { ok: false, error: "SMTP test only runs on the published site (not in the editor preview)" };
     return { ok: false, error: msg.slice(0, 300) };
   }
 }
