@@ -44,7 +44,7 @@ export async function notifyOrderPlacedEmail(db: AdminClient, order: OrderForNot
       { event: "order_placed_admin", recipientEmail: store?.support_email ?? "" },
     ];
     const { data: logs, error } = await db.from("email_logs").insert(notifications.map((n) => ({
-      event: n.event, recipient_email: n.recipientEmail, subject: "", status: "processing",
+      event: n.event, recipient_email: n.recipientEmail, subject: "", status: "retrying",
       attempts: 0, payload: vars,
     }))).select("id, event, recipient_email");
     if (error || !logs || logs.length !== 2) throw new Error("Could not reserve order notification logs");
