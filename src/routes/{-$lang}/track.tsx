@@ -1,5 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { money } from "@/lib/store";
@@ -76,7 +76,7 @@ function TrackOrder() {
   }
 
   // Auto-lookup when arriving from checkout.
-  if (search.n && search.e && !searched && !busy) void lookup();
+  useEffect(() => { if (search.n && search.e) void lookup(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <StoreLayout>
@@ -103,7 +103,7 @@ function TrackOrder() {
 
         {searched && !order && !busy && (
           <p className="mt-8 rounded border border-destructive/40 p-4 text-sm text-destructive">
-            No guest order found with that number and email. Check both and try again.
+            No order found with that number and email. Check both and try again.
           </p>
         )}
 
@@ -116,7 +116,7 @@ function TrackOrder() {
               </div>
               <div className="text-right text-sm">
                 <p><span className="text-muted-foreground">Status:</span> {STATUS_LABEL[order.status] ?? order.status}</p>
-                <p><span className="text-muted-foreground">Payment:</span> {order.payment_status === "pending" ? "Pay on delivery" : order.payment_status}</p>
+                <p><span className="text-muted-foreground">Payment:</span> {order.payment_status === "paid" ? "Paid" : order.payment_status === "pending" && (order as { payment_method?: string }).payment_method === "cod" ? "Pay on delivery" : order.payment_status}</p>
                 {order.tracking_number && <p><span className="text-muted-foreground">Tracking:</span> {order.tracking_url ? <a href={order.tracking_url} target="_blank" rel="noreferrer" className="text-gold underline">{order.tracking_number}</a> : order.tracking_number}</p>}
                 <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
               </div>
