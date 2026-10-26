@@ -48,7 +48,7 @@ function MediaPage() {
   return (
     <>
       <PageHeader title="Media library" subtitle={`${data.length} files · images up to 10MB (JPG, PNG, WEBP, GIF, AVIF, SVG)`}>
-        <Button variant="gold" onClick={() => ref.current?.click()} disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <Upload />} Upload images</Button>
+        <Button variant="gold" onClick={() => ref.current?.click()} disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <Upload />} {busy && pct ? `Uploading ${pct}` : "Upload images"}</Button>
         <input ref={ref} type="file" multiple accept="image/*" hidden onChange={(e) => onFiles(e.target.files)} />
       </PageHeader>
       <Card className="p-5">
