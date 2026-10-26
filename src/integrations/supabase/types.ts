@@ -1004,6 +1004,7 @@ export type Database = {
           id: string
           items: Json
           notes: string | null
+          order_code: string | null
           order_number: number
           paid_at: string | null
           payment_fee: number
@@ -1046,6 +1047,7 @@ export type Database = {
           id?: string
           items?: Json
           notes?: string | null
+          order_code?: string | null
           order_number?: never
           paid_at?: string | null
           payment_fee?: number
@@ -1088,6 +1090,7 @@ export type Database = {
           id?: string
           items?: Json
           notes?: string | null
+          order_code?: string | null
           order_number?: never
           paid_at?: string | null
           payment_fee?: number
@@ -2420,6 +2423,7 @@ export type Database = {
         }
         Returns: number
       }
+      generate_order_code: { Args: { _created?: string }; Returns: string }
       has_permission: {
         Args: { _perm: string; _user_id: string }
         Returns: boolean
@@ -2473,6 +2477,10 @@ export type Database = {
       }
       track_guest_order: {
         Args: { _email: string; _order_number: number }
+        Returns: Json
+      }
+      track_guest_order_code: {
+        Args: { _code: string; _email: string }
         Returns: Json
       }
     }
