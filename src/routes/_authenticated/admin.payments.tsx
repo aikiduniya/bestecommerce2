@@ -168,7 +168,7 @@ function CardOrders() {
   const { data = [] } = useQuery({
     queryKey: ["card-orders", filter],
     queryFn: async () => {
-      let q = supabase.from("orders").select("id, order_number, customer_name, total, refunded_total, currency, payment_status, status, created_at").eq("payment_method", "stripe").order("created_at", { ascending: false }).limit(200);
+      let q = supabase.from("orders").select("id, order_number, order_code, customer_name, total, refunded_total, currency, payment_status, status, created_at").eq("payment_method", "stripe").order("created_at", { ascending: false }).limit(200);
       if (filter !== "all") q = q.eq("payment_status", filter);
       const { data, error } = await q;
       if (error) throw error;
