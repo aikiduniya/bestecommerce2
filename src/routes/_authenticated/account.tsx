@@ -70,7 +70,7 @@ function Account() {
               <div className="divide-y rounded border bg-card">
                 {orders.map((o) => (
                   <Link key={o.id} to="/order/$id" params={{ id: o.id }} className="flex flex-wrap items-center justify-between gap-4 p-5 hover:bg-muted">
-                    <div><p className="font-medium">Order #{o.order_number}</p><p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()} · {(o.items as unknown[]).length} items</p></div>
+                    <div><p className="font-medium">Order {o.order_code ?? `#${o.order_number}`}</p><p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()} · {(o.items as unknown[]).length} items</p></div>
                     <div className="flex items-center gap-4"><StatusPill value={o.status} /><span>{money(o.total, o.currency)}</span></div>
                   </Link>
                 ))}

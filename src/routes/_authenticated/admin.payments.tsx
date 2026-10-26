@@ -196,7 +196,7 @@ function CardOrders() {
             {data.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No card orders yet.</td></tr>}
             {data.map((o) => (
               <tr key={o.id} className="border-b last:border-0">
-                <td className="p-3">#{o.order_number}</td><td className="p-3">{o.customer_name}</td>
+                <td className="p-3">{o.order_code ?? `#${o.order_number}`}</td><td className="p-3">{o.customer_name}</td>
                 <td className="p-3">{money(o.total, o.currency)}{Number(o.refunded_total) > 0 && <span className="block text-xs text-muted-foreground">Refunded {money(o.refunded_total, o.currency)}</span>}</td>
                 <td className="p-3 capitalize">{o.payment_status}</td><td className="p-3 capitalize">{o.status}</td>
                 <td className="p-3 text-right space-x-2">

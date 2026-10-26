@@ -108,7 +108,7 @@ function TrackOrder() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Order</p>
-                <p className="font-display text-3xl">#{order.order_number}</p>
+                <p className="font-display text-3xl">{order.order_code ?? `#${order.order_number}`}</p>
               </div>
               <div className="text-right text-sm">
                 <p><span className="text-muted-foreground">Status:</span> {STATUS_LABEL[order.status] ?? order.status}</p>

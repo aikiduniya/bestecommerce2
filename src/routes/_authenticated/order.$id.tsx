@@ -41,7 +41,7 @@ function OrderPage() {
           </div>
         )}
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div><p className="eyebrow text-gold">Order</p><h1 className="mt-2 text-6xl">#{o.order_number}</h1><p className="text-sm text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p></div>
+          <div><p className="eyebrow text-gold">Order</p><h1 className="mt-2 text-6xl">{o.order_code ?? `#${o.order_number}`}</h1><p className="text-sm text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p></div>
           <div className="flex gap-2"><StatusPill value={o.status} /><StatusPill value={o.payment_status} /></div>
         </div>
         <div className="mt-10 divide-y rounded border bg-card">

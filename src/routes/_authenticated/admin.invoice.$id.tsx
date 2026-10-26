@@ -49,7 +49,7 @@ function InvoicePage() {
           </div>
           <div className="text-right">
             <p className="font-display text-2xl">INVOICE</p>
-            <p className="text-sm">#{o.order_number}</p>
+            <p className="text-sm">{o.order_code ?? `#${o.order_number}`}</p>
             <p className="text-sm text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</p>
           </div>
         </div>
