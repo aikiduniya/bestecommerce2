@@ -266,7 +266,7 @@ function SettingsPage() {
             {text("hero_image_alt" as never, "Hero image alt text (describes the photo for search engines)")}
             {((s as { hero_media?: string }).hero_media ?? "images") === "video" ? (
               <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Banner video link (MP4, YouTube or Vimeo, https://)</Label>
-                <Input aria-label="Banner video link" placeholder="https://…/banner.mp4" value={(s as { hero_video_url?: string | null }).hero_video_url ?? ""} onChange={(e) => setS({ ...s, hero_video_url: e.target.value } as never)} /></div>
+                <Input aria-label="Banner video link" placeholder="https://…/banner.mp4" value={(s as { hero_video_url?: string | null }).hero_video_url ?? ""} onChange={(e) => setS({ ...s, hero_video_url: e.target.value, hero_media: "video" } as never)} /></div>
             ) : (
               <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Banner images (add several — they slide automatically; headline uses the tagline)</Label><ImagePicker multiple value={(s as { hero_images?: string[] }).hero_images ?? []} onChange={(v) => setS({ ...s, hero_images: v, hero_image_url: v[0] ?? null } as never)} /></div>
             )}
