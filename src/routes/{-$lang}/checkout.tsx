@@ -9,6 +9,7 @@ import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
 import { notifyOrderPlaced } from "@/lib/email.functions";
 import { createStripeCheckout } from "@/lib/payments.functions";
 import { publicOrderCode } from "@/lib/order-reference";
+import { getPlacedOrderCode } from "@/lib/order-reference.functions";
 import { useDisplayCurrency } from "@/lib/currency";
 import { isValidLang, useLang } from "@/lib/i18n";
 import { useSessionUser } from "@/lib/auth";
@@ -166,7 +167,15 @@ function Checkout() {
     });
     if (error) { setPlacing(false); toast.error(error.message); return; }
     const res = data as { id: string; order_number: number; order_code?: string | null; guest_token: string | null };
-    const orderCode = publicOrderCode(res);
+    let orderCode = publicOrderCode(res);
+    if (!orderCode) {
+      try {
+        orderCode = (await getPlacedOrderCode({ data: { orderId: res.id, guestToken: res.guest_token ?? undefined } })).orderCode;
+      } catch (err) {
+        // The order already exists: do not offer a second placement or suppress notifications.
+        console.error("Could not read the placed order code", err);
+      }
+    }
     if (pay === "stripe") {
       try {
         const r = await createStripeCheckout({ data: { orderId: res.id, guestToken: res.guest_token ?? undefined, origin: window.location.origin } });
