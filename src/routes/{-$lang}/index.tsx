@@ -1,3 +1,4 @@
+import { HeroSlider, settingsSlides } from "@/components/store/HeroSlider";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -91,18 +92,7 @@ function LegacyHome() {
 
   return (
     <>
-      <section className="bg-hero relative overflow-hidden text-primary-foreground">
-        {s?.hero_image_url && <img src={s.hero_image_url} alt={(s as { hero_image_alt?: string | null }).hero_image_alt ?? ""} className="hero-img absolute inset-0 size-full object-cover" />}
-        <div className="hero-pad relative mx-auto max-w-7xl px-6">
-          {s?.hero_eyebrow && <p className="eyebrow text-gold">{s.hero_eyebrow}</p>}
-          <h1 className="mt-6 max-w-3xl text-6xl leading-[1.02] md:text-8xl">{s?.tagline ?? " "}</h1>
-          {s?.hero_cta && (
-            <Button variant="hero" size="lg" className="mt-10" asChild>
-              <Link to="/{-$lang}/shop" params={lp}>{s.hero_cta} <ArrowRight /></Link>
-            </Button>
-          )}
-        </div>
-      </section>
+      <HeroSlider slides={settingsSlides(s as never)} layout="full" height={s?.hero_height || "tall"} autoplay={6} />
 
       <section className="border-b bg-card">
         <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 text-sm sm:grid-cols-3">
