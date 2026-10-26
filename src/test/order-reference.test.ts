@@ -25,7 +25,7 @@ beforeEach(() => {
 describe("public order code data flow", () => {
   it("uses the stored code ELE-261026-9520, never internal number 15", () => {
     expect(publicOrderCode(state.order)).toBe("ELE-261026-9520");
-    expect(buildOrderVars(state.order).order_number).toBe(publicOrderCode(state.order));
+    expect(buildOrderVars(state.order)["order_number"]).toBe(publicOrderCode(state.order));
     expect(state.order.order_number).toBe(15);
   });
   it("does not fabricate a numeric public reference when a code is missing", () => {

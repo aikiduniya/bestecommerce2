@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 const state = vi.hoisted(() => ({ search: {} as any, navigate: vi.fn(), rpc: vi.fn(), readCode: vi.fn(), notify: vi.fn(), verify: vi.fn(), clear: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: () => (opts: any) => ({ ...opts, useSearch: () => state.search }),
+  createFileRoute: () => (opts: any) => ({ options: opts, useSearch: () => state.search }),
   Link: ({ children, search }: any) => <a href={search ? `/track?n=${search.n}&e=${search.e}` : "/"}>{children}</a>,
   notFound: vi.fn(), useNavigate: () => state.navigate,
 }));
@@ -40,7 +40,7 @@ beforeEach(() => {
 });
 describe("checkout to tracking using disposable transport doubles", () => {
   it("places COD with a legacy response, reads the code, redirects and automatically looks up the same order", async () => {
-    const Checkout = CheckoutRoute.component as any;
+    const Checkout = CheckoutRoute.options.component as any;
     render(<Checkout />);
     const form = screen.getByRole("button", { name: "Place order" }).closest("form");
     if (!form) throw new Error("Missing checkout form");
@@ -52,14 +52,15 @@ describe("checkout to tracking using disposable transport doubles", () => {
     expect(destination.search.n).toBe("ELE-261026-9520");
     expect(state.notify).toHaveBeenCalledWith({ data: { orderId: "qa-order", guestToken: "disposable-token" } });
     cleanup(); state.search = { ...destination.search, e: "qa@example.test" };
-    const Track = TrackRoute.component as any; render(<Track />);
+    const Track = TrackRoute.options.component as any; render(<Track />);
     await waitFor(() => expect(state.rpc).toHaveBeenCalledWith("track_guest_order_code", { _code: "ELE-261026-9520", _email: "qa@example.test" }));
     expect(screen.getByDisplayValue("ELE-261026-9520")).toBeTruthy();
     await screen.findByText(/Your order ELE-261026-9520 has been placed/);
   });
   it("manually entered public code looks up the order", async () => {
-    const Track = TrackRoute.component as any; render(<Track />);
+    const Track = TrackRoute.options.component as any; render(<Track />);
     const inputs = screen.getAllByRole("textbox");
+    if (!inputs[0] || !inputs[1]) throw new Error("Missing tracking inputs");
     fireEvent.change(inputs[0], { target: { value: order.order_code } });
     fireEvent.change(inputs[1], { target: { value: "qa@example.test" } });
     fireEvent.click(screen.getByRole("button", { name: "Find my order" }));
@@ -68,14 +69,14 @@ describe("checkout to tracking using disposable transport doubles", () => {
   });
   it("legacy numeric tracking still works and normalizes the input to the public code", async () => {
     state.search = { n: 15, e: "qa@example.test" };
-    const Track = TrackRoute.component as any; render(<Track />);
+    const Track = TrackRoute.options.component as any; render(<Track />);
     await waitFor(() => expect(state.rpc).toHaveBeenCalledWith("track_guest_order", { _order_number: 15, _email: "qa@example.test" }));
     await screen.findByDisplayValue(order.order_code);
   });
   it("card success displays and links the public code without enabling Stripe", async () => {
     state.search = { session_id: "cs_test_abc" };
     state.verify.mockResolvedValue({ paid: true, orderNumber: "15", orderCode: order.order_code, email: "qa@example.test" });
-    const Success = SuccessRoute.component as any; render(<Success />);
+    const Success = SuccessRoute.options.component as any; render(<Success />);
     await screen.findByText(/Payment confirmed for order ELE-261026-9520/);
     expect(screen.getByRole("link", { name: "View order details" }).getAttribute("href")).toContain("n=ELE-261026-9520");
   });
