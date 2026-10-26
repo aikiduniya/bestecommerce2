@@ -288,6 +288,13 @@
       "when": 1793009724628,
       "tag": "0040_track_order_code_any_owner",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793013782914,
+      "tag": "0041_hero_media",
+      "breakpoints": true
     }
   ]
 }

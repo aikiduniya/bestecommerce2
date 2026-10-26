@@ -253,13 +253,23 @@ function SettingsPage() {
         </TabsContent>
         <TabsContent value="home">
           <Card className="grid gap-4 p-6 sm:grid-cols-2">
-            <div className="rounded border border-gold bg-gold-soft/40 p-4 text-sm sm:col-span-2">
-              <strong>Multiple banner images or videos?</strong> Your homepage uses the Homepage builder. Go to <a href="/admin/homepage" className="text-gold underline">Admin → Homepage</a>, open the <strong>Banner (Hero)</strong> section and use <strong>"Add slide"</strong> — each slide can have its own image or video link. The fields below are only used when the Homepage builder is empty.
+            <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Banner background</Label>
+              <div className="flex gap-2">
+                {([["images", "Image slider"], ["video", "Video"]] as const).map(([v, l]) => (
+                  <Button key={v} type="button" variant={((s as { hero_media?: string }).hero_media ?? "images") === v ? "gold" : "outline"} size="sm" onClick={() => setS({ ...s, hero_media: v } as never)}>{l}</Button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">Only one runs at a time. Video plays silently on loop with no buttons.</p>
             </div>
             {text("hero_eyebrow", "Hero small label")}
             {text("hero_cta", "Hero button text")}
             {text("hero_image_alt" as never, "Hero image alt text (describes the photo for search engines)")}
-            <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Hero background image (headline uses the tagline)</Label><ImagePicker multiple={false} value={s.hero_image_url ? [s.hero_image_url] : []} onChange={(v) => set("hero_image_url", v[0] ?? null)} /></div>
+            {((s as { hero_media?: string }).hero_media ?? "images") === "video" ? (
+              <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Banner video link (MP4, YouTube or Vimeo, https://)</Label>
+                <Input aria-label="Banner video link" placeholder="https://…/banner.mp4" value={(s as { hero_video_url?: string | null }).hero_video_url ?? ""} onChange={(e) => setS({ ...s, hero_video_url: e.target.value } as never)} /></div>
+            ) : (
+              <div className="space-y-1.5 sm:col-span-2"><Label className="text-xs text-muted-foreground">Banner images (add several — they slide automatically; headline uses the tagline)</Label><ImagePicker multiple value={(s as { hero_images?: string[] }).hero_images ?? []} onChange={(v) => setS({ ...s, hero_images: v, hero_image_url: v[0] ?? null } as never)} /></div>
+            )}
             <p className="text-xs text-muted-foreground sm:col-span-2">Featured products and homepage collections are controlled from Products (★ Featured) and Collections (Homepage switch).</p>
           </Card>
         </TabsContent>

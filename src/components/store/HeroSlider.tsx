@@ -108,3 +108,12 @@ export function HeroSlider({ slides, layout = "split", height = "tall", autoplay
     </section>
   );
 }
+
+/** Banner slides from Settings → Home: either one muted background video or an image slider (never both). */
+export function settingsSlides(s: { hero_media?: string | null; hero_images?: string[] | null; hero_video_url?: string | null; hero_image_url?: string | null; hero_eyebrow?: string | null; tagline?: string | null; hero_image_alt?: string | null; hero_cta?: string | null; hero_overlay?: number | null } | null | undefined, title?: string, description?: string): Slide[] {
+  const base: Slide = { eyebrow: s?.hero_eyebrow || "", title: title || s?.tagline || "", description: description ?? "", image_alt: s?.hero_image_alt || "", ...(s?.hero_cta ? { cta_label: s.hero_cta, cta_link: "/shop" } : {}), overlay: s?.hero_overlay != null ? 100 - s.hero_overlay : 55 };
+  if (s?.hero_media === "video" && s.hero_video_url) return [{ ...base, video_url: s.hero_video_url }];
+  const imgs = (s?.hero_images ?? []).filter(Boolean);
+  const list = imgs.length ? imgs : s?.hero_image_url ? [s.hero_image_url] : [""];
+  return list.map((u) => ({ ...base, image_url: u }));
+}

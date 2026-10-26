@@ -245,6 +245,8 @@ function ConfigFields({ type, cfg, set }: { type: string; cfg: Cfg; set: (k: str
 
   switch (type) {
     case "hero":
+      return <p className="text-sm text-muted-foreground">Banner images or video are managed in <a href="/admin/settings" className="text-gold underline">Settings → Home</a>. Here you only set its position.</p>;
+    case "__old_hero":
       return (
         <>
           <div className="grid grid-cols-3 gap-2">

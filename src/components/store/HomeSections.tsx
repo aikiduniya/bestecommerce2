@@ -14,7 +14,7 @@ import { bestSellersQuery, type HomeSection } from "@/lib/sections";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Prose } from "@/components/store/Prose";
-import { HeroSlider, type Slide } from "@/components/store/HeroSlider";
+import { HeroSlider, settingsSlides, type Slide } from "@/components/store/HeroSlider";
 import { NewsletterForm } from "@/components/store/NewsletterForm";
 import { FaqList } from "@/components/store/FaqList";
 import { ContactForm } from "@/components/store/ContactForm";
@@ -59,10 +59,9 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
     const c = (sec.config ?? {}) as Cfg;
     switch (sec.type) {
       case "hero": {
-        const slides: Slide[] = Array.isArray(c.slides) && c.slides.length
-          ? c.slides
-          : [{ eyebrow: c.eyebrow || s?.hero_eyebrow || "", title: sec.title || s?.tagline || "", description: sec.subtitle ?? "", image_url: c.image_url || s?.hero_image_url || "", image_alt: c.image_alt || s?.hero_image_alt || "", cta_label: c.cta_label, cta_link: c.cta_link, overlay: s?.hero_overlay != null ? 100 - s.hero_overlay : 55 }];
-        return <HeroSlider slides={slides} layout={c.layout ?? (Array.isArray(c.slides) && c.slides.length ? "split" : "full")} height={c.height || s?.hero_height || "tall"} autoplay={Number(c.autoplay ?? 6)} />;
+        // Banner content is managed in Settings → Home (image slider or one background video).
+        const slides = settingsSlides(s as never, sec.title || undefined, sec.subtitle ?? "");
+        return <HeroSlider slides={slides} layout="full" height={s?.hero_height || "tall"} autoplay={6} />;
       }
       case "about":
         return (
