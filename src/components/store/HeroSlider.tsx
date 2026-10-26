@@ -4,11 +4,20 @@ import { Button } from "@/components/ui/button";
 
 export type Slide = {
   eyebrow?: string; title?: string; subtitle?: string; description?: string;
-  image_url?: string; mobile_image_url?: string; image_alt?: string;
+  image_url?: string; mobile_image_url?: string; image_alt?: string; video_url?: string;
   cta_label?: string; cta_link?: string; cta_icon?: string;
   cta2_label?: string; cta2_link?: string;
   align?: "left" | "center" | "right"; tone?: "light" | "dark"; overlay?: number;
 };
+
+/** Embed URL for YouTube/Vimeo links (muted autoplay loop), or null for direct video files. */
+export function videoEmbed(url: string): string | null {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
+  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}?autoplay=1&mute=1&loop=1&playlist=${yt[1]}&controls=0&playsinline=1&rel=0`;
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}?background=1&autoplay=1&muted=1&loop=1`;
+  return null;
+}
 
 const ICONS = { arrow: ArrowRight, bag: ShoppingBag, sparkles: Sparkles, star: Star, play: Play } as const;
 const HEIGHTS: Record<string, string> = { compact: "min-h-[420px]", medium: "min-h-[520px]", tall: "min-h-[620px] md:min-h-[720px]", full: "min-h-[calc(100svh-4.5rem)]" };
@@ -54,7 +63,13 @@ export function HeroSlider({ slides, layout = "split", height = "tall", autoplay
             )}
           </div>
         );
-        const img = s.image_url ? (
+        const video = s.video_url && /^https:\/\//.test(s.video_url) ? s.video_url : "";
+        const embed = video ? videoEmbed(video) : null;
+        const img = video ? (
+          embed
+            ? <iframe src={k === i ? embed : undefined} title={s.image_alt || s.title || "Banner video"} allow="autoplay; encrypted-media" className="pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2 border-0" style={s.image_url ? { backgroundImage: `url(${s.image_url})`, backgroundSize: "cover" } : undefined} />
+            : <video src={video} poster={s.image_url || undefined} autoPlay muted loop playsInline preload={k === 0 ? "auto" : "metadata"} className="size-full object-cover" aria-label={s.image_alt || undefined} />
+        ) : s.image_url ? (
           <picture>
             {s.mobile_image_url && <source media="(max-width: 767px)" srcSet={s.mobile_image_url} />}
             <img src={s.image_url} alt={s.image_alt ?? ""} className="size-full object-cover" loading={k === 0 ? "eager" : "lazy"} {...(k === 0 ? { fetchPriority: "high" as const } : {})} />

@@ -421,6 +421,11 @@ function SlidesEditor({ slides, onChange }: { slides: Cfg[]; onChange: (v: Cfg[]
             <div><label className="text-xs">Desktop image</label><SingleImage value={s.image_url ?? ""} onChange={(v) => up(i, "image_url", v)} /></div>
             <div><label className="text-xs">Mobile image (optional)</label><SingleImage value={s.mobile_image_url ?? ""} onChange={(v) => up(i, "mobile_image_url", v)} /></div>
           </div>
+          <div>
+            <label className="text-xs">Background video link (optional — plays instead of the image)</label>
+            <Input aria-label={`Slide ${i + 1} video link`} placeholder="https://…/banner.mp4 or a YouTube / Vimeo link" value={s.video_url ?? ""} onChange={(e) => up(i, "video_url", e.target.value)} />
+            <p className="mt-1 text-[11px] text-muted-foreground">MP4/WebM, YouTube or Vimeo. Plays muted and on loop; the desktop image is shown while it loads. Recommended 1920 × 1080, under 10 MB.</p>
+          </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <div><label className="text-xs">Button icon</label><select className={sel} value={s.cta_icon ?? "arrow"} onChange={(e) => up(i, "cta_icon", e.target.value)}><option value="arrow">Arrow</option><option value="bag">Shopping bag</option><option value="sparkles">Sparkles</option><option value="star">Star</option><option value="play">Play</option></select></div>
             <div><label className="text-xs">Text alignment</label><select className={sel} value={s.align ?? "left"} onChange={(e) => up(i, "align", e.target.value)}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div>
